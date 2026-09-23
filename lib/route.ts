@@ -34,8 +34,8 @@ const CUM: number[] = [0];
 for (let i = 1; i < ROUTE.coords.length; i++) CUM.push(CUM[i - 1] + hav(ROUTE.coords[i - 1], ROUTE.coords[i]));
 export const ROUTE_LEN = CUM[CUM.length - 1];
 
-/** Position + heading at `d` metres along the route. */
-export function positionAt(d: number): { pos: [number, number]; heading: number; index: number } {
+/** Segment index and interpolated point at `d` metres along the route. */
+function pointAt(d: number): { pos: [number, number]; index: number } {
   const dd = Math.max(0, Math.min(ROUTE_LEN - 0.01, d));
   let lo = 0;
   let hi = CUM.length - 1;
@@ -47,14 +47,22 @@ export function positionAt(d: number): { pos: [number, number]; heading: number;
   const a = ROUTE.coords[lo];
   const b = ROUTE.coords[hi];
   const t = (dd - CUM[lo]) / Math.max(0.001, CUM[hi] - CUM[lo]);
-  // look a little ahead for a calmer heading
-  let j = hi;
-  while (j < CUM.length - 1 && CUM[j] - dd < 25) j++;
-  return {
-    pos: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t],
-    heading: bearing(a, ROUTE.coords[j]),
-    index: lo,
-  };
+  return { pos: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t], index: lo };
+}
+
+/** Half-length of the chord used for heading: the arrow only starts turning this close to a corner. */
+const TURN_M = 5;
+
+/**
+ * Position + heading at `d` metres along the route. Heading is the chord between the points
+ * TURN_M behind and ahead on the path itself, so the arrow follows the road and swings round
+ * a corner only in the last few metres, instead of aiming at a point past the bend.
+ */
+export function positionAt(d: number): { pos: [number, number]; heading: number; index: number } {
+  const here = pointAt(d);
+  const from = pointAt(Math.max(0, d - TURN_M)).pos;
+  const ahead = pointAt(Math.min(ROUTE_LEN - 0.01, Math.max(d, TURN_M) + TURN_M)).pos;
+  return { pos: here.pos, heading: bearing(from, ahead), index: here.index };
 }
 
 /** Next manoeuvre ahead of `d`. */

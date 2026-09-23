@@ -150,7 +150,7 @@ export function NavMap({ className = "" }: { className?: string }) {
         const zoom = 17.1 - Math.min(1.3, s.speed / 55) + s.zoomBias;
         map.jumpTo({
           center: pos,
-          bearing: map.getBearing() + shortest(map.getBearing(), heading) * 0.08,
+          bearing: map.getBearing() + shortest(map.getBearing(), heading) * 0.12,
           zoom: map.getZoom() + (zoom - map.getZoom()) * 0.08,
           pitch: s.map3d ? 58 : 0,
           padding: { top: 180, bottom: 0, left: 0, right: 0 },
