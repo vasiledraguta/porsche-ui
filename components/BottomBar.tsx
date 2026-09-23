@@ -20,8 +20,10 @@ export function BottomBar() {
 
   const setTemp = (side: "L" | "R", d: number) => {
     const v = (x: number) => Math.round(Math.min(28, Math.max(16, x + d)) * 2) / 2;
-    if (s.sync) s.set({ tempL: v(s.tempL), tempR: v(s.tempL) });
-    else s.set(side === "L" ? { tempL: v(s.tempL) } : { tempR: v(s.tempR) });
+    // Each side is its own zone. With SYNC on, the driver's side sets both; touching the
+    // passenger side switches SYNC off, the way a dual-zone climate panel behaves.
+    if (side === "L") s.set(s.sync ? { tempL: v(s.tempL), tempR: v(s.tempL) } : { tempL: v(s.tempL) });
+    else s.set({ tempR: v(s.tempR), sync: false });
   };
 
   return (

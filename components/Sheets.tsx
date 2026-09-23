@@ -13,6 +13,7 @@ import {
   Phone,
   Play,
   Timer,
+  Link2,
   Route,
   Search,
   ShieldCheck,
@@ -303,7 +304,7 @@ function ClimateTab() {
         <ClimateKey icon={Snowflake} label="A/C MAX" on={s.acMax} onClick={() => s.set({ acMax: !s.acMax })} />
         <ClimateKey icon={Fan} label="AUTO" on={s.auto} onClick={() => s.set({ auto: !s.auto })} />
         <ClimateKey icon={Wind} label="Defrost" on={s.defrost} onClick={() => s.set({ defrost: !s.defrost })} />
-        <ClimateKey icon={Snowflake} label="SYNC" on={s.sync} onClick={() => s.set({ sync: !s.sync, tempR: s.tempL })} />
+        <ClimateKey icon={Link2} label="SYNC" on={s.sync} onClick={() => s.set(s.sync ? { sync: false } : { sync: true, tempR: s.tempL })} />
       </div>
       <SectionTitle>Fan · {s.auto ? "Auto" : s.fan}</SectionTitle>
       <input

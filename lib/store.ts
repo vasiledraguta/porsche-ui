@@ -159,7 +159,7 @@ export const useCar = create<State & Actions>((set, get) => ({
 
   tempL: 21.5,
   tempR: 21.5,
-  sync: true,
+  sync: false,
   fan: 3,
   auto: true,
   acMax: false,
