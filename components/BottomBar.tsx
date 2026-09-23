@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, ChevronUp, Fan, Volume2, VolumeX } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Fan, Volume2, VolumeX } from "lucide-react";
 import { APPS, Glyph, type AppId } from "./ui/Glyph";
 import { useCar, type Sheet, type VehicleTab } from "@/lib/store";
 
@@ -158,7 +158,7 @@ function Volume() {
         onClick={() => set({ volume: Math.max(0, volume - 6) })}
         className="grid h-11 w-9 place-items-center text-white/50 hover:text-white"
       >
-        <ChevronDown size={20} className="-rotate-90" />
+        <ChevronLeft size={20} />
       </button>
       <button
         aria-label="Mute"
@@ -175,7 +175,7 @@ function Volume() {
         onClick={() => set({ volume: Math.min(100, volume + 6) })}
         className="grid h-11 w-9 place-items-center text-white/50 hover:text-white"
       >
-        <ChevronUp size={20} className="rotate-90" />
+        <ChevronRight size={20} />
       </button>
     </div>
   );
