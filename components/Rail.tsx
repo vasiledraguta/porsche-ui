@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useSlider } from "./ui/useSlider";
 import { Glyph, type AppId } from "./ui/Glyph";
 import { useCar, type Sheet } from "@/lib/store";
 import { hhmm, useClock } from "@/lib/useClock";
@@ -18,6 +18,8 @@ export function Rail() {
   const sheet = useCar((s) => s.sheet);
   const set = useCar((s) => s.set);
   const openSheet = useCar((s) => s.openSheet);
+  const activeIdx = RAIL.findIndex((r) => (r.sheet === null ? sheet === null : sheet === r.sheet));
+  const { container, indicator } = useSlider(activeIdx);
 
   return (
     <aside className="relative z-30 flex w-[78px] shrink-0 flex-col items-center bg-[#0b0c0e] pt-5 pb-4">
@@ -41,23 +43,17 @@ export function Rail() {
         <HomeGlyph active={sheet === "home"} />
       </button>
 
-      <div className="mt-2 flex flex-col items-center gap-1.5">
+      <div ref={container} className="relative mt-2 flex flex-col items-center gap-1.5">
+        <span ref={indicator} className="pointer-events-none absolute top-0 left-0 rounded-[14px] bg-white/[0.08] opacity-0" />
         {RAIL.map((r) => {
-          const active = r.sheet === null ? sheet === null : sheet === r.sheet;
           return (
             <button
               key={r.id}
+              data-slot
               onClick={() => (r.sheet === null ? set({ sheet: null, follow: true }) : openSheet(r.sheet))}
               aria-label={r.label}
               className="relative grid h-[54px] w-[54px] place-items-center rounded-[14px]"
             >
-              {active && (
-                <motion.span
-                  layoutId="rail-active"
-                  className="absolute inset-0 rounded-[14px] bg-white/[0.08]"
-                  transition={{ type: "spring", stiffness: 460, damping: 36 }}
-                />
-              )}
               <span className="relative">
                 <Glyph id={r.id} size={24} />
               </span>

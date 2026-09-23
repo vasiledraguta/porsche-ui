@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
 import { Fuel, Lock, LockOpen, Move3d, RotateCcw } from "lucide-react";
 import { MiniPlayer } from "./MiniPlayer";
+import { useSlider } from "./ui/useSlider";
 
 // WebGL only runs client-side.
 const Car3D = dynamic(() => import("./Car3D"), { ssr: false });
@@ -158,18 +159,16 @@ function CarStage() {
 function ModeBar() {
   const mode = useCar((s) => s.mode);
   const setMode = useCar((s) => s.setMode);
+  const { container, indicator } = useSlider(MODE_ORDER.indexOf(mode));
   return (
     <div className="px-5 pb-3">
-      <div className="flex rounded-[12px] bg-white/[0.05] p-[3px]">
+      <div ref={container} className="relative flex rounded-[12px] bg-white/[0.05] p-[3px]">
+        <span
+          ref={indicator}
+          className="pointer-events-none absolute top-0 left-0 rounded-[9px] bg-[#262a30] opacity-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07),0_2px_8px_rgba(0,0,0,0.4)]"
+        />
         {MODE_ORDER.map((m) => (
-          <button key={m} onClick={() => setMode(m)} className="relative flex-1 rounded-[9px] py-[9px] text-[13.5px]">
-            {mode === m && (
-              <motion.span
-                layoutId="drive-mode"
-                className="absolute inset-0 rounded-[9px] bg-[#262a30] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07),0_2px_8px_rgba(0,0,0,0.4)]"
-                transition={{ type: "spring", stiffness: 420, damping: 36 }}
-              />
-            )}
+          <button key={m} data-slot onClick={() => setMode(m)} className="relative flex-1 rounded-[9px] py-[9px] text-[13.5px]">
             <span className={`relative ${mode === m ? "text-white" : "text-white/50"}`}>{MODES[m].label}</span>
           </button>
         ))}

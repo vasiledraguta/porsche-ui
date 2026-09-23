@@ -24,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { AlbumArt } from "./AlbumArt";
+import { useSlider } from "./ui/useSlider";
 import { Glyph, APPS, type AppId } from "./ui/Glyph";
 import { Row, Segmented, SectionTitle, Toggle } from "./ui/controls";
 import { AMBIENT, MODES, MODE_ORDER, REDLINE, TANK_L, TRACKS, fmtTime, rangeFor, useCar, type VehicleTab } from "@/lib/store";
@@ -141,25 +142,21 @@ const TABS: { id: VehicleTab; label: string; icon: LucideIcon }[] = [
 function VehicleSheet() {
   const tab = useCar((s) => s.vehicleTab);
   const set = useCar((s) => s.set);
+  const { container, indicator } = useSlider<HTMLElement>(TABS.findIndex((t) => t.id === tab));
   return (
     <div className="flex h-full">
-      <nav className="w-[270px] shrink-0 border-r border-white/[0.06] px-3 pt-6">
+      <nav ref={container} className="relative w-[270px] shrink-0 border-r border-white/[0.06] px-3 pt-6">
+        <span ref={indicator} className="pointer-events-none absolute top-0 left-0 rounded-[10px] bg-white/[0.08] opacity-0" />
         <div className="mb-3 flex items-center gap-2 px-3 text-[18px] font-medium text-white">
           <CarFront size={20} strokeWidth={1.7} /> Vehicle
         </div>
         {TABS.map((t) => (
           <button
             key={t.id}
+            data-slot
             onClick={() => set({ vehicleTab: t.id })}
             className="relative flex w-full items-center gap-3 rounded-[10px] px-3 py-[11px] text-left text-[14.5px]"
           >
-            {tab === t.id && (
-              <motion.span
-                layoutId="veh-tab"
-                className="absolute inset-0 rounded-[10px] bg-white/[0.08]"
-                transition={{ type: "spring", stiffness: 460, damping: 38 }}
-              />
-            )}
             <t.icon size={18} strokeWidth={1.6} className={`relative ${tab === t.id ? "text-white" : "text-white/55"}`} />
             <span className={`relative ${tab === t.id ? "text-white" : "text-white/70"}`}>{t.label}</span>
           </button>

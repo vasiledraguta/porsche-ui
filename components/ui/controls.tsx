@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useSlider } from "./useSlider";
 
 export function Toggle({ on, onChange, label }: { on: boolean; onChange: () => void; label?: string }) {
   return (
@@ -29,28 +30,27 @@ export function Segmented<T extends string>({
   value,
   options,
   onChange,
-  id,
 }: {
   value: T;
   options: { value: T; label: string }[];
   onChange: (v: T) => void;
-  id: string;
+  /** kept for call-site readability; no longer needed for animation */
+  id?: string;
 }) {
+  const { container, indicator } = useSlider(options.findIndex((o) => o.value === value));
   return (
-    <div className="flex rounded-[10px] bg-white/[0.06] p-[3px]">
+    <div ref={container} className="relative flex rounded-[10px] bg-white/[0.06] p-[3px]">
+      <span
+        ref={indicator}
+        className="pointer-events-none absolute top-0 left-0 rounded-[8px] bg-[#2b2f35] opacity-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08),0_2px_6px_rgba(0,0,0,0.3)]"
+      />
       {options.map((o) => (
         <button
           key={o.value}
+          data-slot
           onClick={() => onChange(o.value)}
           className="relative flex-1 rounded-[8px] px-3 py-2 text-[14px]"
         >
-          {value === o.value && (
-            <motion.span
-              layoutId={`seg-${id}`}
-              className="absolute inset-0 rounded-[8px] bg-[#2b2f35] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08),0_2px_6px_rgba(0,0,0,0.3)]"
-              transition={{ type: "spring", stiffness: 420, damping: 36 }}
-            />
-          )}
           <span className={`relative ${value === o.value ? "text-white" : "text-white/55"}`}>{o.label}</span>
         </button>
       ))}
