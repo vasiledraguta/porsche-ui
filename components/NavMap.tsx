@@ -76,11 +76,23 @@ export function NavMap({ className = "" }: { className?: string }) {
           bearing: start.heading,
           attributionControl: false,
           interactive: true,
-          dragRotate: false,
+          dragRotate: true,
+          pitchWithRotate: true,
+          touchPitch: true,
+          maxPitch: 75,
           fadeDuration: 0,
         });
         mapRef.current = map;
-        map.on("dragstart", () => useCar.getState().set({ follow: false }));
+        // Hand the camera to the user the moment they touch the map. This has to happen on
+        // press, not on dragstart: the follow loop's jumpTo() stops in-progress gestures, so a
+        // drag would otherwise be cancelled before it ever reached dragstart.
+        const release = () => {
+          if (useCar.getState().follow) useCar.getState().set({ follow: false });
+        };
+        map.on("mousedown", release);
+        map.on("touchstart", release);
+        map.on("wheel", release);
+        map.getCanvasContainer().style.cursor = "grab";
         map.on("load", () => {
           if (!map) return;
           map.addSource("route", {
@@ -146,7 +158,7 @@ export function NavMap({ className = "" }: { className?: string }) {
       if (s.now - last < 33) return;
       last = s.now;
       const { pos, heading } = positionAt(s.routeD);
-      if (s.follow) {
+      if (s.follow && !map.isMoving()) {
         const zoom = 17.1 - Math.min(1.3, s.speed / 55) + s.zoomBias;
         map.jumpTo({
           center: pos,
@@ -175,8 +187,34 @@ export function NavMap({ className = "" }: { className?: string }) {
 
   // recenter
   const follow = useCar((s) => s.follow);
+  const map3d = useCar((s) => s.map3d);
+  const zoomBias = useCar((s) => s.zoomBias);
+
+  // in free-look mode the 2D/3D and zoom buttons act on the camera directly
   useEffect(() => {
-    if (follow && mapRef.current) mapRef.current.easeTo({ zoom: 16.4, duration: 600 });
+    const map = mapRef.current;
+    if (map && !useCar.getState().follow) map.easeTo({ pitch: map3d ? 58 : 0, duration: 500 });
+  }, [map3d]);
+  const lastBias = useRef(zoomBias);
+  useEffect(() => {
+    const map = mapRef.current;
+    const delta = zoomBias - lastBias.current;
+    lastBias.current = zoomBias;
+    if (map && delta && !useCar.getState().follow) map.easeTo({ zoom: map.getZoom() + delta, duration: 300 });
+  }, [zoomBias]);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!follow || !map) return;
+    const s = useCar.getState();
+    const { pos, heading } = positionAt(s.routeD);
+    map.easeTo({
+      center: pos,
+      bearing: heading,
+      zoom: 16.4,
+      pitch: s.map3d ? 58 : 0,
+      padding: { top: 180, bottom: 0, left: 0, right: 0 },
+      duration: 700,
+    });
   }, [follow]);
 
   return (

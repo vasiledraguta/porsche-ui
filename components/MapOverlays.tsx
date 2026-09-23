@@ -176,7 +176,8 @@ function CtlBtn({ children, label, onClick }: { children: React.ReactNode; label
 
 export function SpeedLimit() {
   const d = useCar((s) => s.routeD);
-  const limit = d > 3900 && d < 7300 ? 70 : d > 7300 ? 40 : 50;
+  // Romanian urban default; the airport approach drops to 30
+  const limit = d > 7900 ? 30 : 50;
   return (
     <div className="absolute bottom-[92px] left-4 z-10 grid h-[54px] w-[54px] place-items-center rounded-full border-[5px] border-[#e5332a] bg-white shadow-lg">
       <span className="text-[19px] font-semibold text-black tabular-nums">{limit}</span>

@@ -218,8 +218,7 @@ export const useCar = create<State & Actions>((set, get) => ({
       // Cruise the route at believable city speeds: slow for turns, stop at lights.
       const { step, dist } = nextStep(routeD);
       let target = 50;
-      if (routeD > 3900 && routeD < 7300) target = 70; // B27 Heilbronner Straße
-      if (step && dist < 90) target = step.type === "rotary" ? 22 : step.mod?.includes("slight") ? 40 : 24;
+      if (step && dist < 90) target = step.type === "rotary" || step.type === "roundabout" ? 22 : step.mod?.includes("slight") ? 40 : 24;
       const stop = STOPS[stopIdx];
       if (stop !== undefined && stop - routeD < 70 && stop - routeD > -5) {
         target = Math.max(0, ((stop - routeD) / 70) * 40);

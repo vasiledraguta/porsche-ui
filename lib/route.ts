@@ -67,7 +67,7 @@ export function positionAt(d: number): { pos: [number, number]; heading: number;
 
 /** Next manoeuvre ahead of `d`. */
 export function nextStep(d: number) {
-  const s = ROUTE.steps.find((st) => st.at > d + 3 && st.type !== "exit rotary");
+  const s = ROUTE.steps.find((st) => st.at > d + 3 && st.type !== "exit rotary" && st.type !== "exit roundabout");
   if (!s) return { step: null as Step | null, dist: ROUTE_LEN - d };
   return { step: s, dist: s.at - d };
 }
@@ -78,4 +78,5 @@ export function fmtDist(m: number) {
   return `${Math.max(0, Math.round(m / 5) * 5)} m`;
 }
 
-export const STOPS = [640, 2330, 4180, 6420, 8050];
+/** Traffic lights on the Cluj route (metres along it): Calea Dorobanților, Teodor Mihali, Aurel Vlaicu, Traian Vuia. */
+export const STOPS = [1150, 2370, 3620, 5480, 7080];
