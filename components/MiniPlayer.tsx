@@ -1,11 +1,19 @@
 "use client";
 
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { AlbumArt } from "./AlbumArt";
 import { TRACKS, useCar } from "@/lib/store";
 
 export function MiniPlayer() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    track: s.track,
+    progress: s.progress,
+    playing: s.playing,
+    openSheet: s.openSheet,
+    nextTrack: s.nextTrack,
+    set: s.set,
+  })));
   const t = TRACKS[s.track];
   return (
     <div className="overflow-hidden rounded-[14px] bg-[#16191d] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
