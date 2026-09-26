@@ -17,6 +17,7 @@ export function Ticker() {
     raf = requestAnimationFrame(loop);
 
     const down = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
       if ((e.target as HTMLElement)?.tagName === "INPUT") return;
       const s = useCar.getState();
       const k = e.key.toLowerCase();
