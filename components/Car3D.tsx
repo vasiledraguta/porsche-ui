@@ -333,7 +333,7 @@ function Rig() {
 export default function Car3D() {
   return (
     <Canvas
-      shadows
+      shadows="percentage"
       dpr={[1, 2]}
       // the display is CSS-scaled; measure layout size, not the transformed rect
       resize={{ offsetSize: true }}
