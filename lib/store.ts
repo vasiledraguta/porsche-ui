@@ -30,6 +30,7 @@ export const MODE_ORDER: DriveMode[] = ["wet", "normal", "sport", "track"];
 /** PDK road speed at the 9,000 rpm limiter, per gear (km/h). */
 const GEAR_TOP = [0, 71, 108, 145, 182, 222, 261, 296];
 export const REDLINE = 9000;
+const SHIFT_RPM = 8800;
 export const IDLE_RPM = 950;
 export const TANK_L = 64;
 /** L/100 km by mode, anchored on the 13.4 L WLTP figure. */
@@ -268,8 +269,8 @@ export const useCar = create<State & Actions>((set, get) => ({
     // PDK: highest gear that keeps revs above the mode's shift floor (higher under load)
     let gearN = 1;
     if (s.gear === "D") {
-      const floor = m.minRpm + throttle * 2600;
       for (let g = 7; g >= 1; g--) {
+        const floor = m.minRpm + ((SHIFT_RPM * GEAR_TOP[g - 1]) / GEAR_TOP[g] - m.minRpm) * throttle;
         if ((kmh / GEAR_TOP[g]) * REDLINE >= floor || g === 1) {
           gearN = g;
           break;
@@ -281,7 +282,7 @@ export const useCar = create<State & Actions>((set, get) => ({
     const wheelRpm = s.gear === "D" ? (kmh / GEAR_TOP[gearN]) * REDLINE : 0;
     const launch = IDLE_RPM + throttle * (s.gear === "D" ? 2400 : 6000);
     const targetRpm = Math.min(REDLINE, Math.max(wheelRpm, kmh < 12 ? launch : IDLE_RPM));
-    const rpm = s.rpm + (targetRpm - s.rpm) * Math.min(1, dt * (targetRpm > s.rpm ? 9 : 6));
+    const rpm = s.rpm + (targetRpm - s.rpm) * Math.min(1, dt * (targetRpm > s.rpm ? 14 : 12));
 
     const powerKw = nv > 0.3 ? Math.max(0, driveForce * nv) / 1000 : 0;
     // ~0.33 L per kWh at the crank, plus idle burn

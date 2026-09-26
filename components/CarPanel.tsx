@@ -33,11 +33,11 @@ function DriveHeader() {
   const fuel = useCar((s) => s.fuel);
   const mode = useCar((s) => s.mode);
   const set = useCar((s) => s.set);
-  const shift = rpm > 8300;
+  const shift = rpm >= REDLINE - 1000;
 
   return (
-    <div className="flex items-start justify-between px-7 pt-6">
-      <div>
+    <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start px-7 pt-6">
+      <div className="whitespace-nowrap">
         <div className="flex gap-3 text-[15px] font-medium">
           {(["P", "N", "D"] as const).map((g) => (
             <button
@@ -58,7 +58,7 @@ function DriveHeader() {
         </div>
       </div>
       <RevCounter rpm={rpm} shift={shift} />
-      <div className="text-right">
+      <div className="justify-self-end text-right">
         <div className="flex items-center justify-end gap-2">
           <span className="text-[15px] font-medium text-white tabular-nums">{Math.round(fuel)}%</span>
           <FuelGauge pct={fuel} />
@@ -93,7 +93,7 @@ function RevCounter({ rpm, shift }: { rpm: number; shift: boolean }) {
   const { cx, cy, r } = TACHO;
   const pct = Math.min(1, rpm / REDLINE);
   const red = REDLINE - 1000;
-  const needle = useSpring(rpm, { stiffness: 300, damping: 35 });
+  const needle = useSpring(rpm, { stiffness: 380, damping: 26 });
   useEffect(() => {
     needle.set(rpm);
   }, [needle, rpm]);
