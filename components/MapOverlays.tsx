@@ -21,7 +21,7 @@ import {
   CornerUpRight,
 } from "lucide-react";
 import { ROUTE, ROUTE_LEN, fmtDist, nextStep } from "@/lib/route";
-import { rangeFor, useCar } from "@/lib/store";
+import { fuelPercentForDistance, rangeFor, useCar } from "@/lib/store";
 import { useClock } from "@/lib/useClock";
 
 export function Maneuver() {
@@ -96,8 +96,7 @@ export function EtaBar() {
   const left = ROUTE_LEN - d;
   const mins = Math.max(1, Math.round((left / ROUTE_LEN) * (ROUTE.duration / 60) + 1));
   const eta = now ? new Date(now.getTime() + mins * 60000) : null;
-  // 13.4 L/100 km from a 64 L tank ≈ 0.21 % per km
-  const arriveFuel = Math.max(0, Math.round(fuel - (left / 1000) * 0.21));
+  const arriveFuel = Math.max(0, Math.round(fuel - fuelPercentForDistance(left / 1000, mode)));
   return (
     <div className="absolute right-4 bottom-4 left-4 z-10 flex items-center gap-6 rounded-[14px] bg-[#1a1d22]/95 px-5 py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
       <div className="flex items-baseline gap-2">

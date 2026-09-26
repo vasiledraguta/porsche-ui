@@ -369,6 +369,8 @@ export const useCar = create<State & Actions>((set, get) => ({
 /** Remaining range in km from fuel level (%) at the mode's typical consumption. */
 export const rangeFor = (fuelPct: number, mode: DriveMode) => Math.round(((fuelPct / 100) * TANK_L * 100) / CONS[mode]);
 
+export const fuelPercentForDistance = (distanceKm: number, mode: DriveMode) => (distanceKm * CONS[mode]) / TANK_L;
+
 export const oilBar = (rpm: number) => 1.2 + (rpm / REDLINE) * 4.3;
 
 export const tyreBar = (i: number, temp: number) => (TYRE_COLD_BAR[i] * (temp + 273)) / 293;
