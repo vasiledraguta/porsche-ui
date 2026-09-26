@@ -19,11 +19,11 @@ export type VehicleTab =
  * 911 GT3 RS (992) drive modes. 4.0 L naturally aspirated flat-six, 386 kW / 525 PS at 8,500 rpm,
  * 9,000 rpm limiter, 7-speed PDK. `minRpm` is where PDK upshifts when cruising.
  */
-export const MODES: Record<DriveMode, { label: string; desc: string; spec: string; maxKw: number; response: number; minRpm: number; brakeRpm: number }> = {
-  wet: { label: "Wet", desc: "Softer throttle and early PSM intervention for standing water.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.6, minRpm: 1700, brakeRpm: 3500 },
-  normal: { label: "Normal", desc: "Road setup. Early upshifts, calmer exhaust.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.85, minRpm: 2000, brakeRpm: 5000 },
-  sport: { label: "Sport", desc: "Sharper throttle, later shifts, exhaust valves open.", spec: "PSM Sport · PASM Sport", maxKw: 386, response: 1, minRpm: 3600, brakeRpm: 7500 },
-  track: { label: "Track", desc: "Full attack. Holds gears near the limiter, lowest ride height.", spec: "PSM off · PASM Track", maxKw: 386, response: 1.12, minRpm: 5200, brakeRpm: 8200 },
+export const MODES: Record<DriveMode, { label: string; desc: string; spec: string; maxKw: number; response: number; minRpm: number; brakeRpm: number; holdOnLift: boolean }> = {
+  wet: { label: "Wet", desc: "Softer throttle and early PSM intervention for standing water.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.6, minRpm: 1700, brakeRpm: 2500, holdOnLift: false },
+  normal: { label: "Normal", desc: "Road setup. Early upshifts, calmer exhaust.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.85, minRpm: 2000, brakeRpm: 3000, holdOnLift: false },
+  sport: { label: "Sport", desc: "Sharper throttle, later shifts, exhaust valves open.", spec: "PSM Sport · PASM Sport", maxKw: 386, response: 1, minRpm: 3600, brakeRpm: 5000, holdOnLift: true },
+  track: { label: "Track", desc: "Full attack. Holds gears near the limiter, lowest ride height.", spec: "PSM off · PASM Track", maxKw: 386, response: 1.12, minRpm: 5200, brakeRpm: 6000, holdOnLift: true },
 };
 export const MODE_ORDER: DriveMode[] = ["wet", "normal", "sport", "track"];
 
@@ -274,22 +274,27 @@ export const useCar = create<State & Actions>((set, get) => ({
     let shiftAt = s.shiftAt;
     if (s.gear === "D") {
       const revs = (g: number) => (kmh / GEAR_TOP[g]) * REDLINE;
-      let want = 1;
-      for (let g = 7; g >= 1; g--) {
-        const floor = m.minRpm + ((SHIFT_RPM * GEAR_TOP[g - 1]) / GEAR_TOP[g] - m.minRpm) * throttle;
-        if (revs(g) >= floor || g === 1) {
-          want = g;
-          break;
-        }
-      }
-      const ceiling = m.minRpm + (m.brakeRpm - m.minRpm) * brake;
-      if (brake > 0) want = Math.min(want, s.pdkGear);
-      while (brake > 0 && want > 1 && revs(want - 1) <= ceiling) want--;
       const ready = t - s.shiftAt >= SHIFT_GAP_MS;
       gearN = s.pdkGear;
-      if (want > gearN && (ready || revs(gearN) > REDLINE)) gearN++;
-      else if (want < gearN && throttle > 0) gearN = want;
-      else if (want < gearN && ready) gearN--;
+      if (throttle > 0) {
+        let want = 1;
+        for (let g = 7; g >= 1; g--) {
+          const floor = m.minRpm + ((SHIFT_RPM * GEAR_TOP[g - 1]) / GEAR_TOP[g] - m.minRpm) * throttle;
+          if (revs(g) >= floor || g === 1) {
+            want = g;
+            break;
+          }
+        }
+        if (want < gearN) gearN = want;
+        else if (want > gearN && ready) gearN++;
+      } else if (ready) {
+        const downAt = m.minRpm + (m.brakeRpm - m.minRpm) * brake;
+        if (gearN > 1 && revs(gearN) < downAt && revs(gearN - 1) < SHIFT_RPM) {
+          gearN--;
+          while (gearN > 1 && revs(gearN - 1) <= downAt * 1.35) gearN--;
+        } else if (!m.holdOnLift && brake === 0 && gearN < 7 && revs(gearN + 1) >= m.minRpm) gearN++;
+      }
+      if (gearN < 7 && revs(gearN) > REDLINE) gearN++;
       if (gearN !== s.pdkGear) shiftAt = t;
     }
     const wheelRpm = s.gear === "D" ? (kmh / GEAR_TOP[gearN]) * REDLINE : 0;
