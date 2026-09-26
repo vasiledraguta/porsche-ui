@@ -50,7 +50,7 @@ function DriveHeader() {
           ))}
         </div>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-[64px] leading-[0.9] font-light tracking-[-0.03em] text-white tabular-nums">
+          <span className="text-[64px] leading-[0.9] font-normal text-white tabular-nums">
             {Math.round(speed)}
           </span>
           <span className="text-[14px] text-white/45">km/h</span>
@@ -109,6 +109,7 @@ function FuelGauge({ pct }: { pct: number }) {
 function CarStage() {
   const locked = useCar((s) => s.locked);
   const lift = useCar((s) => s.lift);
+  const drs = useCar((s) => s.drs);
   const set = useCar((s) => s.set);
   const anyOpen = useCar((s) => s.frunkOpen || s.trunkOpen || s.doorL || s.doorR);
   return (
@@ -132,6 +133,13 @@ function CarStage() {
             <LockOpen size={15} strokeWidth={1.9} className="text-[#2f8fff]" />
           )}
           <span className={locked ? "text-white" : "text-[#6db3ff]"}>{locked ? "Locked" : anyOpen ? "Open" : "Unlocked"}</span>
+        </button>
+        <button
+          onClick={() => set({ drs: !drs })}
+          aria-pressed={drs}
+          className="rounded-full bg-black/40 px-3.5 py-[7px] text-[12.5px] font-medium tracking-[0.06em] backdrop-blur-sm transition hover:bg-black/60"
+        >
+          <span className={drs ? "text-[#6db3ff]" : "text-white"}>DRS</span>
         </button>
       </div>
       <div className="pointer-events-none absolute bottom-2 left-4 flex items-center gap-1.5 text-[11px] text-white/30">
