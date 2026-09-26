@@ -50,7 +50,7 @@ function DriveHeader() {
           ))}
         </div>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-[64px] leading-[0.9] font-light tracking-[-0.03em] text-white tabular-nums">
+          <span className="text-[64px] leading-[0.9] font-normal text-white tabular-nums">
             {Math.round(speed)}
           </span>
           <span className="text-[14px] text-white/45">km/h</span>
