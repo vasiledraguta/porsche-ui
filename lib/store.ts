@@ -59,7 +59,7 @@ type State = {
   stopIdx: number;
   tripTime: number;
   tripFuelL: number;
-  gear: "P" | "R" | "N" | "D";
+  gear: "P" | "N" | "D";
   mode: DriveMode;
   throttle: number;
   brake: number;
@@ -241,7 +241,7 @@ export const useCar = create<State & Actions>((set, get) => ({
     const mass = 1450;
     const maxForce = 12600 * m.response;
     const drivePower = throttle * m.maxKw * 1000;
-    const driveForce = Math.min(maxForce * throttle, v > 1 ? drivePower / v : maxForce * throttle);
+    const driveForce = s.gear === "D" ? Math.min(maxForce * throttle, v > 1 ? drivePower / v : maxForce * throttle) : 0;
     const drag = 0.5 * 1.2 * 0.39 * 2.05 * v * v + 160;
     const engineBrake = v > 0.3 && throttle === 0 ? 450 : 0;
     const brakeForce = v > 0.3 ? brake * 14000 + engineBrake : 0;
