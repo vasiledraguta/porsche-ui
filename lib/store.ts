@@ -8,6 +8,7 @@ export type Sheet = null | "home" | "vehicle" | "media" | "phone" | "notificatio
 export type VehicleTab =
   | "modes"
   | "chassis"
+  | "setup"
   | "engine"
   | "lights"
   | "assist"
@@ -24,7 +25,7 @@ export const MODES: Record<DriveMode, { label: string; desc: string; spec: strin
   wet: { label: "Wet", desc: "Softer throttle and early PSM intervention for standing water.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.6, minRpm: 1700 },
   normal: { label: "Normal", desc: "Road setup. Early upshifts, calmer exhaust.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.85, minRpm: 2000 },
   sport: { label: "Sport", desc: "Sharper throttle, later shifts, exhaust valves open.", spec: "PSM Sport · PASM Sport", maxKw: 386, response: 1, minRpm: 3600 },
-  track: { label: "Track", desc: "Full attack. Holds gears near the limiter, lowest ride height.", spec: "PSM off · PASM Track", maxKw: 386, response: 1.12, minRpm: 5200 },
+  track: { label: "Track", desc: "Full attack. Holds gears near the limiter.", spec: "PSM off · PASM Track", maxKw: 386, response: 1.12, minRpm: 5200 },
 };
 export const MODE_ORDER: DriveMode[] = ["wet", "normal", "sport", "track"];
 
@@ -97,6 +98,7 @@ type State = {
   ventFocus: "driver" | "diffuse" | "passenger";
   rearDefrost: boolean;
   exhaust: boolean;
+  drs: boolean;
   startStop: boolean;
   fuelFlap: boolean;
   frunkOpen: boolean;
@@ -107,8 +109,15 @@ type State = {
   locked: boolean;
   comfortAccess: boolean;
   lift: boolean;
-  rideHeight: "low" | "normal" | "high";
   pasm: "comfort" | "sport";
+  reboundF: number;
+  compressionF: number;
+  reboundR: number;
+  compressionR: number;
+  diffCoast: number;
+  diffDrive: number;
+  tc: number;
+  esc: "on" | "sport" | "off";
   headlights: "auto" | "low" | "high" | "off";
   ambient: number;
   ambientLevel: number;
@@ -181,6 +190,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   ventFocus: "diffuse",
   rearDefrost: false,
   exhaust: false,
+  drs: false,
   startStop: true,
   fuelFlap: false,
   frunkOpen: false,
@@ -191,8 +201,15 @@ export const useCar = create<State & Actions>((set, get) => ({
   locked: true,
   comfortAccess: true,
   lift: false,
-  rideHeight: "normal",
   pasm: "comfort",
+  reboundF: 0,
+  compressionF: 0,
+  reboundR: 0,
+  compressionR: 0,
+  diffCoast: 3,
+  diffDrive: 3,
+  tc: 5,
+  esc: "on",
   headlights: "auto",
   ambient: 1,
   ambientLevel: 70,
@@ -212,7 +229,6 @@ export const useCar = create<State & Actions>((set, get) => ({
     set((s) => ({
       mode,
       modePopupAt: s.now,
-      rideHeight: mode === "track" ? "low" : s.rideHeight === "low" ? "normal" : s.rideHeight,
       pasm: mode === "sport" || mode === "track" ? "sport" : "comfort",
       exhaust: mode === "sport" || mode === "track" ? true : mode === "wet" ? false : s.exhaust,
     })),
