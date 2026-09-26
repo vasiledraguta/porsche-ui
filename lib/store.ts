@@ -19,11 +19,11 @@ export type VehicleTab =
  * 911 GT3 RS (992) drive modes. 4.0 L naturally aspirated flat-six, 386 kW / 525 PS at 8,500 rpm,
  * 9,000 rpm limiter, 7-speed PDK. `minRpm` is where PDK upshifts when cruising.
  */
-export const MODES: Record<DriveMode, { label: string; desc: string; spec: string; maxKw: number; response: number; minRpm: number }> = {
-  wet: { label: "Wet", desc: "Softer throttle and early PSM intervention for standing water.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.6, minRpm: 1700 },
-  normal: { label: "Normal", desc: "Road setup. Early upshifts, calmer exhaust.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.85, minRpm: 2000 },
-  sport: { label: "Sport", desc: "Sharper throttle, later shifts, exhaust valves open.", spec: "PSM Sport · PASM Sport", maxKw: 386, response: 1, minRpm: 3600 },
-  track: { label: "Track", desc: "Full attack. Holds gears near the limiter, lowest ride height.", spec: "PSM off · PASM Track", maxKw: 386, response: 1.12, minRpm: 5200 },
+export const MODES: Record<DriveMode, { label: string; desc: string; spec: string; maxKw: number; response: number; minRpm: number; brakeRpm: number }> = {
+  wet: { label: "Wet", desc: "Softer throttle and early PSM intervention for standing water.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.6, minRpm: 1700, brakeRpm: 3500 },
+  normal: { label: "Normal", desc: "Road setup. Early upshifts, calmer exhaust.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.85, minRpm: 2000, brakeRpm: 5000 },
+  sport: { label: "Sport", desc: "Sharper throttle, later shifts, exhaust valves open.", spec: "PSM Sport · PASM Sport", maxKw: 386, response: 1, minRpm: 3600, brakeRpm: 7500 },
+  track: { label: "Track", desc: "Full attack. Holds gears near the limiter, lowest ride height.", spec: "PSM off · PASM Track", maxKw: 386, response: 1.12, minRpm: 5200, brakeRpm: 8200 },
 };
 export const MODE_ORDER: DriveMode[] = ["wet", "normal", "sport", "track"];
 
@@ -31,6 +31,7 @@ export const MODE_ORDER: DriveMode[] = ["wet", "normal", "sport", "track"];
 const GEAR_TOP = [0, 71, 108, 145, 182, 222, 261, 296];
 export const REDLINE = 9000;
 const SHIFT_RPM = 8800;
+const SHIFT_GAP_MS = 350;
 export const IDLE_RPM = 950;
 export const TANK_L = 64;
 /** L/100 km by mode, anchored on the 13.4 L WLTP figure. */
@@ -51,6 +52,7 @@ type State = {
   powerKw: number;
   rpm: number;
   pdkGear: number;
+  shiftAt: number;
   fuel: number;
   oilTemp: number;
   coolantTemp: number;
@@ -134,6 +136,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   powerKw: 0,
   rpm: IDLE_RPM,
   pdkGear: 1,
+  shiftAt: 0,
   fuel: 72,
   oilTemp: 88,
   coolantTemp: 86,
@@ -268,21 +271,31 @@ export const useCar = create<State & Actions>((set, get) => ({
 
     // PDK: highest gear that keeps revs above the mode's shift floor (higher under load)
     let gearN = 1;
+    let shiftAt = s.shiftAt;
     if (s.gear === "D") {
+      const revs = (g: number) => (kmh / GEAR_TOP[g]) * REDLINE;
+      let want = 1;
       for (let g = 7; g >= 1; g--) {
         const floor = m.minRpm + ((SHIFT_RPM * GEAR_TOP[g - 1]) / GEAR_TOP[g] - m.minRpm) * throttle;
-        if ((kmh / GEAR_TOP[g]) * REDLINE >= floor || g === 1) {
-          gearN = g;
+        if (revs(g) >= floor || g === 1) {
+          want = g;
           break;
         }
       }
-      // one gear at a time on the way up
-      gearN = Math.min(gearN, s.pdkGear + 1);
+      const ceiling = m.minRpm + (m.brakeRpm - m.minRpm) * brake;
+      if (brake > 0) want = Math.min(want, s.pdkGear);
+      while (brake > 0 && want > 1 && revs(want - 1) <= ceiling) want--;
+      const ready = t - s.shiftAt >= SHIFT_GAP_MS;
+      gearN = s.pdkGear;
+      if (want > gearN && (ready || revs(gearN) > REDLINE)) gearN++;
+      else if (want < gearN && throttle > 0) gearN = want;
+      else if (want < gearN && ready) gearN--;
+      if (gearN !== s.pdkGear) shiftAt = t;
     }
     const wheelRpm = s.gear === "D" ? (kmh / GEAR_TOP[gearN]) * REDLINE : 0;
     const launch = IDLE_RPM + throttle * (s.gear === "D" ? 2400 : 6000);
     const targetRpm = Math.min(REDLINE, Math.max(wheelRpm, kmh < 12 ? launch : IDLE_RPM));
-    const rpm = s.rpm + (targetRpm - s.rpm) * Math.min(1, dt * (targetRpm > s.rpm ? 14 : 12));
+    const rpm = s.rpm + (targetRpm - s.rpm) * Math.min(1, dt * (targetRpm > s.rpm ? 22 : 12));
 
     const powerKw = nv > 0.3 ? Math.max(0, driveForce * nv) / 1000 : 0;
     // ~0.33 L per kWh at the crank, plus idle burn
@@ -307,6 +320,7 @@ export const useCar = create<State & Actions>((set, get) => ({
       powerKw: s.powerKw + (powerKw - s.powerKw) * Math.min(1, dt * 6),
       rpm,
       pdkGear: gearN,
+      shiftAt,
       fuel,
       oilTemp: warm(s.oilTemp, 96 + (rpm / REDLINE) * 18),
       coolantTemp: warm(s.coolantTemp, 88 + (rpm / REDLINE) * 8),
