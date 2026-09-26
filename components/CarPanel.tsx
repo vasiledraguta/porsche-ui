@@ -55,7 +55,10 @@ function DriveHeader() {
           </span>
           <span className="text-[14px] text-white/45">km/h</span>
         </div>
-        <RevBar rpm={rpm} shift={shift} />
+        <div className="flex items-end gap-3">
+          <RevBar rpm={rpm} shift={shift} />
+          {rpm === 0 && <span role="status" aria-label="Auto start/stop active" className="mb-0.5 rounded border border-[#4ca765] px-1.5 py-0.5 text-[11px] font-semibold text-[#75d28b]">A</span>}
+        </div>
       </div>
       <div className="text-right">
         <div className="flex items-center justify-end gap-2">
