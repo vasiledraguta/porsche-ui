@@ -69,11 +69,12 @@ export function Row({
   right?: React.ReactNode;
   onClick?: () => void;
 }) {
+  const Tag = onClick ? "button" : "div";
   return (
-    <div
+    <Tag
       onClick={onClick}
-      className={`flex min-h-[60px] items-center justify-between gap-4 border-b border-white/[0.07] py-3 ${
-        onClick ? "cursor-pointer" : ""
+      className={`flex min-h-[60px] w-full items-center justify-between gap-4 border-b border-white/[0.07] py-3 text-left ${
+        onClick ? "cursor-pointer transition hover:bg-white/[0.03]" : ""
       }`}
     >
       <div className="min-w-0">
@@ -81,7 +82,7 @@ export function Row({
         {sub && <div className="mt-0.5 text-[12.5px] text-white/45">{sub}</div>}
       </div>
       {right}
-    </div>
+    </Tag>
   );
 }
 

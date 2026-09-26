@@ -18,6 +18,7 @@ export function Rail() {
   const sheet = useCar((s) => s.sheet);
   const set = useCar((s) => s.set);
   const openSheet = useCar((s) => s.openSheet);
+  const notesRead = useCar((s) => s.notesRead);
   const activeIdx = RAIL.findIndex((r) => (r.sheet === null ? sheet === null : sheet === r.sheet));
   const { container, indicator } = useSlider(activeIdx);
 
@@ -65,18 +66,18 @@ export function Rail() {
       <div className="mt-auto flex flex-col items-center gap-1.5">
         <button
           aria-label="Apple CarPlay"
-          onClick={() => openSheet("home")}
+          onClick={() => openSheet("carplay")}
           className="grid h-[54px] w-[54px] place-items-center rounded-[14px]"
         >
           <Glyph id="carplay" size={23} />
         </button>
         <button
           aria-label="Notifications"
-          onClick={() => openSheet("home")}
+          onClick={() => openSheet("notifications")}
           className="relative grid h-[54px] w-[54px] place-items-center rounded-[14px]"
         >
           <Glyph id="notifications" size={21} dim />
-          <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-[#2f8fff]" />
+          {!notesRead && <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-[#2f8fff]" />}
         </button>
       </div>
     </aside>

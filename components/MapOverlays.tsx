@@ -72,15 +72,15 @@ export function Maneuver() {
 export function SearchBox() {
   return (
     <div className="absolute top-4 right-4 z-10 w-[300px] overflow-hidden rounded-[14px] bg-[#1a1d22]/90 shadow-[0_10px_30px_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
-      <div className="flex items-center gap-3 px-4 py-3.5 text-white/50">
+      <div className="flex cursor-default items-center gap-3 px-4 py-3.5 text-white/30 select-none">
         <Search size={18} strokeWidth={1.8} />
         <span className="text-[15px]">Search destination</span>
       </div>
-      <div className="grid grid-cols-2 border-t border-white/[0.06] text-[14px] text-white/80">
-        <button className="flex items-center justify-center gap-2 py-2.5 transition hover:bg-white/[0.04]">
+      <div className="grid grid-cols-2 border-t border-white/[0.06] text-[14px] text-white/30">
+        <button disabled className="flex cursor-default items-center justify-center gap-2 py-2.5">
           <House size={15} strokeWidth={1.8} /> Home
         </button>
-        <button className="flex items-center justify-center gap-2 border-l border-white/[0.06] py-2.5 transition hover:bg-white/[0.04]">
+        <button disabled className="flex cursor-default items-center justify-center gap-2 border-l border-white/[0.06] py-2.5">
           <Briefcase size={15} strokeWidth={1.8} /> Work
         </button>
       </div>

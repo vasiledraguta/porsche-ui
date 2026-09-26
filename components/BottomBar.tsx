@@ -10,7 +10,7 @@ const DOCK: { id: AppId; sheet: Sheet; tab?: VehicleTab }[] = [
   { id: "media", sheet: "media" },
   { id: "phone", sheet: "phone" },
   { id: "chrono", sheet: "vehicle", tab: "engine" },
-  { id: "carplay", sheet: "home" },
+  { id: "carplay", sheet: "carplay" },
   { id: "apps", sheet: "home" },
 ];
 
