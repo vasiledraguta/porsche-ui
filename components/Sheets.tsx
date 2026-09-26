@@ -8,6 +8,7 @@ import {
   CircleGauge,
   DoorOpen,
   Fan,
+  Flag,
   Gauge,
   Lightbulb,
   Pause,
@@ -33,7 +34,7 @@ import { AlbumArt } from "./AlbumArt";
 import { useSlider } from "./ui/useSlider";
 import { Glyph, APPS, type AppId } from "./ui/Glyph";
 import { Row, Segmented, SectionTitle, Stepper, Toggle } from "./ui/controls";
-import { AMBIENT, MODES, MODE_ORDER, REDLINE, TANK_L, TRACKS, fmtTime, rangeFor, useCar, type VehicleTab } from "@/lib/store";
+import { AMBIENT, MODES, MODE_ORDER, TANK_L, TRACKS, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 
@@ -157,6 +158,7 @@ const TABS: { id: VehicleTab; label: string; icon: LucideIcon }[] = [
   { id: "assist", label: "Assistance systems", icon: ShieldCheck },
   { id: "doors", label: "Doors & locking", icon: DoorOpen },
   { id: "trip", label: "Trip data", icon: Route },
+  { id: "trackscreen", label: "Track Screen", icon: Flag },
 ];
 
 function VehicleSheet() {
@@ -202,6 +204,7 @@ function VehicleSheet() {
             {tab === "assist" && <AssistTab />}
             {tab === "doors" && <DoorsTab />}
             {tab === "trip" && <TripTab />}
+            {tab === "trackscreen" && <TrackScreenTab />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -323,7 +326,7 @@ function EngineTab() {
         <Tile label="Engine speed" value={`${(Math.round(s.rpm / 50) * 50).toLocaleString("en")} rpm`} />
         <Tile label="Oil temperature" value={`${Math.round(s.oilTemp)} °C`} />
         <Tile label="Coolant" value={`${Math.round(s.coolantTemp)} °C`} />
-        <Tile label="Oil pressure" value={`${(1.2 + (s.rpm / REDLINE) * 4.3).toFixed(1)} bar`} />
+        <Tile label="Oil pressure" value={`${oilBar(s.rpm).toFixed(1)} bar`} />
         <Tile label="PDK gear" value={s.gear === "D" ? `${s.pdkGear} / 7` : s.gear} />
         <Tile label="Power output" value={`${Math.round(s.powerKw)} kW`} />
       </div>
@@ -500,11 +503,44 @@ function TripTab() {
   );
 }
 
-function Tile({ label, value }: { label: string; value: string }) {
+function TrackScreenTab() {
+  const s = useCar();
+  return (
+    <>
+      <SectionTitle>Tyres · pressure and temperature</SectionTitle>
+      <div className="mt-2 grid grid-cols-[1fr_72px_1fr] grid-rows-2 gap-3">
+        {TYRES.map((label, i) => (
+          <div key={label} className={i % 2 ? "col-start-3" : "col-start-1"}>
+            <Tile label={label} value={`${tyreBar(i, s.tyreTemp[i]).toFixed(2)} bar`} sub={<TyreTemp temp={s.tyreTemp[i]} />} />
+          </div>
+        ))}
+        <div className="col-start-2 row-span-2 row-start-1 rounded-[26px] shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.1)]" />
+      </div>
+      <SectionTitle>Engine oil</SectionTitle>
+      <div className="mt-2 grid grid-cols-2 gap-3">
+        <Tile label="Oil temperature" value={`${Math.round(s.oilTemp)} °C`} />
+        <Tile label="Oil pressure" value={`${oilBar(s.rpm).toFixed(1)} bar`} />
+      </div>
+    </>
+  );
+}
+
+function TyreTemp({ temp }: { temp: number }) {
+  const [color, state] = temp < 70 ? ["#6db3ff", "Cold"] : temp <= 100 ? ["#3fd46b", "In window"] : ["#ffb020", "Hot"];
+  return (
+    <span className="flex items-center gap-2 tabular-nums">
+      <span className="h-2 w-2 rounded-full" style={{ background: color }} />
+      {Math.round(temp)} °C · {state}
+    </span>
+  );
+}
+
+function Tile({ label, value, sub }: { label: string; value: string; sub?: React.ReactNode }) {
   return (
     <div className="rounded-[14px] bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
       <div className="text-[12px] text-white/45">{label}</div>
       <div className="mt-1.5 text-[22px] font-light text-white tabular-nums">{value}</div>
+      {sub && <div className="mt-1 text-[13px] text-white/60">{sub}</div>}
     </div>
   );
 }
