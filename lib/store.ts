@@ -23,7 +23,7 @@ export const MODES: Record<DriveMode, { label: string; desc: string; spec: strin
   wet: { label: "Wet", desc: "Softer throttle and early PSM intervention for standing water.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.6, minRpm: 1700 },
   normal: { label: "Normal", desc: "Road setup. Early upshifts, calmer exhaust.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.85, minRpm: 2000 },
   sport: { label: "Sport", desc: "Sharper throttle, later shifts, exhaust valves open.", spec: "PSM Sport · PASM Sport", maxKw: 386, response: 1, minRpm: 3600 },
-  track: { label: "Track", desc: "Full attack. Holds gears near the limiter, lowest ride height.", spec: "PSM off · PASM Track", maxKw: 386, response: 1.12, minRpm: 5200 },
+  track: { label: "Track", desc: "Full attack. Holds gears near the limiter.", spec: "PSM off · PASM Track", maxKw: 386, response: 1.12, minRpm: 5200 },
 };
 export const MODE_ORDER: DriveMode[] = ["wet", "normal", "sport", "track"];
 
@@ -102,7 +102,6 @@ type State = {
   locked: boolean;
   comfortAccess: boolean;
   lift: boolean;
-  rideHeight: "low" | "normal" | "high";
   pasm: "comfort" | "sport";
   headlights: "auto" | "low" | "high" | "off";
   ambient: number;
@@ -185,7 +184,6 @@ export const useCar = create<State & Actions>((set, get) => ({
   locked: true,
   comfortAccess: true,
   lift: false,
-  rideHeight: "normal",
   pasm: "comfort",
   headlights: "auto",
   ambient: 1,
@@ -206,7 +204,6 @@ export const useCar = create<State & Actions>((set, get) => ({
     set((s) => ({
       mode,
       modePopupAt: s.now,
-      rideHeight: mode === "track" ? "low" : s.rideHeight === "low" ? "normal" : s.rideHeight,
       pasm: mode === "sport" || mode === "track" ? "sport" : "comfort",
       exhaust: mode === "sport" || mode === "track" ? true : mode === "wet" ? false : s.exhaust,
     })),

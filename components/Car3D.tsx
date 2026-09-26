@@ -114,7 +114,6 @@ export function togglePart(id: PartId) {
 function Model() {
   const { scene } = useGLTF(MODEL, false, true);
   const open = useParts();
-  const rideHeight = useCar((s) => s.rideHeight);
   const lift = useCar((s) => s.lift);
   const lifted = useRef<THREE.Group>(null);
   const [hover, setHover] = useState<PartId | null>(null);
@@ -182,7 +181,7 @@ function Model() {
       p.rotation[def.axis] = THREE.MathUtils.damp(p.rotation[def.axis], target, 4.2, dt);
     }
     if (lifted.current) {
-      const y = rideHeight === "low" ? -0.03 : rideHeight === "high" || lift ? 0.05 : 0;
+      const y = lift ? 0.05 : 0;
       lifted.current.position.y = THREE.MathUtils.damp(lifted.current.position.y, y, 3, dt);
     }
   });
