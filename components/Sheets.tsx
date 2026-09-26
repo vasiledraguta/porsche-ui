@@ -237,19 +237,6 @@ function ChassisTab() {
   const s = useCar();
   return (
     <>
-      <SectionTitle>Ride height</SectionTitle>
-      <div className="py-2">
-        <Segmented
-          id="rh"
-          value={s.rideHeight}
-          onChange={(v) => s.set({ rideHeight: v })}
-          options={[
-            { value: "low", label: "Low" },
-            { value: "normal", label: "Normal" },
-            { value: "high", label: "High" },
-          ]}
-        />
-      </div>
       <SectionTitle>Damping (PASM)</SectionTitle>
       <div className="py-2">
         <Segmented
@@ -266,7 +253,7 @@ function ChassisTab() {
       <Row
         title="Lift system"
         sub="Raises the front axle for ramps and kerbs. Saved by location."
-        right={<Toggle on={s.lift} onChange={() => s.set({ lift: !s.lift, rideHeight: !s.lift ? "high" : "normal" })} />}
+        right={<Toggle on={s.lift} onChange={() => s.set({ lift: !s.lift })} />}
       />
     </>
   );
