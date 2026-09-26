@@ -318,11 +318,12 @@ export const useCar = create<State & Actions>((set, get) => ({
     const wheelRpm = s.gear === "D" ? (kmh / GEAR_TOP[gearN]) * REDLINE : 0;
     const launch = IDLE_RPM + throttle * (s.gear === "D" ? 2400 : 6000);
     const targetRpm = Math.min(REDLINE, Math.max(wheelRpm, kmh < 12 ? launch : IDLE_RPM));
-    const rpm = s.rpm + (targetRpm - s.rpm) * Math.min(1, dt * (targetRpm > s.rpm ? 9 : 6));
+    const engineStopped = s.startStop && kmh === 0 && throttle === 0;
+    const rpm = engineStopped ? 0 : s.rpm === 0 ? IDLE_RPM : s.rpm + (targetRpm - s.rpm) * Math.min(1, dt * (targetRpm > s.rpm ? 9 : 6));
 
     const powerKw = nv > 0.3 ? Math.max(0, driveForce * nv) / 1000 : 0;
     // ~0.33 L per kWh at the crank, plus idle burn
-    const litres = (powerKw * 0.33 * dt) / 3600 + ((0.8 + rpm / 9000) * dt) / 3600;
+    const litres = engineStopped ? 0 : (powerKw * 0.33 * dt) / 3600 + ((0.8 + rpm / 9000) * dt) / 3600;
     const fuel = Math.min(100, Math.max(6, s.fuel - (litres / TANK_L) * 100));
     const warm = (x: number, target: number) => x + (target - x) * Math.min(1, dt * 0.02);
     const tyreTemp = s.tyreTemp.map((x, i) => {
