@@ -44,13 +44,16 @@ export function Display() {
         }}
       />
       {scale > 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: scale * 0.985 }}
-          animate={{ opacity: 1, scale }}
-          transition={{ duration: 0.9, ease: [0.2, 0.8, 0.2, 1] }}
-          style={{ width: W + 28, height: H + 28, x: "-50%", y: "-50%" }}
-          className="absolute top-1/2 left-1/2 shrink-0 rounded-[34px] bg-[#0a0a0b] p-[14px] shadow-[0_0_0_1px_rgba(255,255,255,0.07),0_50px_120px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)]"
+        <div
+          className="absolute top-1/2 left-1/2"
+          style={{ width: W + 28, height: H + 28, transform: `translate(-50%, -50%) scale(${scale})` }}
         >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.985 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.9, ease: [0.2, 0.8, 0.2, 1] }}
+            className="relative h-full w-full rounded-[34px] bg-[#0a0a0b] p-[14px] shadow-[0_0_0_1px_rgba(255,255,255,0.07),0_50px_120px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)]"
+          >
           {/* screen */}
           <div
             className="relative flex h-full w-full overflow-hidden rounded-[22px] bg-black"
@@ -85,7 +88,8 @@ export function Display() {
               boxShadow: `0 0 18px 2px ${ambient}`,
             }}
           />
-        </motion.div>
+          </motion.div>
+        </div>
       )}
     </div>
   );
