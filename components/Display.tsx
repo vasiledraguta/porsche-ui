@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
+import type { Map } from "maplibre-gl";
 import { AnimatePresence, motion } from "motion/react";
 import { BottomBar } from "./BottomBar";
 import { CarPanel } from "./CarPanel";
@@ -17,6 +18,7 @@ const H = 900;
 /** One continuous screen, scaled to fit the browser like teslaui.com. */
 export function Display() {
   const wrap = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<Map | null>(null);
   const [scale, setScale] = useState(0);
   const ambient = useCar((s) => AMBIENT[s.ambient]);
   const ambientLevel = useCar((s) => s.ambientLevel);
@@ -59,11 +61,11 @@ export function Display() {
               <div className="flex min-h-0 flex-1">
                 <CarPanel />
                 <main className="relative min-w-0 flex-1 overflow-hidden">
-                  <NavMap />
+                  <NavMap mapRef={mapRef} />
                   <Maneuver />
                   <SearchBox />
                   <SpeedLimit />
-                  <MapControls />
+                  <MapControls mapRef={mapRef} />
                   <EtaBar />
                   <Sheets />
                   <ModePopup />
