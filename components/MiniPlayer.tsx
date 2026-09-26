@@ -1,11 +1,20 @@
 "use client";
 
 import { Heart, Pause, Play, Search, Shuffle, SkipBack, SkipForward, SlidersHorizontal } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { AlbumArt } from "./AlbumArt";
 import { TRACKS, useCar } from "@/lib/store";
 
 export function MiniPlayer() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    track: s.track,
+    liked: s.liked,
+    progress: s.progress,
+    playing: s.playing,
+    openSheet: s.openSheet,
+    nextTrack: s.nextTrack,
+    set: s.set,
+  })));
   const t = TRACKS[s.track];
   const liked = s.liked.includes(s.track);
   return (

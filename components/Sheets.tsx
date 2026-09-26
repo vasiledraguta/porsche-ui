@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpFromLine,
@@ -91,7 +92,7 @@ const HOME_ORDER: AppId[] = [
 ];
 
 function HomeSheet() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({ set: s.set, openSheet: s.openSheet })));
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
   const apps = HOME_ORDER.filter((id) => APPS[id].label.toLowerCase().includes(q));
@@ -234,7 +235,12 @@ function ModesTab() {
 }
 
 function ChassisTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    rideHeight: s.rideHeight,
+    pasm: s.pasm,
+    lift: s.lift,
+    set: s.set,
+  })));
   return (
     <>
       <SectionTitle>Ride height</SectionTitle>
@@ -273,7 +279,20 @@ function ChassisTab() {
 }
 
 function EngineTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    rpm: s.rpm,
+    oilTemp: s.oilTemp,
+    coolantTemp: s.coolantTemp,
+    gear: s.gear,
+    pdkGear: s.pdkGear,
+    powerKw: s.powerKw,
+    fuel: s.fuel,
+    mode: s.mode,
+    exhaust: s.exhaust,
+    startStop: s.startStop,
+    fuelFlap: s.fuelFlap,
+    set: s.set,
+  })));
   return (
     <>
       <div className="mt-3 grid grid-cols-3 gap-3">
@@ -314,7 +333,17 @@ function EngineTab() {
 }
 
 function ClimateTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    acMax: s.acMax,
+    auto: s.auto,
+    defrost: s.defrost,
+    sync: s.sync,
+    tempL: s.tempL,
+    fan: s.fan,
+    ventFocus: s.ventFocus,
+    rearDefrost: s.rearDefrost,
+    set: s.set,
+  })));
   return (
     <>
       <div className="mt-4 grid grid-cols-4 gap-3">
@@ -367,7 +396,12 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
 }
 
 function LightsTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    headlights: s.headlights,
+    ambient: s.ambient,
+    ambientLevel: s.ambientLevel,
+    set: s.set,
+  })));
   return (
     <>
       <SectionTitle>Headlights</SectionTitle>
@@ -416,7 +450,13 @@ function LightsTab() {
 }
 
 function AssistTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    innodrive: s.innodrive,
+    lane: s.lane,
+    signs: s.signs,
+    parkAssist: s.parkAssist,
+    set: s.set,
+  })));
   return (
     <>
       <Row title="Porsche InnoDrive" sub="Adaptive cruise that anticipates corners and limits" right={<Toggle on={s.innodrive} onChange={() => s.set({ innodrive: !s.innodrive })} />} />
@@ -428,7 +468,15 @@ function AssistTab() {
 }
 
 function DoorsTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    locked: s.locked,
+    frunkOpen: s.frunkOpen,
+    trunkOpen: s.trunkOpen,
+    doorL: s.doorL,
+    doorR: s.doorR,
+    comfortAccess: s.comfortAccess,
+    set: s.set,
+  })));
   return (
     <>
       <Row title="Central locking" sub={s.locked ? "Locked" : "Unlocked"} right={<Toggle on={s.locked} onChange={() => s.set({ locked: !s.locked, ...(!s.locked ? { frunkOpen: false, trunkOpen: false, doorL: false, doorR: false } : {}) })} />} />
@@ -442,7 +490,12 @@ function DoorsTab() {
 }
 
 function TripTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    tripD: s.tripD,
+    tripFuelL: s.tripFuelL,
+    tripTime: s.tripTime,
+    odo: s.odo,
+  })));
   const km = s.tripD / 1000;
   const cons = km > 0.2 ? (s.tripFuelL / km) * 100 : 0;
   return (
@@ -469,7 +522,13 @@ function Tile({ label, value }: { label: string; value: string }) {
 /* ---------------- Media ---------------- */
 
 function MediaSheet() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    track: s.track,
+    progress: s.progress,
+    playing: s.playing,
+    nextTrack: s.nextTrack,
+    set: s.set,
+  })));
   const t = TRACKS[s.track];
   return (
     <div className="relative flex h-full overflow-hidden">
@@ -741,7 +800,11 @@ function ProjectionSheet({ id, phone }: { id: "carplay" | "androidauto"; phone: 
 }
 
 function DevicesSheet() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    bluetooth: s.bluetooth,
+    hotspot: s.hotspot,
+    set: s.set,
+  })));
   return (
     <AppPage id="devices">
       <SectionTitle>Paired devices</SectionTitle>

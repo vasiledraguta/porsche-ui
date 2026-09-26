@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Fan, Volume2, VolumeX } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { APPS, Glyph, type AppId } from "./ui/Glyph";
 import { useCar, type Sheet, type VehicleTab } from "@/lib/store";
 
@@ -16,7 +17,19 @@ const DOCK: { id: AppId; sheet: Sheet; tab?: VehicleTab }[] = [
 
 /** Bottom bar: climate on both ends like the PCM lower bar, apps in the middle. */
 export function BottomBar() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    set: s.set,
+    openSheet: s.openSheet,
+    sheet: s.sheet,
+    vehicleTab: s.vehicleTab,
+    tempL: s.tempL,
+    tempR: s.tempR,
+    sync: s.sync,
+    seatL: s.seatL,
+    seatR: s.seatR,
+    fan: s.fan,
+    auto: s.auto,
+  })));
 
   const setTemp = (side: "L" | "R", d: number) => {
     const v = (x: number) => Math.round(Math.min(28, Math.max(16, x + d)) * 2) / 2;
