@@ -3,13 +3,13 @@
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Fan, Volume2, VolumeX } from "lucide-react";
 import { APPS, Glyph, type AppId } from "./ui/Glyph";
-import { useCar, type Sheet, type VehicleTab } from "@/lib/store";
+import { useCar, type Sheet } from "@/lib/store";
 
-const DOCK: { id: AppId; sheet: Sheet; tab?: VehicleTab }[] = [
+const DOCK: { id: AppId; sheet: Sheet }[] = [
   { id: "nav", sheet: null },
   { id: "media", sheet: "media" },
   { id: "phone", sheet: "phone" },
-  { id: "chrono", sheet: "vehicle", tab: "engine" },
+  { id: "chrono", sheet: "chrono" },
   { id: "carplay", sheet: "carplay" },
   { id: "apps", sheet: "home" },
 ];
@@ -44,8 +44,8 @@ export function BottomBar() {
           <DockBtn
             key={d.id}
             label={APPS[d.id].label}
-            active={d.sheet === null ? s.sheet === null : s.sheet === d.sheet && (!d.tab || s.vehicleTab === d.tab)}
-            onClick={() => (d.sheet === null ? s.set({ sheet: null, follow: true }) : s.openSheet(d.sheet, d.tab))}
+            active={s.sheet === d.sheet}
+            onClick={() => (d.sheet === null ? s.set({ sheet: null, follow: true }) : s.openSheet(d.sheet))}
           >
             <Glyph id={d.id} size={25} />
           </DockBtn>

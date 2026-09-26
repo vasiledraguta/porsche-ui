@@ -4,16 +4,18 @@ import { create } from "zustand";
 import { ROUTE_LEN, STOPS, nextStep } from "./route";
 
 export type DriveMode = "wet" | "normal" | "sport" | "track";
-export type Sheet = null | "home" | "vehicle" | "media" | "phone" | "notifications" | "carplay" | "androidauto" | "devices" | "settings";
+export type Sheet = null | "home" | "vehicle" | "chrono" | "media" | "phone" | "notifications" | "carplay" | "androidauto" | "devices" | "settings";
 export type VehicleTab =
   | "modes"
   | "chassis"
+  | "setup"
   | "engine"
   | "lights"
   | "assist"
   | "climate"
   | "doors"
-  | "trip";
+  | "trip"
+  | "trackscreen";
 
 /**
  * 911 GT3 RS (992) drive modes. 4.0 L naturally aspirated flat-six, 386 kW / 525 PS at 8,500 rpm,
@@ -23,7 +25,7 @@ export const MODES: Record<DriveMode, { label: string; desc: string; spec: strin
   wet: { label: "Wet", desc: "Softer throttle and early PSM intervention for standing water.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.6, minRpm: 1700 },
   normal: { label: "Normal", desc: "Road setup. Early upshifts, calmer exhaust.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.85, minRpm: 2000 },
   sport: { label: "Sport", desc: "Sharper throttle, later shifts, exhaust valves open.", spec: "PSM Sport · PASM Sport", maxKw: 386, response: 1, minRpm: 3600 },
-  track: { label: "Track", desc: "Full attack. Holds gears near the limiter, lowest ride height.", spec: "PSM off · PASM Track", maxKw: 386, response: 1.12, minRpm: 5200 },
+  track: { label: "Track", desc: "Full attack. Holds gears near the limiter.", spec: "PSM off · PASM Track", maxKw: 386, response: 1.12, minRpm: 5200 },
 };
 export const MODE_ORDER: DriveMode[] = ["wet", "normal", "sport", "track"];
 
@@ -34,6 +36,9 @@ export const IDLE_RPM = 950;
 export const TANK_L = 64;
 /** L/100 km by mode, anchored on the 13.4 L WLTP figure. */
 const CONS: Record<DriveMode, number> = { wet: 12.8, normal: 13.4, sport: 15.2, track: 19 };
+const TYRE_LOAD: Record<DriveMode, number> = { wet: 0.8, normal: 1, sport: 1.15, track: 1.35 };
+export const TYRES = ["Front left", "Front right", "Rear left", "Rear right"] as const;
+const TYRE_COLD_BAR = [2.2, 2.2, 2.4, 2.4];
 
 export const TRACKS = [
   { title: "Nightcall", artist: "Kavinsky", album: "OutRun", length: 258, hue: 262 },
@@ -53,6 +58,7 @@ type State = {
   fuel: number;
   oilTemp: number;
   coolantTemp: number;
+  tyreTemp: number[];
   odo: number;
   routeD: number;
   tripD: number;
@@ -81,6 +87,11 @@ type State = {
   lastVolume: number;
   liked: number[];
 
+  chronoRunning: boolean;
+  chronoAt: number;
+  chronoBase: number;
+  laps: number[];
+
   tempL: number;
   tempR: number;
   sync: boolean;
@@ -93,6 +104,7 @@ type State = {
   ventFocus: "driver" | "diffuse" | "passenger";
   rearDefrost: boolean;
   exhaust: boolean;
+  drs: boolean;
   startStop: boolean;
   fuelFlap: boolean;
   frunkOpen: boolean;
@@ -103,8 +115,15 @@ type State = {
   locked: boolean;
   comfortAccess: boolean;
   lift: boolean;
-  rideHeight: "low" | "normal" | "high";
   pasm: "comfort" | "sport";
+  reboundF: number;
+  compressionF: number;
+  reboundR: number;
+  compressionR: number;
+  diffCoast: number;
+  diffDrive: number;
+  tc: number;
+  esc: "on" | "sport" | "off";
   headlights: "auto" | "low" | "high" | "off";
   ambient: number;
   ambientLevel: number;
@@ -127,6 +146,8 @@ type Actions = {
   cycleMode: (dir: 1 | -1) => void;
   nextTrack: (dir: 1 | -1) => void;
   openSheet: (s: Sheet, tab?: VehicleTab) => void;
+  toggleChrono: () => void;
+  lapChrono: () => void;
   tick: (dt: number, t: number) => void;
 };
 
@@ -138,6 +159,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   fuel: 72,
   oilTemp: 88,
   coolantTemp: 86,
+  tyreTemp: [22, 22, 22, 22],
   odo: 12846,
   routeD: 0,
   tripD: 0,
@@ -166,6 +188,11 @@ export const useCar = create<State & Actions>((set, get) => ({
   lastVolume: 38,
   liked: [0],
 
+  chronoRunning: false,
+  chronoAt: 0,
+  chronoBase: 0,
+  laps: [],
+
   tempL: 21.5,
   tempR: 21.5,
   sync: false,
@@ -178,6 +205,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   ventFocus: "diffuse",
   rearDefrost: false,
   exhaust: false,
+  drs: false,
   startStop: true,
   fuelFlap: false,
   frunkOpen: false,
@@ -188,8 +216,15 @@ export const useCar = create<State & Actions>((set, get) => ({
   locked: true,
   comfortAccess: true,
   lift: false,
-  rideHeight: "normal",
   pasm: "comfort",
+  reboundF: 0,
+  compressionF: 0,
+  reboundR: 0,
+  compressionR: 0,
+  diffCoast: 3,
+  diffDrive: 3,
+  tc: 5,
+  esc: "on",
   headlights: "auto",
   ambient: 1,
   ambientLevel: 70,
@@ -210,7 +245,6 @@ export const useCar = create<State & Actions>((set, get) => ({
     set((s) => ({
       mode,
       modePopupAt: s.now,
-      rideHeight: mode === "track" ? "low" : s.rideHeight === "low" ? "normal" : s.rideHeight,
       pasm: mode === "sport" || mode === "track" ? "sport" : "comfort",
       exhaust: mode === "sport" || mode === "track" ? true : mode === "wet" ? false : s.exhaust,
     })),
@@ -225,6 +259,9 @@ export const useCar = create<State & Actions>((set, get) => ({
       vehicleTab: tab ?? s.vehicleTab,
       notesRead: s.notesRead || sheet === "notifications",
     })),
+  toggleChrono: () =>
+    set((s) => (s.chronoRunning ? { chronoRunning: false, chronoBase: s.chronoBase + s.now - s.chronoAt } : { chronoRunning: true, chronoAt: s.now })),
+  lapChrono: () => set((s) => (s.chronoRunning ? { laps: [...s.laps, s.chronoBase + s.now - s.chronoAt] } : { chronoBase: 0, laps: [] })),
 
   tick: (dt, t) => {
     const s = get();
@@ -292,6 +329,11 @@ export const useCar = create<State & Actions>((set, get) => ({
     const litres = (powerKw * 0.33 * dt) / 3600 + ((0.8 + rpm / 9000) * dt) / 3600;
     const fuel = Math.min(100, Math.max(6, s.fuel - (litres / TANK_L) * 100));
     const warm = (x: number, target: number) => x + (target - x) * Math.min(1, dt * 0.02);
+    const tyreTemp = s.tyreTemp.map((x, i) => {
+      const front = i < 2;
+      const target = 22 + s.speed * 0.45 * TYRE_LOAD[s.mode] + (front ? brake * 30 : throttle * 24) + (i % 2 ? 1.5 : 0);
+      return x + (target - x) * Math.min(1, dt * 0.05);
+    });
     const progress = s.playing ? s.progress + dt : s.progress;
     const trackEnded = s.playing && progress >= TRACKS[s.track].length;
 
@@ -313,6 +355,7 @@ export const useCar = create<State & Actions>((set, get) => ({
       fuel,
       oilTemp: warm(s.oilTemp, 96 + (rpm / REDLINE) * 18),
       coolantTemp: warm(s.coolantTemp, 88 + (rpm / REDLINE) * 8),
+      tyreTemp,
       odo: s.odo + (nv * dt) / 1000,
       routeD,
       tripD: s.tripD + nv * dt,
@@ -328,5 +371,9 @@ export const useCar = create<State & Actions>((set, get) => ({
 
 /** Remaining range in km from fuel level (%) at the mode's typical consumption. */
 export const rangeFor = (fuelPct: number, mode: DriveMode) => Math.round(((fuelPct / 100) * TANK_L * 100) / CONS[mode]);
+
+export const oilBar = (rpm: number) => 1.2 + (rpm / REDLINE) * 4.3;
+
+export const tyreBar = (i: number, temp: number) => (TYRE_COLD_BAR[i] * (temp + 273)) / 293;
 
 export const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
