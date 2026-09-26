@@ -232,7 +232,7 @@ function Model() {
   );
 }
 
-/** Tesla-style callout pinned to the body; fades out when that side faces away from the camera. */
+/** Leader-line callout pinned to the body; fades out when that side faces away from the camera. */
 function Hotspot({
   id,
   label,
@@ -265,27 +265,22 @@ function Hotspot({
 
   return (
     <group ref={anchor} position={pos}>
-      <Html center zIndexRange={[30, 0]}>
-        <div ref={ref} className="transition-opacity duration-150">
+      <Html zIndexRange={[30, 0]}>
+        <div ref={ref} className="relative transition-opacity duration-150">
           <button
             onClick={() => togglePart(id)}
-            className={`group flex items-center gap-2 rounded-full py-[5px] pr-3 pl-[5px] whitespace-nowrap backdrop-blur-md transition ${
-              hot ? "bg-black/70" : "bg-black/45 hover:bg-black/70"
-            }`}
+            aria-label={`${open ? "Close" : "Open"} ${label}`}
+            className="group absolute bottom-0 left-0 flex -translate-x-1/2 translate-y-[3px] flex-col items-center whitespace-nowrap [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"
           >
             <span
-              className={`grid h-[22px] w-[22px] place-items-center rounded-full transition ${
-                open ? "bg-[#2f8fff]" : "bg-white/15"
+              className={`text-[11px] font-medium tracking-[0.04em] uppercase transition ${
+                open ? "text-[#6db3ff]" : hot ? "text-white" : "text-white/70 group-hover:text-white"
               }`}
             >
-              <span className={`h-[6px] w-[6px] rounded-full ${open ? "bg-white" : "bg-white/80"}`} />
+              {label}
             </span>
-            <span className="text-left leading-[1.15]">
-              <span className="block text-[10.5px] text-white/50">{label}</span>
-              <span className={`block text-[12.5px] font-medium ${open ? "text-[#6db3ff]" : "text-white"}`}>
-                {open ? "Close" : "Open"}
-              </span>
-            </span>
+            <span className={`mt-1 h-7 w-px transition ${hot ? "bg-white/70" : "bg-white/35 group-hover:bg-white/70"}`} />
+            <span className={`h-1.5 w-1.5 rounded-full ${open ? "bg-[#2f8fff]" : "bg-white"}`} />
           </button>
         </div>
       </Html>
