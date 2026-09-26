@@ -8,6 +8,7 @@ export type Sheet = null | "home" | "vehicle" | "media" | "phone" | "notificatio
 export type VehicleTab =
   | "modes"
   | "chassis"
+  | "setup"
   | "engine"
   | "lights"
   | "assist"
@@ -104,6 +105,14 @@ type State = {
   lift: boolean;
   rideHeight: "low" | "normal" | "high";
   pasm: "comfort" | "sport";
+  reboundF: number;
+  compressionF: number;
+  reboundR: number;
+  compressionR: number;
+  diffCoast: number;
+  diffDrive: number;
+  tc: number;
+  esc: "on" | "sport" | "off";
   headlights: "auto" | "low" | "high" | "off";
   ambient: number;
   ambientLevel: number;
@@ -187,6 +196,14 @@ export const useCar = create<State & Actions>((set, get) => ({
   lift: false,
   rideHeight: "normal",
   pasm: "comfort",
+  reboundF: 0,
+  compressionF: 0,
+  reboundR: 0,
+  compressionR: 0,
+  diffCoast: 3,
+  diffDrive: 3,
+  tc: 5,
+  esc: "on",
   headlights: "auto",
   ambient: 1,
   ambientLevel: 70,

@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   SkipBack,
   SkipForward,
+  SlidersHorizontal,
   Snowflake,
   Wind,
   X,
@@ -31,7 +32,7 @@ import {
 import { AlbumArt } from "./AlbumArt";
 import { useSlider } from "./ui/useSlider";
 import { Glyph, APPS, type AppId } from "./ui/Glyph";
-import { Row, Segmented, SectionTitle, Toggle } from "./ui/controls";
+import { Row, Segmented, SectionTitle, Stepper, Toggle } from "./ui/controls";
 import { AMBIENT, MODES, MODE_ORDER, REDLINE, TANK_L, TRACKS, fmtTime, rangeFor, useCar, type VehicleTab } from "@/lib/store";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
@@ -149,6 +150,7 @@ function HomeSheet() {
 const TABS: { id: VehicleTab; label: string; icon: LucideIcon }[] = [
   { id: "modes", label: "Driving modes", icon: CircleGauge },
   { id: "chassis", label: "Chassis", icon: ArrowUpFromLine },
+  { id: "setup", label: "Track setup", icon: SlidersHorizontal },
   { id: "engine", label: "Engine & fuel", icon: Timer },
   { id: "climate", label: "Climate", icon: Fan },
   { id: "lights", label: "Light & visibility", icon: Lightbulb },
@@ -193,6 +195,7 @@ function VehicleSheet() {
             <h2 className="mb-2 text-[22px] font-medium text-white">{TABS.find((t) => t.id === tab)?.label}</h2>
             {tab === "modes" && <ModesTab />}
             {tab === "chassis" && <ChassisTab />}
+            {tab === "setup" && <SetupTab />}
             {tab === "engine" && <EngineTab />}
             {tab === "climate" && <ClimateTab />}
             {tab === "lights" && <LightsTab />}
@@ -268,6 +271,59 @@ function ChassisTab() {
         sub="Raises the front axle for ramps and kerbs. Saved by location."
         right={<Toggle on={s.lift} onChange={() => s.set({ lift: !s.lift, rideHeight: !s.lift ? "high" : "normal" })} />}
       />
+    </>
+  );
+}
+
+const clicks = (v: number) => (v === 0 ? "Base" : v > 0 ? `+${v}` : `${v}`);
+
+function SetupTab() {
+  const s = useCar();
+  const damper = (title: string, key: "reboundF" | "compressionF" | "reboundR" | "compressionR") => (
+    <Row
+      title={title}
+      sub="Clicks from base · minus is softer"
+      right={<Stepper label={title} value={s[key]} min={-5} max={5} format={clicks} onChange={(v) => s.set({ [key]: v })} />}
+    />
+  );
+  return (
+    <>
+      <SectionTitle>Damping · front axle</SectionTitle>
+      {damper("Front rebound", "reboundF")}
+      {damper("Front compression", "compressionF")}
+      <SectionTitle>Damping · rear axle</SectionTitle>
+      {damper("Rear rebound", "reboundR")}
+      {damper("Rear compression", "compressionR")}
+      <SectionTitle>Rear differential lock</SectionTitle>
+      <Row
+        title="Coast"
+        sub="Lock off throttle · higher is more stable on entry"
+        right={<Stepper label="Coast lock" value={s.diffCoast} min={1} max={5} onChange={(v) => s.set({ diffCoast: v })} />}
+      />
+      <Row
+        title="Drive"
+        sub="Lock on throttle · higher is more traction on exit"
+        right={<Stepper label="Drive lock" value={s.diffDrive} min={1} max={5} onChange={(v) => s.set({ diffDrive: v })} />}
+      />
+      <SectionTitle>Traction control (TC)</SectionTitle>
+      <Row
+        title="TC stage"
+        sub="Lower allows more wheelspin"
+        right={<Stepper label="TC stage" value={s.tc} min={0} max={8} format={(v) => (v === 0 ? "Off" : `${v}`)} onChange={(v) => s.set({ tc: v })} />}
+      />
+      <SectionTitle>Stability control (ESC)</SectionTitle>
+      <div className="py-2">
+        <Segmented
+          id="esc"
+          value={s.esc}
+          onChange={(v) => s.set({ esc: v })}
+          options={[
+            { value: "on", label: "On" },
+            { value: "sport", label: "Sport" },
+            { value: "off", label: "Off" },
+          ]}
+        />
+      </div>
     </>
   );
 }
