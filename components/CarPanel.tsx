@@ -55,8 +55,8 @@ function DriveHeader() {
           </span>
           <span className="text-[14px] text-white/45">km/h</span>
         </div>
-        <RevBar rpm={rpm} shift={shift} />
       </div>
+      <RevCounter rpm={rpm} shift={shift} />
       <div className="text-right">
         <div className="flex items-center justify-end gap-2">
           <span className="text-[15px] font-medium text-white tabular-nums">{Math.round(fuel)}%</span>
@@ -68,23 +68,104 @@ function DriveHeader() {
   );
 }
 
-/** Rev counter strip, 0–9,000 rpm. The last 1,000 rpm is the red zone; it flashes at the shift point. */
-function RevBar({ rpm, shift }: { rpm: number; shift: boolean }) {
+const TACHO = { cx: 88, cy: 80, r: 72, sweep: 240 };
+
+function tachoAngle(rpm: number) {
+  return -TACHO.sweep / 2 + (Math.min(Math.max(rpm, 0), REDLINE) / REDLINE) * TACHO.sweep;
+}
+
+function tachoPoint(angle: number, r: number) {
+  const t = (angle * Math.PI) / 180;
+  return [TACHO.cx + r * Math.sin(t), TACHO.cy - r * Math.cos(t)] as const;
+}
+
+function tachoArc(from: number, to: number, r: number) {
+  const a = tachoAngle(from);
+  const b = tachoAngle(to);
+  const [x1, y1] = tachoPoint(a, r);
+  const [x2, y2] = tachoPoint(b, r);
+  return `M ${x1} ${y1} A ${r} ${r} 0 ${b - a > 180 ? 1 : 0} 1 ${x2} ${y2}`;
+}
+
+/** Porsche centre rev counter, 0–9,000 rpm. The last 1,000 rpm is the red zone; the needle turns red at the shift point. */
+function RevCounter({ rpm, shift }: { rpm: number; shift: boolean }) {
+  const { cx, cy, r } = TACHO;
   const pct = Math.min(1, rpm / REDLINE);
+  const red = REDLINE - 1000;
+  const needle = tachoAngle(rpm);
+  const [nx1, ny1] = tachoPoint(needle, -10);
+  const [nx2, ny2] = tachoPoint(needle, r - 5);
+  const readout = (Math.round(rpm / 50) * 50).toLocaleString("en");
   return (
-    <div className="mt-3 w-[190px]">
-      <div className="relative h-[4px] rounded-full bg-white/10">
-        <span className="absolute inset-y-0 right-0 w-[11.1%] rounded-r-full bg-[#ff3b30]/35" />
-        <span
-          className="absolute inset-y-0 left-0 rounded-full"
-          style={{ width: `${pct * 100}%`, background: shift ? "#ff3b30" : pct > 0.78 ? "#ffb020" : "#fff" }}
+    <svg
+      width={176}
+      height={124}
+      viewBox="0 0 176 124"
+      role="img"
+      aria-label={`${readout} rpm`}
+      className="-mt-2 shrink-0 tabular-nums"
+    >
+      <path d={tachoArc(0, red, r)} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={1.5} />
+      <path d={tachoArc(red, REDLINE, r)} fill="none" stroke="#ff3b30" strokeWidth={3} />
+      {rpm > 0 && (
+        <path
+          d={tachoArc(0, rpm, r - 4)}
+          fill="none"
+          stroke={shift ? "#ff3b30" : pct > 0.78 ? "#ffb020" : "rgba(255,255,255,0.3)"}
+          strokeWidth={2}
         />
-      </div>
-      <div className="mt-1.5 flex justify-between text-[11px] text-white/35 tabular-nums">
-        <span className={shift ? "text-[#ff6b61]" : "text-white/60"}>{(Math.round(rpm / 50) * 50).toLocaleString("en")} rpm</span>
-        <span>9</span>
-      </div>
-    </div>
+      )}
+      {Array.from({ length: REDLINE / 500 + 1 }, (_, i) => {
+        const v = i * 500;
+        const major = v % 1000 === 0;
+        const a = tachoAngle(v);
+        const [x1, y1] = tachoPoint(a, r);
+        const [x2, y2] = tachoPoint(a, r - (major ? 8 : 4));
+        return (
+          <line
+            key={v}
+            x1={x1}
+            y1={y1}
+            x2={x2}
+            y2={y2}
+            stroke={v >= red ? "#ff3b30" : major ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.3)"}
+            strokeWidth={major ? 1.5 : 1}
+          />
+        );
+      })}
+      {Array.from({ length: REDLINE / 1000 + 1 }, (_, i) => {
+        const [x, y] = tachoPoint(tachoAngle(i * 1000), r - 17);
+        return (
+          <text
+            key={i}
+            x={x}
+            y={y}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={10.5}
+            fill={i * 1000 >= red ? "#ff6b61" : "rgba(255,255,255,0.6)"}
+          >
+            {i}
+          </text>
+        );
+      })}
+      <text x={cx} y={cy - 24} textAnchor="middle" fontSize={7.5} letterSpacing="0.04em" fill="rgba(255,255,255,0.35)">
+        1/min × 1000
+      </text>
+      <text x={cx} y={cy + 28} textAnchor="middle" fontSize={11} fill={shift ? "#ff6b61" : "rgba(255,255,255,0.6)"}>
+        {readout}
+      </text>
+      <line
+        x1={nx1}
+        y1={ny1}
+        x2={nx2}
+        y2={ny2}
+        stroke={shift ? "#ff3b30" : "#fff"}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+      <circle cx={cx} cy={cy} r={4} fill="#0e1013" stroke="rgba(255,255,255,0.6)" strokeWidth={1.5} />
+    </svg>
   );
 }
 
