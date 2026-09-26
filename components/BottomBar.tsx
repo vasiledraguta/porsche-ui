@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Fan, Volume2, VolumeX } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { APPS, Glyph, type AppId } from "./ui/Glyph";
 import { useCar, type Sheet } from "@/lib/store";
 
@@ -16,7 +17,18 @@ const DOCK: { id: AppId; sheet: Sheet }[] = [
 
 /** Bottom bar: climate on both ends like the PCM lower bar, apps in the middle. */
 export function BottomBar() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    set: s.set,
+    openSheet: s.openSheet,
+    sheet: s.sheet,
+    tempL: s.tempL,
+    tempR: s.tempR,
+    sync: s.sync,
+    seatL: s.seatL,
+    seatR: s.seatR,
+    fan: s.fan,
+    auto: s.auto,
+  })));
 
   const setTemp = (side: "L" | "R", d: number) => {
     const v = (x: number) => Math.round(Math.min(28, Math.max(16, x + d)) * 2) / 2;
@@ -152,19 +164,20 @@ function SeatHeat({ level, onClick }: { level: number; onClick: () => void }) {
 
 function Volume() {
   const volume = useCar((s) => s.volume);
-  const set = useCar((s) => s.set);
+  const lastVolume = useCar((s) => s.lastVolume);
+  const setVolume = useCar((s) => s.setVolume);
   return (
     <div className="flex items-center gap-1">
       <button
         aria-label="Volume down"
-        onClick={() => set({ volume: Math.max(0, volume - 6) })}
+        onClick={() => setVolume(Math.max(0, volume - 6))}
         className="grid h-11 w-9 place-items-center text-white/50 hover:text-white"
       >
         <ChevronLeft size={20} />
       </button>
       <button
-        aria-label="Mute"
-        onClick={() => set({ volume: volume ? 0 : 38 })}
+        aria-label={volume ? "Mute" : "Unmute"}
+        onClick={() => setVolume(volume ? 0 : lastVolume)}
         className="relative grid h-11 w-11 place-items-center text-white/85"
       >
         {volume ? <Volume2 size={21} strokeWidth={1.7} /> : <VolumeX size={21} strokeWidth={1.7} />}
@@ -174,7 +187,7 @@ function Volume() {
       </button>
       <button
         aria-label="Volume up"
-        onClick={() => set({ volume: Math.min(100, volume + 6) })}
+        onClick={() => setVolume(Math.min(100, volume + 6))}
         className="grid h-11 w-9 place-items-center text-white/50 hover:text-white"
       >
         <ChevronRight size={20} />
