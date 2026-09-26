@@ -1,7 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useSpring, useTransform } from "motion/react";
 import dynamic from "next/dynamic";
+import { useEffect } from "react";
 import { Fuel, Lock, LockOpen, Move3d, RotateCcw } from "lucide-react";
 import { MiniPlayer } from "./MiniPlayer";
 import { useSlider } from "./ui/useSlider";
@@ -92,9 +93,17 @@ function RevCounter({ rpm, shift }: { rpm: number; shift: boolean }) {
   const { cx, cy, r } = TACHO;
   const pct = Math.min(1, rpm / REDLINE);
   const red = REDLINE - 1000;
-  const needle = tachoAngle(rpm);
-  const [nx1, ny1] = tachoPoint(needle, -10);
-  const [nx2, ny2] = tachoPoint(needle, r - 5);
+  const needle = useSpring(rpm, { stiffness: 40, damping: 13 });
+  useEffect(() => {
+    needle.set(rpm);
+  }, [needle, rpm]);
+  const sweep = useTransform(needle, (v) => tachoArc(0, v, r - 4));
+  const hand = useTransform(needle, (v) => {
+    const a = tachoAngle(v);
+    const [x1, y1] = tachoPoint(a, -10);
+    const [x2, y2] = tachoPoint(a, r - 5);
+    return `M ${x1} ${y1} L ${x2} ${y2}`;
+  });
   const readout = (Math.round(rpm / 50) * 50).toLocaleString("en");
   return (
     <svg
@@ -107,14 +116,12 @@ function RevCounter({ rpm, shift }: { rpm: number; shift: boolean }) {
     >
       <path d={tachoArc(0, red, r)} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={1.5} />
       <path d={tachoArc(red, REDLINE, r)} fill="none" stroke="#ff3b30" strokeWidth={3} />
-      {rpm > 0 && (
-        <path
-          d={tachoArc(0, rpm, r - 4)}
-          fill="none"
-          stroke={shift ? "#ff3b30" : pct > 0.78 ? "#ffb020" : "rgba(255,255,255,0.3)"}
-          strokeWidth={2}
-        />
-      )}
+      <motion.path
+        d={sweep}
+        fill="none"
+        stroke={shift ? "#ff3b30" : pct > 0.78 ? "#ffb020" : "rgba(255,255,255,0.3)"}
+        strokeWidth={2}
+      />
       {Array.from({ length: REDLINE / 500 + 1 }, (_, i) => {
         const v = i * 500;
         const major = v % 1000 === 0;
@@ -149,21 +156,10 @@ function RevCounter({ rpm, shift }: { rpm: number; shift: boolean }) {
           </text>
         );
       })}
-      <text x={cx} y={cy - 24} textAnchor="middle" fontSize={7.5} letterSpacing="0.04em" fill="rgba(255,255,255,0.35)">
-        1/min × 1000
-      </text>
       <text x={cx} y={cy + 28} textAnchor="middle" fontSize={11} fill={shift ? "#ff6b61" : "rgba(255,255,255,0.6)"}>
-        {readout}
+        {readout} rpm
       </text>
-      <line
-        x1={nx1}
-        y1={ny1}
-        x2={nx2}
-        y2={ny2}
-        stroke={shift ? "#ff3b30" : "#fff"}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
+      <motion.path d={hand} fill="none" stroke={shift ? "#ff3b30" : "#fff"} strokeWidth={2} strokeLinecap="round" />
       <circle cx={cx} cy={cy} r={4} fill="#0e1013" stroke="rgba(255,255,255,0.6)" strokeWidth={1.5} />
     </svg>
   );
