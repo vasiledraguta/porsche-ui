@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { Minus, Plus } from "lucide-react";
 import { useSlider } from "./useSlider";
 
 export function Toggle({ on, onChange, label }: { on: boolean; onChange: () => void; label?: string }) {
@@ -73,8 +74,8 @@ export function Row({
   return (
     <Tag
       onClick={onClick}
-      className={`flex min-h-[60px] w-full items-center justify-between gap-4 border-b border-white/[0.07] py-3 text-left ${
-        onClick ? "cursor-pointer transition hover:bg-white/[0.03]" : ""
+      className={`flex min-h-[60px] items-center justify-between gap-4 border-b border-white/[0.07] text-left ${
+        onClick ? "-mx-4 w-[calc(100%+2rem)] cursor-pointer px-4 py-4 transition hover:bg-white/[0.04]" : "w-full py-3"
       }`}
     >
       <div className="min-w-0">
@@ -88,4 +89,36 @@ export function Row({
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
   return <div className="mt-6 mb-1 text-[12px] font-medium tracking-[0.08em] text-white/40 uppercase">{children}</div>;
+}
+
+export function Stepper({
+  value,
+  min,
+  max,
+  onChange,
+  label,
+  format = String,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  onChange: (v: number) => void;
+  label: string;
+  format?: (v: number) => string;
+}) {
+  const btn =
+    "grid h-10 w-10 place-items-center rounded-full bg-white/[0.06] text-white/80 transition hover:bg-white/[0.1] hover:text-white active:scale-95 disabled:pointer-events-none disabled:opacity-30";
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      <button aria-label={`${label} down`} disabled={value <= min} onClick={() => onChange(value - 1)} className={btn}>
+        <Minus size={17} strokeWidth={1.8} />
+      </button>
+      <span aria-live="polite" className="w-[58px] text-center text-[16px] text-white tabular-nums">
+        {format(value)}
+      </span>
+      <button aria-label={`${label} up`} disabled={value >= max} onClick={() => onChange(value + 1)} className={btn}>
+        <Plus size={17} strokeWidth={1.8} />
+      </button>
+    </div>
+  );
 }

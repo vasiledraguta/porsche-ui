@@ -1,13 +1,12 @@
 "use client";
 
-import { Heart, Pause, Play, Search, Shuffle, SkipBack, SkipForward, SlidersHorizontal } from "lucide-react";
+import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { AlbumArt } from "./AlbumArt";
 import { TRACKS, useCar } from "@/lib/store";
 
 export function MiniPlayer() {
   const s = useCar();
   const t = TRACKS[s.track];
-  const liked = s.liked.includes(s.track);
   return (
     <div className="overflow-hidden rounded-[14px] bg-[#16191d] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
       <button onClick={() => s.openSheet("media")} className="flex w-full items-center gap-3.5 p-3 text-left">
@@ -24,7 +23,7 @@ export function MiniPlayer() {
       <div className="h-[2px] bg-white/[0.06]">
         <div className="h-full bg-white/80" style={{ width: `${(s.progress / t.length) * 100}%` }} />
       </div>
-      <div className="flex items-center justify-between px-3 py-1.5 text-white/75">
+      <div className="flex items-center justify-center gap-8 px-3 py-1.5 text-white/75">
         <Btn label="Previous" onClick={() => s.nextTrack(-1)}>
           <SkipBack size={19} fill="currentColor" strokeWidth={1.4} />
         </Btn>
@@ -33,21 +32,6 @@ export function MiniPlayer() {
         </Btn>
         <Btn label="Next" onClick={() => s.nextTrack(1)}>
           <SkipForward size={19} fill="currentColor" strokeWidth={1.4} />
-        </Btn>
-        <Btn
-          label="Like"
-          onClick={() => s.set({ liked: liked ? s.liked.filter((x) => x !== s.track) : [...s.liked, s.track] })}
-        >
-          <Heart size={18} strokeWidth={1.6} fill={liked ? "#ff4a4a" : "none"} color={liked ? "#ff4a4a" : "currentColor"} />
-        </Btn>
-        <Btn label="Shuffle" onClick={() => s.nextTrack(1)}>
-          <Shuffle size={17} strokeWidth={1.6} />
-        </Btn>
-        <Btn label="Sound" onClick={() => s.openSheet("media")}>
-          <SlidersHorizontal size={17} strokeWidth={1.6} />
-        </Btn>
-        <Btn label="Search" onClick={() => s.openSheet("media")}>
-          <Search size={17} strokeWidth={1.6} />
         </Btn>
       </div>
     </div>
