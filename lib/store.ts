@@ -273,6 +273,8 @@ export const useCar = create<State & Actions>((set, get) => ({
     const litres = (powerKw * 0.33 * dt) / 3600 + ((0.8 + rpm / 9000) * dt) / 3600;
     const fuel = Math.min(100, Math.max(6, s.fuel - (litres / TANK_L) * 100));
     const warm = (x: number, target: number) => x + (target - x) * Math.min(1, dt * 0.02);
+    const progress = s.playing ? s.progress + dt : s.progress;
+    const trackEnded = s.playing && progress >= TRACKS[s.track].length;
 
     routeD += nv * dt;
     if (routeD >= ROUTE_LEN - 2 && nv < 0.5) {
@@ -298,7 +300,8 @@ export const useCar = create<State & Actions>((set, get) => ({
       stopIdx,
       tripTime: s.tripTime + (nv > 0 ? dt : 0),
       tripFuelL: s.tripFuelL + litres,
-      progress: s.playing ? (s.progress + dt) % TRACKS[s.track].length : s.progress,
+      track: trackEnded ? (s.track + 1) % TRACKS.length : s.track,
+      progress: trackEnded ? progress - TRACKS[s.track].length : progress,
     });
   },
 }));
