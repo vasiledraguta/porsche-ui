@@ -80,6 +80,7 @@ export function NavMap({ className = "", mapRef }: { className?: string; mapRef:
           touchPitch: true,
           maxPitch: 75,
           fadeDuration: 0,
+          cancelPendingTileRequestsWhileZooming: false,
         });
         mapRef.current = map;
         // Hand the camera to the user the moment they touch the map. This has to happen on
