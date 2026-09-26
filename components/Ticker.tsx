@@ -39,12 +39,20 @@ export function Ticker() {
       if (k === "arrowup" || k === "w") useCar.getState().set({ throttle: 0 });
       if (k === "arrowdown" || k === "s") useCar.getState().set({ brake: 0 });
     };
+    const resetInput = () => useCar.getState().set({ throttle: 0, brake: 0 });
+    const onVisibilityChange = () => {
+      if (document.hidden) resetInput();
+    };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
+    window.addEventListener("blur", resetInput);
+    document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
+      window.removeEventListener("blur", resetInput);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
   return null;
