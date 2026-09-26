@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import * as maplibregl from "maplibre-gl";
 import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -50,9 +50,8 @@ function porscheify(style: StyleSpecification): StyleSpecification {
   };
 }
 
-export function NavMap({ className = "" }: { className?: string }) {
+export function NavMap({ className = "", mapRef }: { className?: string; mapRef: RefObject<maplibregl.Map | null> }) {
   const el = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const puck = useRef<maplibregl.Marker | null>(null);
@@ -146,7 +145,7 @@ export function NavMap({ className = "" }: { className?: string }) {
       map?.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [mapRef]);
 
   // follow camera
   useEffect(() => {
@@ -183,25 +182,17 @@ export function NavMap({ className = "" }: { className?: string }) {
       unsub();
       puck.current?.remove();
     };
-  }, [ready]);
+  }, [ready, mapRef]);
 
   // recenter
   const follow = useCar((s) => s.follow);
   const map3d = useCar((s) => s.map3d);
-  const zoomBias = useCar((s) => s.zoomBias);
 
   // in free-look mode the 2D/3D and zoom buttons act on the camera directly
   useEffect(() => {
     const map = mapRef.current;
     if (map && !useCar.getState().follow) map.easeTo({ pitch: map3d ? 58 : 0, duration: 500 });
-  }, [map3d]);
-  const lastBias = useRef(zoomBias);
-  useEffect(() => {
-    const map = mapRef.current;
-    const delta = zoomBias - lastBias.current;
-    lastBias.current = zoomBias;
-    if (map && delta && !useCar.getState().follow) map.easeTo({ zoom: map.getZoom() + delta, duration: 300 });
-  }, [zoomBias]);
+  }, [map3d, mapRef]);
   useEffect(() => {
     const map = mapRef.current;
     if (!follow || !map) return;
@@ -215,7 +206,7 @@ export function NavMap({ className = "" }: { className?: string }) {
       padding: { top: 180, bottom: 0, left: 0, right: 0 },
       duration: 700,
     });
-  }, [follow]);
+  }, [follow, mapRef]);
 
   return (
     <div className={`absolute inset-0 ${className}`}>

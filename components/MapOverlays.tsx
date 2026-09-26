@@ -1,5 +1,7 @@
 "use client";
 
+import type { RefObject } from "react";
+import type { Map } from "maplibre-gl";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUp,
@@ -128,11 +130,16 @@ function Sep() {
   return <span className="h-5 w-px bg-white/10" />;
 }
 
-export function MapControls() {
+export function MapControls({ mapRef }: { mapRef: RefObject<Map | null> }) {
   const map3d = useCar((s) => s.map3d);
   const follow = useCar((s) => s.follow);
   const set = useCar((s) => s.set);
   const zoomBias = useCar((s) => s.zoomBias);
+  const zoom = (dir: 1 | -1) => {
+    if (follow) set({ zoomBias: Math.max(-3, Math.min(2, zoomBias + dir * 0.7)) });
+    else if (dir === 1) mapRef.current?.zoomIn();
+    else mapRef.current?.zoomOut();
+  };
   return (
     <div className="absolute right-4 bottom-[92px] z-10 flex flex-col gap-2">
       <AnimatePresence>
@@ -151,10 +158,10 @@ export function MapControls() {
       <CtlBtn label={map3d ? "2D" : "3D"} onClick={() => set({ map3d: !map3d })}>
         <Box size={17} strokeWidth={1.7} />
       </CtlBtn>
-      <CtlBtn label="Zoom in" onClick={() => set({ zoomBias: Math.min(2, zoomBias + 0.7) })}>
+      <CtlBtn label="Zoom in" onClick={() => zoom(1)}>
         <Plus size={17} strokeWidth={1.8} />
       </CtlBtn>
-      <CtlBtn label="Zoom out" onClick={() => set({ zoomBias: Math.max(-3, zoomBias - 0.7) })}>
+      <CtlBtn label="Zoom out" onClick={() => zoom(-1)}>
         <Minus size={17} strokeWidth={1.8} />
       </CtlBtn>
     </div>
