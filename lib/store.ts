@@ -78,6 +78,7 @@ type State = {
   playing: boolean;
   progress: number;
   volume: number;
+  lastVolume: number;
   liked: number[];
 
   tempL: number;
@@ -121,6 +122,7 @@ type State = {
 
 type Actions = {
   set: (p: Partial<State>) => void;
+  setVolume: (volume: number) => void;
   setMode: (m: DriveMode) => void;
   cycleMode: (dir: 1 | -1) => void;
   nextTrack: (dir: 1 | -1) => void;
@@ -161,6 +163,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   playing: true,
   progress: 71,
   volume: 38,
+  lastVolume: 38,
   liked: [0],
 
   tempL: 21.5,
@@ -202,6 +205,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   bootT: 0,
 
   set: (p) => set(p),
+  setVolume: (volume) => set((s) => ({ volume, lastVolume: volume > 0 ? volume : s.lastVolume })),
   setMode: (mode) =>
     set((s) => ({
       mode,
