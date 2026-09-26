@@ -93,7 +93,7 @@ function RevCounter({ rpm, shift }: { rpm: number; shift: boolean }) {
   const { cx, cy, r } = TACHO;
   const pct = Math.min(1, rpm / REDLINE);
   const red = REDLINE - 1000;
-  const needle = useSpring(rpm, { stiffness: 40, damping: 13 });
+  const needle = useSpring(rpm, { stiffness: 300, damping: 35 });
   useEffect(() => {
     needle.set(rpm);
   }, [needle, rpm]);
