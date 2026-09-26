@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { ROUTE_LEN, STOPS, nextStep } from "./route";
 
 export type DriveMode = "wet" | "normal" | "sport" | "track";
-export type Sheet = null | "home" | "vehicle" | "media" | "phone" | "notifications" | "carplay" | "androidauto" | "devices" | "settings";
+export type Sheet = null | "home" | "vehicle" | "chrono" | "media" | "phone" | "notifications" | "carplay" | "androidauto" | "devices" | "settings";
 export type VehicleTab =
   | "modes"
   | "chassis"
@@ -86,6 +86,11 @@ type State = {
   volume: number;
   liked: number[];
 
+  chronoRunning: boolean;
+  chronoAt: number;
+  chronoBase: number;
+  laps: number[];
+
   tempL: number;
   tempR: number;
   sync: boolean;
@@ -139,6 +144,8 @@ type Actions = {
   cycleMode: (dir: 1 | -1) => void;
   nextTrack: (dir: 1 | -1) => void;
   openSheet: (s: Sheet, tab?: VehicleTab) => void;
+  toggleChrono: () => void;
+  lapChrono: () => void;
   tick: (dt: number, t: number) => void;
 };
 
@@ -177,6 +184,11 @@ export const useCar = create<State & Actions>((set, get) => ({
   progress: 71,
   volume: 38,
   liked: [0],
+
+  chronoRunning: false,
+  chronoAt: 0,
+  chronoBase: 0,
+  laps: [],
 
   tempL: 21.5,
   tempR: 21.5,
@@ -243,6 +255,9 @@ export const useCar = create<State & Actions>((set, get) => ({
       vehicleTab: tab ?? s.vehicleTab,
       notesRead: s.notesRead || sheet === "notifications",
     })),
+  toggleChrono: () =>
+    set((s) => (s.chronoRunning ? { chronoRunning: false, chronoBase: s.chronoBase + s.now - s.chronoAt } : { chronoRunning: true, chronoAt: s.now })),
+  lapChrono: () => set((s) => (s.chronoRunning ? { laps: [...s.laps, s.chronoBase + s.now - s.chronoAt] } : { chronoBase: 0, laps: [] })),
 
   tick: (dt, t) => {
     const s = get();
