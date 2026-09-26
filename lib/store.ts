@@ -92,6 +92,7 @@ type State = {
   ventFocus: "driver" | "diffuse" | "passenger";
   rearDefrost: boolean;
   exhaust: boolean;
+  drs: boolean;
   startStop: boolean;
   fuelFlap: boolean;
   frunkOpen: boolean;
@@ -174,6 +175,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   ventFocus: "diffuse",
   rearDefrost: false,
   exhaust: false,
+  drs: false,
   startStop: true,
   fuelFlap: false,
   frunkOpen: false,

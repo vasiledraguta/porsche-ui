@@ -94,6 +94,9 @@ const PARTS: Record<PartId, PartDef> = {
 /** Game-rip badge meshes that don't belong on a road car. */
 const HIDE = [/CSR2_Badge/i];
 
+const FLAP = "TwiXeR_992_gt3rs_carbon_Wing_TwiXeR_992_carbon_roof001_0";
+const FLAP_DRS = -0.16;
+
 function useParts() {
   return {
     hood: useCar((s) => s.frunkOpen),
@@ -115,6 +118,7 @@ function Model() {
   const { scene } = useGLTF(MODEL, false, true);
   const open = useParts();
   const lift = useCar((s) => s.lift);
+  const drs = useCar((s) => s.drs);
   const lifted = useRef<THREE.Group>(null);
   const [hover, setHover] = useState<PartId | null>(null);
 
@@ -164,14 +168,26 @@ function Model() {
       pivots[id] = pivot;
     }
 
+    const flap = new THREE.Group();
+    const flapMesh = root.getObjectByName(FLAP);
+    if (flapMesh) {
+      const fb = new THREE.Box3().setFromObject(flapMesh);
+      flap.position.set(0, fb.max.y, fb.max.z);
+      root.add(flap);
+      flap.updateMatrixWorld(true);
+      flap.attach(flapMesh);
+      pivots.trunk.attach(flap);
+    }
+
     const box = new THREE.Box3().setFromObject(root);
     const center = box.getCenter(new THREE.Vector3());
-    return { root, pivots, spots, offset: new THREE.Vector3(-center.x, -box.min.y, -center.z) };
+    return { root, pivots, flap, spots, offset: new THREE.Vector3(-center.x, -box.min.y, -center.z) };
   }, [scene]);
 
   // three.js objects are mutated every frame; keep them in a ref, outside React's immutable values
   // (the glTF scene is cached by useGLTF, so rig is built exactly once)
   const pivots = useRef(rig.pivots);
+  const flap = useRef(rig.flap);
 
   useFrame((_, dt) => {
     for (const id of Object.keys(PARTS) as PartId[]) {
@@ -180,6 +196,7 @@ function Model() {
       const target = open[id] ? def.open : 0;
       p.rotation[def.axis] = THREE.MathUtils.damp(p.rotation[def.axis], target, 4.2, dt);
     }
+    flap.current.rotation.x = THREE.MathUtils.damp(flap.current.rotation.x, drs ? FLAP_DRS : 0, 6, dt);
     if (lifted.current) {
       const y = lift ? 0.05 : 0;
       lifted.current.position.y = THREE.MathUtils.damp(lifted.current.position.y, y, 3, dt);
