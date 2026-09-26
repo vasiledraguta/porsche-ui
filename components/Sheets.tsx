@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpFromLine,
@@ -8,6 +9,7 @@ import {
   CircleGauge,
   DoorOpen,
   Fan,
+  Flag,
   Gauge,
   Lightbulb,
   Pause,
@@ -23,6 +25,7 @@ import {
   ShieldCheck,
   SkipBack,
   SkipForward,
+  SlidersHorizontal,
   Snowflake,
   Wind,
   X,
@@ -31,8 +34,8 @@ import {
 import { AlbumArt } from "./AlbumArt";
 import { useSlider } from "./ui/useSlider";
 import { Glyph, APPS, type AppId } from "./ui/Glyph";
-import { Row, Segmented, SectionTitle, Toggle } from "./ui/controls";
-import { AMBIENT, MODES, MODE_ORDER, REDLINE, TANK_L, TRACKS, fmtTime, rangeFor, useCar, type VehicleTab } from "@/lib/store";
+import { Row, Segmented, SectionTitle, Stepper, Toggle } from "./ui/controls";
+import { AMBIENT, MODES, MODE_ORDER, TANK_L, TRACKS, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 
@@ -60,6 +63,7 @@ export function Sheets() {
           </button>
           {sheet === "home" && <HomeSheet />}
           {sheet === "vehicle" && <VehicleSheet />}
+          {sheet === "chrono" && <ChronoSheet />}
           {sheet === "media" && <MediaSheet />}
           {sheet === "phone" && <PhoneSheet />}
           {sheet === "notifications" && <NotificationsSheet />}
@@ -91,14 +95,13 @@ const HOME_ORDER: AppId[] = [
 ];
 
 function HomeSheet() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({ set: s.set, openSheet: s.openSheet })));
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
   const apps = HOME_ORDER.filter((id) => APPS[id].label.toLowerCase().includes(q));
   const open = (id: AppId) => {
     if (id === "nav") s.set({ sheet: null, follow: true });
     else if (id === "vehicle") s.openSheet("vehicle", "modes");
-    else if (id === "chrono") s.openSheet("vehicle", "engine");
     else if (id === "climate") s.openSheet("vehicle", "climate");
     else if (id === "parking") s.openSheet("vehicle", "assist");
     else if (id !== "apps") s.openSheet(id);
@@ -149,12 +152,14 @@ function HomeSheet() {
 const TABS: { id: VehicleTab; label: string; icon: LucideIcon }[] = [
   { id: "modes", label: "Driving modes", icon: CircleGauge },
   { id: "chassis", label: "Chassis", icon: ArrowUpFromLine },
+  { id: "setup", label: "Track setup", icon: SlidersHorizontal },
   { id: "engine", label: "Engine & fuel", icon: Timer },
   { id: "climate", label: "Climate", icon: Fan },
   { id: "lights", label: "Light & visibility", icon: Lightbulb },
   { id: "assist", label: "Assistance systems", icon: ShieldCheck },
   { id: "doors", label: "Doors & locking", icon: DoorOpen },
   { id: "trip", label: "Trip data", icon: Route },
+  { id: "trackscreen", label: "Track Screen", icon: Flag },
 ];
 
 function VehicleSheet() {
@@ -193,12 +198,14 @@ function VehicleSheet() {
             <h2 className="mb-2 text-[22px] font-medium text-white">{TABS.find((t) => t.id === tab)?.label}</h2>
             {tab === "modes" && <ModesTab />}
             {tab === "chassis" && <ChassisTab />}
+            {tab === "setup" && <SetupTab />}
             {tab === "engine" && <EngineTab />}
             {tab === "climate" && <ClimateTab />}
             {tab === "lights" && <LightsTab />}
             {tab === "assist" && <AssistTab />}
             {tab === "doors" && <DoorsTab />}
             {tab === "trip" && <TripTab />}
+            {tab === "trackscreen" && <TrackScreenTab />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -234,22 +241,13 @@ function ModesTab() {
 }
 
 function ChassisTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    pasm: s.pasm,
+    lift: s.lift,
+    set: s.set,
+  })));
   return (
     <>
-      <SectionTitle>Ride height</SectionTitle>
-      <div className="py-2">
-        <Segmented
-          id="rh"
-          value={s.rideHeight}
-          onChange={(v) => s.set({ rideHeight: v })}
-          options={[
-            { value: "low", label: "Low" },
-            { value: "normal", label: "Normal" },
-            { value: "high", label: "High" },
-          ]}
-        />
-      </div>
       <SectionTitle>Damping (PASM)</SectionTitle>
       <div className="py-2">
         <Segmented
@@ -266,21 +264,97 @@ function ChassisTab() {
       <Row
         title="Lift system"
         sub="Raises the front axle for ramps and kerbs. Saved by location."
-        right={<Toggle on={s.lift} onChange={() => s.set({ lift: !s.lift, rideHeight: !s.lift ? "high" : "normal" })} />}
+        right={<Toggle on={s.lift} onChange={() => s.set({ lift: !s.lift })} />}
       />
     </>
   );
 }
 
+const clicks = (v: number) => (v === 0 ? "Base" : v > 0 ? `+${v}` : `${v}`);
+
+function SetupTab() {
+  const s = useCar(useShallow((s) => ({
+    reboundF: s.reboundF,
+    compressionF: s.compressionF,
+    reboundR: s.reboundR,
+    compressionR: s.compressionR,
+    diffCoast: s.diffCoast,
+    diffDrive: s.diffDrive,
+    tc: s.tc,
+    esc: s.esc,
+    set: s.set,
+  })));
+  const damper = (title: string, key: "reboundF" | "compressionF" | "reboundR" | "compressionR") => (
+    <Row
+      title={title}
+      sub="Clicks from base · minus is softer"
+      right={<Stepper label={title} value={s[key]} min={-5} max={5} format={clicks} onChange={(v) => s.set({ [key]: v })} />}
+    />
+  );
+  return (
+    <>
+      <SectionTitle>Damping · front axle</SectionTitle>
+      {damper("Front rebound", "reboundF")}
+      {damper("Front compression", "compressionF")}
+      <SectionTitle>Damping · rear axle</SectionTitle>
+      {damper("Rear rebound", "reboundR")}
+      {damper("Rear compression", "compressionR")}
+      <SectionTitle>Rear differential lock</SectionTitle>
+      <Row
+        title="Coast"
+        sub="Lock off throttle · higher is more stable on entry"
+        right={<Stepper label="Coast lock" value={s.diffCoast} min={1} max={5} onChange={(v) => s.set({ diffCoast: v })} />}
+      />
+      <Row
+        title="Drive"
+        sub="Lock on throttle · higher is more traction on exit"
+        right={<Stepper label="Drive lock" value={s.diffDrive} min={1} max={5} onChange={(v) => s.set({ diffDrive: v })} />}
+      />
+      <SectionTitle>Traction control (TC)</SectionTitle>
+      <Row
+        title="TC stage"
+        sub="Lower allows more wheelspin"
+        right={<Stepper label="TC stage" value={s.tc} min={0} max={8} format={(v) => (v === 0 ? "Off" : `${v}`)} onChange={(v) => s.set({ tc: v })} />}
+      />
+      <SectionTitle>Stability control (ESC)</SectionTitle>
+      <div className="py-2">
+        <Segmented
+          id="esc"
+          value={s.esc}
+          onChange={(v) => s.set({ esc: v })}
+          options={[
+            { value: "on", label: "On" },
+            { value: "sport", label: "Sport" },
+            { value: "off", label: "Off" },
+          ]}
+        />
+      </div>
+    </>
+  );
+}
+
 function EngineTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    rpm: s.rpm,
+    oilTemp: s.oilTemp,
+    coolantTemp: s.coolantTemp,
+    gear: s.gear,
+    pdkGear: s.pdkGear,
+    powerKw: s.powerKw,
+    fuel: s.fuel,
+    mode: s.mode,
+    exhaust: s.exhaust,
+    startStop: s.startStop,
+    fuelFlap: s.fuelFlap,
+    set: s.set,
+  })));
   return (
     <>
       <div className="mt-3 grid grid-cols-3 gap-3">
         <Tile label="Engine speed" value={`${(Math.round(s.rpm / 50) * 50).toLocaleString("en")} rpm`} />
         <Tile label="Oil temperature" value={`${Math.round(s.oilTemp)} °C`} />
         <Tile label="Coolant" value={`${Math.round(s.coolantTemp)} °C`} />
-        <Tile label="Oil pressure" value={`${(1.2 + (s.rpm / REDLINE) * 4.3).toFixed(1)} bar`} />
+        <Tile label="Oil pressure" value={`${oilBar(s.rpm).toFixed(1)} bar`} />
         <Tile label="PDK gear" value={s.gear === "D" ? `${s.pdkGear} / 7` : s.gear} />
         <Tile label="Power output" value={`${Math.round(s.powerKw)} kW`} />
       </div>
@@ -314,7 +388,17 @@ function EngineTab() {
 }
 
 function ClimateTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    acMax: s.acMax,
+    auto: s.auto,
+    defrost: s.defrost,
+    sync: s.sync,
+    tempL: s.tempL,
+    fan: s.fan,
+    ventFocus: s.ventFocus,
+    rearDefrost: s.rearDefrost,
+    set: s.set,
+  })));
   return (
     <>
       <div className="mt-4 grid grid-cols-4 gap-3">
@@ -367,7 +451,12 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
 }
 
 function LightsTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    headlights: s.headlights,
+    ambient: s.ambient,
+    ambientLevel: s.ambientLevel,
+    set: s.set,
+  })));
   return (
     <>
       <SectionTitle>Headlights</SectionTitle>
@@ -416,7 +505,13 @@ function LightsTab() {
 }
 
 function AssistTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    innodrive: s.innodrive,
+    lane: s.lane,
+    signs: s.signs,
+    parkAssist: s.parkAssist,
+    set: s.set,
+  })));
   return (
     <>
       <Row title="Porsche InnoDrive" sub="Adaptive cruise that anticipates corners and limits" right={<Toggle on={s.innodrive} onChange={() => s.set({ innodrive: !s.innodrive })} />} />
@@ -428,7 +523,15 @@ function AssistTab() {
 }
 
 function DoorsTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    locked: s.locked,
+    frunkOpen: s.frunkOpen,
+    trunkOpen: s.trunkOpen,
+    doorL: s.doorL,
+    doorR: s.doorR,
+    comfortAccess: s.comfortAccess,
+    set: s.set,
+  })));
   return (
     <>
       <Row title="Central locking" sub={s.locked ? "Locked" : "Unlocked"} right={<Toggle on={s.locked} onChange={() => s.set({ locked: !s.locked, ...(!s.locked ? { frunkOpen: false, trunkOpen: false, doorL: false, doorR: false } : {}) })} />} />
@@ -442,7 +545,12 @@ function DoorsTab() {
 }
 
 function TripTab() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    tripD: s.tripD,
+    tripFuelL: s.tripFuelL,
+    tripTime: s.tripTime,
+    odo: s.odo,
+  })));
   const km = s.tripD / 1000;
   const cons = km > 0.2 ? (s.tripFuelL / km) * 100 : 0;
   return (
@@ -457,19 +565,170 @@ function TripTab() {
   );
 }
 
-function Tile({ label, value }: { label: string; value: string }) {
+function TrackScreenTab() {
+  const s = useCar(useShallow((s) => ({
+    tyreTemp: s.tyreTemp,
+    oilTemp: s.oilTemp,
+    rpm: s.rpm,
+  })));
+  return (
+    <>
+      <SectionTitle>Tyres · pressure and temperature</SectionTitle>
+      <div className="mt-2 grid grid-cols-[1fr_72px_1fr] grid-rows-2 gap-3">
+        {TYRES.map((label, i) => (
+          <div key={label} className={i % 2 ? "col-start-3" : "col-start-1"}>
+            <Tile label={label} value={`${tyreBar(i, s.tyreTemp[i]).toFixed(2)} bar`} sub={<TyreTemp temp={s.tyreTemp[i]} />} />
+          </div>
+        ))}
+        <div className="col-start-2 row-span-2 row-start-1 rounded-[26px] shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.1)]" />
+      </div>
+      <SectionTitle>Engine oil</SectionTitle>
+      <div className="mt-2 grid grid-cols-2 gap-3">
+        <Tile label="Oil temperature" value={`${Math.round(s.oilTemp)} °C`} />
+        <Tile label="Oil pressure" value={`${oilBar(s.rpm).toFixed(1)} bar`} />
+      </div>
+    </>
+  );
+}
+
+function TyreTemp({ temp }: { temp: number }) {
+  const [color, state] = temp < 70 ? ["#6db3ff", "Cold"] : temp <= 100 ? ["#3fd46b", "In window"] : ["#ffb020", "Hot"];
+  return (
+    <span className="flex items-center gap-2 tabular-nums">
+      <span className="h-2 w-2 rounded-full" style={{ background: color }} />
+      {Math.round(temp)} °C · {state}
+    </span>
+  );
+}
+
+function Tile({ label, value, sub }: { label: string; value: string; sub?: React.ReactNode }) {
   return (
     <div className="rounded-[14px] bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
       <div className="text-[12px] text-white/45">{label}</div>
       <div className="mt-1.5 text-[22px] font-light text-white tabular-nums">{value}</div>
+      {sub && <div className="mt-1 text-[13px] text-white/60">{sub}</div>}
     </div>
+  );
+}
+
+const fmtLap = (ms: number) => {
+  const cs = Math.floor(ms / 10);
+  return `${Math.floor(cs / 6000)}:${String(Math.floor(cs / 100) % 60).padStart(2, "0")}.${String(cs % 100).padStart(2, "0")}`;
+};
+
+function ChronoSheet() {
+  const elapsed = useCar((s) => s.chronoBase + (s.chronoRunning ? s.now - s.chronoAt : 0));
+  const running = useCar((s) => s.chronoRunning);
+  const splits = useCar((s) => s.laps);
+  const toggleChrono = useCar((s) => s.toggleChrono);
+  const lapChrono = useCar((s) => s.lapChrono);
+  const laps = splits.map((t, i) => t - (splits[i - 1] ?? 0));
+  const best = laps.length ? Math.min(...laps) : 0;
+  const current = elapsed - (splits.at(-1) ?? 0);
+  return (
+    <div className="flex h-full">
+      <div className="flex flex-1 flex-col items-center justify-center gap-7">
+        <div className="flex items-center gap-2 text-[13px] text-white/50">
+          <Glyph id="chrono" size={15} /> Sport Chrono · Stopwatch
+        </div>
+        <ChronoDial ms={elapsed} />
+        <div className="text-center">
+          <div className="text-[44px] leading-none font-light text-white tabular-nums">{fmtLap(elapsed)}</div>
+          <div className="mt-2 text-[14px] text-white/45 tabular-nums">
+            Lap {laps.length + 1} · {fmtLap(current)}
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={lapChrono}
+            disabled={!running && elapsed === 0}
+            className="h-[52px] w-[120px] rounded-full bg-white/[0.08] text-[15px] text-white transition hover:bg-white/[0.12] active:scale-95 disabled:opacity-30"
+          >
+            {running || elapsed === 0 ? "Lap" : "Reset"}
+          </button>
+          <button
+            onClick={toggleChrono}
+            className={`h-[52px] w-[120px] rounded-full text-[15px] font-medium transition active:scale-95 ${
+              running ? "bg-[#ff4a4a]/20 text-[#ff7a70] hover:bg-[#ff4a4a]/30" : "bg-[#3fd46b]/20 text-[#5fe086] hover:bg-[#3fd46b]/30"
+            }`}
+          >
+            {running ? "Stop" : elapsed ? "Resume" : "Start"}
+          </button>
+        </div>
+      </div>
+      <div className="w-[340px] shrink-0 overflow-y-auto border-l border-white/[0.06] bg-black/20 px-5 pt-16 pb-6 [scrollbar-width:none]">
+        <div className="mb-2 text-[12px] font-medium tracking-[0.08em] text-white/40 uppercase">Laps</div>
+        {laps.length === 0 && <div className="text-[14px] text-white/40">Press Lap to record a lap time</div>}
+        {laps
+          .map((t, i) => ({ t, n: i + 1 }))
+          .reverse()
+          .map(({ t, n }) => (
+            <div key={n} className="flex items-center justify-between border-b border-white/[0.07] py-3 tabular-nums">
+              <span className="text-[14px] text-white/55">Lap {n}</span>
+              <span className="flex items-baseline gap-3">
+                {laps.length > 1 && (
+                  <span className={`text-[12.5px] ${t === best ? "text-[#3fd46b]" : "text-white/40"}`}>
+                    {t === best ? "Best" : `+${((t - best) / 1000).toFixed(2)}`}
+                  </span>
+                )}
+                <span className={`text-[17px] ${t === best && laps.length > 1 ? "text-[#3fd46b]" : "text-white"}`}>{fmtLap(t)}</span>
+              </span>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+function ChronoDial({ ms }: { ms: number }) {
+  const sec = ((ms / 1000) % 60) * 6;
+  const min = ((ms / 60000) % 30) * 12;
+  return (
+    <svg width="300" height="300" viewBox="-150 -150 300 300" role="img" aria-label="Stopwatch dial">
+      <circle r="146" fill="#0b0c0e" stroke="rgba(255,255,255,0.14)" strokeWidth="3" />
+      {Array.from({ length: 60 }, (_, i) => (
+        <line
+          key={i}
+          x1="0"
+          y1={-134}
+          x2="0"
+          y2={i % 5 ? -126 : -116}
+          stroke={i % 5 ? "rgba(255,255,255,0.4)" : "#fff"}
+          strokeWidth={i % 5 ? 1.5 : 3}
+          transform={`rotate(${i * 6})`}
+        />
+      ))}
+      {Array.from({ length: 12 }, (_, i) => {
+        const a = ((i + 1) * 30 * Math.PI) / 180;
+        return (
+          <text key={i} x={Math.sin(a) * 98} y={-Math.cos(a) * 98 + 6} textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize="17">
+            {(i + 1) * 5}
+          </text>
+        );
+      })}
+      <g transform="translate(0 48)">
+        <circle r="30" fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth="1.5" />
+        {Array.from({ length: 30 }, (_, i) => (
+          <line key={i} x1="0" y1={-28} x2="0" y2={i % 5 ? -25 : -21} stroke="rgba(255,255,255,0.5)" strokeWidth="1" transform={`rotate(${i * 12})`} />
+        ))}
+        <line x1="0" y1="4" x2="0" y2="-24" stroke="#fff" strokeWidth="2" strokeLinecap="round" transform={`rotate(${min})`} />
+      </g>
+      <line x1="0" y1="22" x2="0" y2="-132" stroke="#ff5a4e" strokeWidth="2.5" strokeLinecap="round" transform={`rotate(${sec})`} />
+      <circle r="6" fill="#ff5a4e" />
+    </svg>
   );
 }
 
 /* ---------------- Media ---------------- */
 
 function MediaSheet() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    track: s.track,
+    progress: s.progress,
+    playing: s.playing,
+    nextTrack: s.nextTrack,
+    set: s.set,
+  })));
   const t = TRACKS[s.track];
   return (
     <div className="relative flex h-full overflow-hidden">
@@ -741,7 +1000,11 @@ function ProjectionSheet({ id, phone }: { id: "carplay" | "androidauto"; phone: 
 }
 
 function DevicesSheet() {
-  const s = useCar();
+  const s = useCar(useShallow((s) => ({
+    bluetooth: s.bluetooth,
+    hotspot: s.hotspot,
+    set: s.set,
+  })));
   return (
     <AppPage id="devices">
       <SectionTitle>Paired devices</SectionTitle>
