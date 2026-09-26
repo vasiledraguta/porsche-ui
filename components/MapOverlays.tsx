@@ -183,6 +183,8 @@ function CtlBtn({ children, label, onClick }: { children: React.ReactNode; label
 
 export function SpeedLimit() {
   const d = useCar((s) => s.routeD);
+  const signs = useCar((s) => s.signs);
+  if (!signs) return null;
   // Romanian urban default; the airport approach drops to 30
   const limit = d > 7900 ? 30 : 50;
   return (
