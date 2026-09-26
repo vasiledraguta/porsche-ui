@@ -20,8 +20,8 @@ export type VehicleTab =
  * 9,000 rpm limiter, 7-speed PDK. `minRpm` is where PDK upshifts when cruising.
  */
 export const MODES: Record<DriveMode, { label: string; desc: string; spec: string; maxKw: number; response: number; minRpm: number; brakeRpm: number; holdOnLift: boolean }> = {
-  wet: { label: "Wet", desc: "Softer throttle and early PSM intervention for standing water.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.6, minRpm: 1700, brakeRpm: 2500, holdOnLift: false },
-  normal: { label: "Normal", desc: "Road setup. Early upshifts, calmer exhaust.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.85, minRpm: 2000, brakeRpm: 3000, holdOnLift: false },
+  wet: { label: "Wet", desc: "Softer throttle and early PSM intervention for standing water.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.6, minRpm: 1700, brakeRpm: 1900, holdOnLift: false },
+  normal: { label: "Normal", desc: "Road setup. Early upshifts, calmer exhaust.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.85, minRpm: 2000, brakeRpm: 2200, holdOnLift: false },
   sport: { label: "Sport", desc: "Sharper throttle, later shifts, exhaust valves open.", spec: "PSM Sport · PASM Sport", maxKw: 386, response: 1, minRpm: 3600, brakeRpm: 5000, holdOnLift: true },
   track: { label: "Track", desc: "Full attack. Holds gears near the limiter, lowest ride height.", spec: "PSM off · PASM Track", maxKw: 386, response: 1.12, minRpm: 5200, brakeRpm: 6000, holdOnLift: true },
 };
@@ -53,6 +53,7 @@ type State = {
   rpm: number;
   pdkGear: number;
   shiftAt: number;
+  brakeFrom: number;
   fuel: number;
   oilTemp: number;
   coolantTemp: number;
@@ -137,6 +138,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   rpm: IDLE_RPM,
   pdkGear: 1,
   shiftAt: 0,
+  brakeFrom: 0,
   fuel: 72,
   oilTemp: 88,
   coolantTemp: 86,
@@ -272,6 +274,7 @@ export const useCar = create<State & Actions>((set, get) => ({
     // PDK: highest gear that keeps revs above the mode's shift floor (higher under load)
     let gearN = 1;
     let shiftAt = s.shiftAt;
+    const brakeFrom = brake > 0 ? s.brakeFrom || s.rpm : 0;
     if (s.gear === "D") {
       const revs = (g: number) => (kmh / GEAR_TOP[g]) * REDLINE;
       const ready = t - s.shiftAt >= SHIFT_GAP_MS;
@@ -288,10 +291,12 @@ export const useCar = create<State & Actions>((set, get) => ({
         if (want < gearN) gearN = want;
         else if (want > gearN && ready) gearN++;
       } else if (ready) {
-        const downAt = m.minRpm + (m.brakeRpm - m.minRpm) * brake;
-        if (gearN > 1 && revs(gearN) < downAt && revs(gearN - 1) < SHIFT_RPM) {
+        const brakeAt = m.minRpm + (m.brakeRpm - m.minRpm) * brake;
+        const downAt = brakeFrom ? Math.min(brakeAt, brakeFrom * 0.85) : brakeAt;
+        const landAt = brakeFrom ? Math.min(downAt * 1.35, brakeFrom) : downAt * 1.35;
+        if (gearN > 1 && revs(gearN) < downAt && revs(gearN - 1) <= landAt) {
           gearN--;
-          while (gearN > 1 && revs(gearN - 1) <= downAt * 1.35) gearN--;
+          while (gearN > 1 && revs(gearN - 1) <= landAt) gearN--;
         } else if (!m.holdOnLift && brake === 0 && gearN < 7 && revs(gearN + 1) >= m.minRpm) gearN++;
       }
       if (gearN < 7 && revs(gearN) > REDLINE) gearN++;
@@ -326,6 +331,7 @@ export const useCar = create<State & Actions>((set, get) => ({
       rpm,
       pdkGear: gearN,
       shiftAt,
+      brakeFrom,
       fuel,
       oilTemp: warm(s.oilTemp, 96 + (rpm / REDLINE) * 18),
       coolantTemp: warm(s.coolantTemp, 88 + (rpm / REDLINE) * 8),
