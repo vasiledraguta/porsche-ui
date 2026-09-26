@@ -55,6 +55,7 @@ type State = {
   coolantTemp: number;
   odo: number;
   routeD: number;
+  tripD: number;
   holdUntil: number;
   stopIdx: number;
   tripTime: number;
@@ -133,6 +134,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   coolantTemp: 86,
   odo: 12846,
   routeD: 0,
+  tripD: 0,
   holdUntil: 0,
   stopIdx: 0,
   tripTime: 0,
@@ -294,6 +296,7 @@ export const useCar = create<State & Actions>((set, get) => ({
       coolantTemp: warm(s.coolantTemp, 88 + (rpm / REDLINE) * 8),
       odo: s.odo + (nv * dt) / 1000,
       routeD,
+      tripD: s.tripD + nv * dt,
       holdUntil,
       stopIdx,
       tripTime: s.tripTime + (nv > 0 ? dt : 0),

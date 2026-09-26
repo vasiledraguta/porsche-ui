@@ -426,7 +426,7 @@ function DoorsTab() {
 
 function TripTab() {
   const s = useCar();
-  const km = s.routeD / 1000;
+  const km = s.tripD / 1000;
   const cons = km > 0.2 ? (s.tripFuelL / km) * 100 : 0;
   return (
     <div className="mt-4 grid grid-cols-3 gap-3">
