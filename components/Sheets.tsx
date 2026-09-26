@@ -60,6 +60,7 @@ export function Sheets() {
           </button>
           {sheet === "home" && <HomeSheet />}
           {sheet === "vehicle" && <VehicleSheet />}
+          {sheet === "chrono" && <ChronoSheet />}
           {sheet === "media" && <MediaSheet />}
           {sheet === "phone" && <PhoneSheet />}
           {sheet === "notifications" && <NotificationsSheet />}
@@ -98,7 +99,6 @@ function HomeSheet() {
   const open = (id: AppId) => {
     if (id === "nav") s.set({ sheet: null, follow: true });
     else if (id === "vehicle") s.openSheet("vehicle", "modes");
-    else if (id === "chrono") s.openSheet("vehicle", "engine");
     else if (id === "climate") s.openSheet("vehicle", "climate");
     else if (id === "parking") s.openSheet("vehicle", "assist");
     else if (id !== "apps") s.openSheet(id);
@@ -463,6 +463,114 @@ function Tile({ label, value }: { label: string; value: string }) {
       <div className="text-[12px] text-white/45">{label}</div>
       <div className="mt-1.5 text-[22px] font-light text-white tabular-nums">{value}</div>
     </div>
+  );
+}
+
+const fmtLap = (ms: number) => {
+  const cs = Math.floor(ms / 10);
+  return `${Math.floor(cs / 6000)}:${String(Math.floor(cs / 100) % 60).padStart(2, "0")}.${String(cs % 100).padStart(2, "0")}`;
+};
+
+function ChronoSheet() {
+  const elapsed = useCar((s) => s.chronoBase + (s.chronoRunning ? s.now - s.chronoAt : 0));
+  const running = useCar((s) => s.chronoRunning);
+  const splits = useCar((s) => s.laps);
+  const toggleChrono = useCar((s) => s.toggleChrono);
+  const lapChrono = useCar((s) => s.lapChrono);
+  const laps = splits.map((t, i) => t - (splits[i - 1] ?? 0));
+  const best = laps.length ? Math.min(...laps) : 0;
+  const current = elapsed - (splits.at(-1) ?? 0);
+  return (
+    <div className="flex h-full">
+      <div className="flex flex-1 flex-col items-center justify-center gap-7">
+        <div className="flex items-center gap-2 text-[13px] text-white/50">
+          <Glyph id="chrono" size={15} /> Sport Chrono · Stopwatch
+        </div>
+        <ChronoDial ms={elapsed} />
+        <div className="text-center">
+          <div className="text-[44px] leading-none font-light text-white tabular-nums">{fmtLap(elapsed)}</div>
+          <div className="mt-2 text-[14px] text-white/45 tabular-nums">
+            Lap {laps.length + 1} · {fmtLap(current)}
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={lapChrono}
+            disabled={!running && elapsed === 0}
+            className="h-[52px] w-[120px] rounded-full bg-white/[0.08] text-[15px] text-white transition hover:bg-white/[0.12] active:scale-95 disabled:opacity-30"
+          >
+            {running || elapsed === 0 ? "Lap" : "Reset"}
+          </button>
+          <button
+            onClick={toggleChrono}
+            className={`h-[52px] w-[120px] rounded-full text-[15px] font-medium transition active:scale-95 ${
+              running ? "bg-[#ff4a4a]/20 text-[#ff7a70] hover:bg-[#ff4a4a]/30" : "bg-[#3fd46b]/20 text-[#5fe086] hover:bg-[#3fd46b]/30"
+            }`}
+          >
+            {running ? "Stop" : elapsed ? "Resume" : "Start"}
+          </button>
+        </div>
+      </div>
+      <div className="w-[340px] shrink-0 overflow-y-auto border-l border-white/[0.06] bg-black/20 px-5 pt-16 pb-6 [scrollbar-width:none]">
+        <div className="mb-2 text-[12px] font-medium tracking-[0.08em] text-white/40 uppercase">Laps</div>
+        {laps.length === 0 && <div className="text-[14px] text-white/40">Press Lap to record a lap time</div>}
+        {laps
+          .map((t, i) => ({ t, n: i + 1 }))
+          .reverse()
+          .map(({ t, n }) => (
+            <div key={n} className="flex items-center justify-between border-b border-white/[0.07] py-3 tabular-nums">
+              <span className="text-[14px] text-white/55">Lap {n}</span>
+              <span className="flex items-baseline gap-3">
+                {laps.length > 1 && (
+                  <span className={`text-[12.5px] ${t === best ? "text-[#3fd46b]" : "text-white/40"}`}>
+                    {t === best ? "Best" : `+${((t - best) / 1000).toFixed(2)}`}
+                  </span>
+                )}
+                <span className={`text-[17px] ${t === best && laps.length > 1 ? "text-[#3fd46b]" : "text-white"}`}>{fmtLap(t)}</span>
+              </span>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+function ChronoDial({ ms }: { ms: number }) {
+  const sec = ((ms / 1000) % 60) * 6;
+  const min = ((ms / 60000) % 30) * 12;
+  return (
+    <svg width="300" height="300" viewBox="-150 -150 300 300" role="img" aria-label="Stopwatch dial">
+      <circle r="146" fill="#0b0c0e" stroke="rgba(255,255,255,0.14)" strokeWidth="3" />
+      {Array.from({ length: 60 }, (_, i) => (
+        <line
+          key={i}
+          x1="0"
+          y1={-134}
+          x2="0"
+          y2={i % 5 ? -126 : -116}
+          stroke={i % 5 ? "rgba(255,255,255,0.4)" : "#fff"}
+          strokeWidth={i % 5 ? 1.5 : 3}
+          transform={`rotate(${i * 6})`}
+        />
+      ))}
+      {Array.from({ length: 12 }, (_, i) => {
+        const a = ((i + 1) * 30 * Math.PI) / 180;
+        return (
+          <text key={i} x={Math.sin(a) * 98} y={-Math.cos(a) * 98 + 6} textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize="17">
+            {(i + 1) * 5}
+          </text>
+        );
+      })}
+      <g transform="translate(0 48)">
+        <circle r="30" fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth="1.5" />
+        {Array.from({ length: 30 }, (_, i) => (
+          <line key={i} x1="0" y1={-28} x2="0" y2={i % 5 ? -25 : -21} stroke="rgba(255,255,255,0.5)" strokeWidth="1" transform={`rotate(${i * 12})`} />
+        ))}
+        <line x1="0" y1="4" x2="0" y2="-24" stroke="#fff" strokeWidth="2" strokeLinecap="round" transform={`rotate(${min})`} />
+      </g>
+      <line x1="0" y1="22" x2="0" y2="-132" stroke="#ff5a4e" strokeWidth="2.5" strokeLinecap="round" transform={`rotate(${sec})`} />
+      <circle r="6" fill="#ff5a4e" />
+    </svg>
   );
 }
 
