@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpFromLine,
@@ -14,6 +15,9 @@ import {
   Play,
   Timer,
   Link2,
+  ChevronRight,
+  Delete,
+  PhoneOff,
   Route,
   Search,
   ShieldCheck,
@@ -58,6 +62,11 @@ export function Sheets() {
           {sheet === "vehicle" && <VehicleSheet />}
           {sheet === "media" && <MediaSheet />}
           {sheet === "phone" && <PhoneSheet />}
+          {sheet === "notifications" && <NotificationsSheet />}
+          {sheet === "carplay" && <ProjectionSheet id="carplay" phone="iPhone" />}
+          {sheet === "androidauto" && <ProjectionSheet id="androidauto" phone="Android phone" />}
+          {sheet === "devices" && <DevicesSheet />}
+          {sheet === "settings" && <SettingsSheet />}
         </motion.div>
       )}
     </AnimatePresence>
@@ -83,26 +92,35 @@ const HOME_ORDER: AppId[] = [
 
 function HomeSheet() {
   const s = useCar();
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  const apps = HOME_ORDER.filter((id) => APPS[id].label.toLowerCase().includes(q));
   const open = (id: AppId) => {
     if (id === "nav") s.set({ sheet: null, follow: true });
-    else if (id === "media") s.openSheet("media");
-    else if (id === "phone") s.openSheet("phone");
+    else if (id === "vehicle") s.openSheet("vehicle", "modes");
     else if (id === "chrono") s.openSheet("vehicle", "engine");
     else if (id === "climate") s.openSheet("vehicle", "climate");
     else if (id === "parking") s.openSheet("vehicle", "assist");
-    else s.openSheet("vehicle", "modes");
+    else if (id !== "apps") s.openSheet(id);
   };
   return (
     <div className="flex h-full flex-col px-10 pt-7">
       <div className="flex items-center justify-between pr-14">
-        <div className="flex w-[360px] items-center gap-3 rounded-[12px] bg-white/[0.06] px-4 py-3 text-white/45">
+        <label className="flex w-[360px] items-center gap-3 rounded-[12px] bg-white/[0.06] px-4 py-3 text-white/45 focus-within:bg-white/[0.09]">
           <Search size={18} />
-          <span className="text-[15px]">Search</span>
-        </div>
-        <div className="text-[15px] text-white/80">Driver ▾</div>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search"
+            aria-label="Search apps"
+            className="min-w-0 flex-1 bg-transparent text-[15px] text-white outline-none placeholder:text-white/45"
+          />
+        </label>
+        <div className="text-[15px] text-white/80">Driver</div>
       </div>
       <div className="mt-8 grid grid-cols-6 gap-x-4 gap-y-7">
-        {HOME_ORDER.map((id, i) => (
+        {apps.map((id, i) => (
           <motion.button
             key={id}
             onClick={() => open(id)}
@@ -118,10 +136,9 @@ function HomeSheet() {
           </motion.button>
         ))}
       </div>
-      <div className="mt-auto mb-6 flex justify-center gap-2">
+      {apps.length === 0 && <div className="mt-2 text-[15px] text-white/45">No apps match “{query.trim()}”</div>}
+      <div className="mt-auto mb-6 flex justify-center">
         <span className="h-[3px] w-5 rounded-full bg-[#2f8fff]" />
-        <span className="h-[3px] w-5 rounded-full bg-white/15" />
-        <span className="h-[3px] w-5 rounded-full bg-white/15" />
       </div>
     </div>
   );
@@ -419,7 +436,7 @@ function DoorsTab() {
       <Row title="Engine lid" sub={s.trunkOpen ? "Open" : "Closed"} right={<Toggle on={s.trunkOpen} onChange={() => s.set({ trunkOpen: !s.trunkOpen, ...(!s.trunkOpen ? { locked: false } : {}) })} />} />
       <Row title="Driver door" sub={s.doorL ? "Open" : "Closed"} right={<Toggle on={s.doorL} onChange={() => s.set({ doorL: !s.doorL, ...(!s.doorL ? { locked: false } : {}) })} />} />
       <Row title="Passenger door" sub={s.doorR ? "Open" : "Closed"} right={<Toggle on={s.doorR} onChange={() => s.set({ doorR: !s.doorR, ...(!s.doorR ? { locked: false } : {}) })} />} />
-      <Row title="Comfort access" sub="Unlock when you approach with the key" right={<Toggle on onChange={() => {}} />} />
+      <Row title="Comfort access" sub="Unlock when you approach with the key" right={<Toggle on={s.comfortAccess} onChange={() => s.set({ comfortAccess: !s.comfortAccess })} />} />
     </>
   );
 }
@@ -525,42 +542,236 @@ function MediaSheet() {
 /* ---------------- Phone ---------------- */
 
 const CONTACTS = [
-  { n: "Alex Carter", sub: "Mobile", c: "#ff8a5c" },
-  { n: "Sam Becker", sub: "Mobile · Missed 10:12", c: "#39a6ff" },
-  { n: "Office", sub: "Work", c: "#3fd46b" },
-  { n: "Porsche Zentrum", sub: "Service", c: "#d4b88c" },
-  { n: "Jordan Lee", sub: "Mobile", c: "#a57bff" },
+  { n: "Alex Carter", sub: "Mobile", kind: "Mobile", fav: true, c: "#ff8a5c" },
+  { n: "Sam Becker", sub: "Mobile · Missed 10:12", kind: "Mobile", fav: true, c: "#39a6ff" },
+  { n: "Office", sub: "Work", kind: "Work", fav: false, c: "#3fd46b" },
+  { n: "Porsche Zentrum", sub: "Service", kind: "Service", fav: true, c: "#d4b88c" },
+  { n: "Jordan Lee", sub: "Mobile", kind: "Mobile", fav: false, c: "#a57bff" },
 ];
 
+const MESSAGES = [
+  { n: "Sam Becker", text: "Running 10 minutes late, see you at departures", time: "10:14" },
+  { n: "Porsche Zentrum", text: "Your service appointment is confirmed for Tuesday", time: "Yesterday" },
+  { n: "Alex Carter", text: "Landing at 18:20", time: "Mon" },
+];
+
+const PHONE_TABS = ["Favourites", "Recent calls", "Contacts", "Keypad", "Messages"] as const;
+type PhoneTab = (typeof PHONE_TABS)[number];
+
 function PhoneSheet() {
+  const [tab, setTab] = useState<PhoneTab>("Recent calls");
+  const [call, setCall] = useState<{ to: string; at: number } | null>(null);
+  const { container, indicator } = useSlider<HTMLElement>(PHONE_TABS.indexOf(tab));
+  const dial = (to: string) => setCall({ to, at: useCar.getState().now });
+  const list =
+    tab === "Favourites" ? CONTACTS.filter((c) => c.fav) : tab === "Contacts" ? [...CONTACTS].sort((a, b) => a.n.localeCompare(b.n)) : CONTACTS;
   return (
     <div className="flex h-full">
-      <div className="w-[270px] shrink-0 border-r border-white/[0.06] px-3 pt-6">
+      <nav ref={container} className="relative w-[270px] shrink-0 border-r border-white/[0.06] px-3 pt-6">
+        <span ref={indicator} className="pointer-events-none absolute top-0 left-0 rounded-[10px] bg-white/[0.08] opacity-0" />
         <div className="mb-3 flex items-center gap-2 px-3 text-[18px] font-medium text-white">
           <Glyph id="phone" size={20} /> Phone
         </div>
-        {["Favourites", "Recent calls", "Contacts", "Keypad", "Messages"].map((l, i) => (
-          <div key={l} className={`rounded-[10px] px-3 py-[11px] text-[14.5px] ${i === 1 ? "bg-white/[0.08] text-white" : "text-white/70"}`}>
-            {l}
-          </div>
+        {PHONE_TABS.map((l) => (
+          <button
+            key={l}
+            data-slot
+            onClick={() => setTab(l)}
+            className="relative flex w-full rounded-[10px] px-3 py-[11px] text-left text-[14.5px]"
+          >
+            <span className={`relative ${tab === l ? "text-white" : "text-white/70"}`}>{l}</span>
+          </button>
         ))}
-      </div>
-      <div className="flex-1 px-9 pt-7">
-        <h2 className="mb-3 text-[22px] font-medium text-white">Recent calls</h2>
-        {CONTACTS.map((c) => (
-          <Row
-            key={c.n}
-            title={c.n}
-            sub={c.sub}
-            right={
-              <button className="grid h-10 w-10 place-items-center rounded-full bg-[#3fd46b]/15 text-[#3fd46b] transition hover:bg-[#3fd46b]/25" aria-label={`Call ${c.n}`}>
-                <Phone size={17} fill="currentColor" strokeWidth={0} />
-              </button>
-            }
-          />
-        ))}
+      </nav>
+      <div className="min-w-0 flex-1 overflow-y-auto px-9 pt-7 pb-8 [scrollbar-width:none]">
+        <h2 className="mb-3 text-[22px] font-medium text-white">{tab}</h2>
+        {call && <CallBanner to={call.to} at={call.at} onEnd={() => setCall(null)} />}
+        {tab === "Keypad" ? (
+          <Keypad onCall={dial} />
+        ) : tab === "Messages" ? (
+          MESSAGES.map((m) => <Row key={m.n} title={m.n} sub={m.text} right={<span className="shrink-0 text-[12.5px] text-white/40">{m.time}</span>} />)
+        ) : (
+          list.map((c) => (
+            <Row
+              key={c.n}
+              title={c.n}
+              sub={tab === "Recent calls" ? c.sub : c.kind}
+              right={
+                <button
+                  onClick={() => dial(c.n)}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#3fd46b]/15 text-[#3fd46b] transition hover:bg-[#3fd46b]/25 active:scale-95"
+                  aria-label={`Call ${c.n}`}
+                >
+                  <Phone size={17} fill="currentColor" strokeWidth={0} />
+                </button>
+              }
+            />
+          ))
+        )}
       </div>
     </div>
   );
 }
 
+function CallBanner({ to, at, onEnd }: { to: string; at: number; onEnd: () => void }) {
+  const now = useCar((s) => s.now);
+  const t = (now - at) / 1000;
+  return (
+    <div className="mb-3 flex items-center gap-4 rounded-[14px] bg-[#3fd46b]/[0.1] px-5 py-4 shadow-[inset_0_0_0_1px_rgba(63,212,107,0.3)]">
+      <Phone size={18} fill="currentColor" strokeWidth={0} className="shrink-0 text-[#3fd46b]" />
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[16px] text-white">{to}</div>
+        <div className="text-[13px] text-white/55 tabular-nums">{t < 3 ? "Calling…" : fmtTime(t - 3)}</div>
+      </div>
+      <button
+        aria-label="End call"
+        onClick={onEnd}
+        className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#ff4a4a] text-white transition hover:bg-[#ff5f5f] active:scale-95"
+      >
+        <PhoneOff size={18} />
+      </button>
+    </div>
+  );
+}
+
+const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
+
+function Keypad({ onCall }: { onCall: (to: string) => void }) {
+  const [digits, setDigits] = useState("");
+  return (
+    <div className="w-[300px]">
+      <div className="flex h-14 items-center justify-between gap-2 border-b border-white/[0.07]">
+        {digits ? (
+          <span className="min-w-0 truncate text-[28px] font-light text-white tabular-nums">{digits}</span>
+        ) : (
+          <span className="text-[15px] text-white/35">Enter a number</span>
+        )}
+        {digits && (
+          <button
+            aria-label="Delete digit"
+            onClick={() => setDigits((d) => d.slice(0, -1))}
+            className="grid h-10 w-10 shrink-0 place-items-center text-white/60 transition hover:text-white"
+          >
+            <Delete size={20} strokeWidth={1.7} />
+          </button>
+        )}
+      </div>
+      <div className="mt-4 grid grid-cols-3 gap-3">
+        {KEYS.map((k) => (
+          <button
+            key={k}
+            onClick={() => setDigits((d) => (d + k).slice(0, 15))}
+            className="h-14 rounded-[14px] bg-white/[0.05] text-[22px] text-white transition hover:bg-white/[0.08] active:scale-95"
+          >
+            {k}
+          </button>
+        ))}
+      </div>
+      <button
+        aria-label="Call"
+        disabled={!digits}
+        onClick={() => onCall(digits)}
+        className="mx-auto mt-5 grid h-14 w-14 place-items-center rounded-full bg-[#3fd46b] text-black transition active:scale-95 disabled:opacity-30"
+      >
+        <Phone size={20} fill="currentColor" strokeWidth={0} />
+      </button>
+    </div>
+  );
+}
+
+/* ---------------- Other apps ---------------- */
+
+function AppPage({ id, children }: { id: AppId; children: React.ReactNode }) {
+  return (
+    <div className="h-full overflow-y-auto px-10 pt-7 pb-8 [scrollbar-width:none]">
+      <div className="max-w-[640px]">
+        <h2 className="mb-3 flex items-center gap-2 text-[22px] font-medium text-white">
+          <Glyph id={id} size={20} /> {APPS[id].label}
+        </h2>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function RowMeta({ children }: { children?: React.ReactNode }) {
+  return (
+    <span className="flex shrink-0 items-center gap-2 text-[12.5px] text-white/40">
+      {children}
+      <ChevronRight size={16} />
+    </span>
+  );
+}
+
+function NotificationsSheet() {
+  const openSheet = useCar((s) => s.openSheet);
+  const notes = [
+    { title: "Missed call", sub: "Sam Becker", time: "10:12", open: () => openSheet("phone") },
+    { title: "Service due in 4,200 km", sub: "Oil change and inspection", time: "Today", open: () => openSheet("vehicle", "engine") },
+    { title: "Tyre pressure checked", sub: "All four tyres at 2.8 bar", time: "08:05", open: () => openSheet("vehicle", "trip") },
+  ];
+  return (
+    <AppPage id="notifications">
+      {notes.map((n) => (
+        <Row key={n.title} title={n.title} sub={n.sub} onClick={n.open} right={<RowMeta>{n.time}</RowMeta>} />
+      ))}
+    </AppPage>
+  );
+}
+
+function ProjectionSheet({ id, phone }: { id: "carplay" | "androidauto"; phone: string }) {
+  const openSheet = useCar((s) => s.openSheet);
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-4 px-10 text-center">
+      <span className="grid h-[96px] w-[96px] place-items-center rounded-[22px] bg-gradient-to-b from-[#2a2e34] to-[#1d2025] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_16px_rgba(0,0,0,0.35)]">
+        <Glyph id={id} size={44} />
+      </span>
+      <h2 className="text-[26px] font-medium text-white">{APPS[id].label}</h2>
+      <p className="max-w-[420px] text-[15px] leading-relaxed text-white/55">
+        No {phone} connected. Plug it into the USB-C port in the centre console, or pair it wirelessly from Devices.
+      </p>
+      <button
+        onClick={() => openSheet("devices")}
+        className="mt-2 rounded-[12px] bg-white/[0.08] px-5 py-3 text-[15px] text-white transition hover:bg-white/[0.12] active:scale-95"
+      >
+        Open Devices
+      </button>
+    </div>
+  );
+}
+
+function DevicesSheet() {
+  const s = useCar();
+  return (
+    <AppPage id="devices">
+      <SectionTitle>Paired devices</SectionTitle>
+      <Row title="iPhone" sub={s.bluetooth ? "Connected · Phone and audio" : "Not connected"} />
+      <Row title="Android phone" sub="Not connected" />
+      <SectionTitle>Connections</SectionTitle>
+      <Row title="Bluetooth" sub={s.bluetooth ? "On" : "Off"} right={<Toggle on={s.bluetooth} onChange={() => s.set({ bluetooth: !s.bluetooth })} />} />
+      <Row
+        title="Wi-Fi hotspot"
+        sub={s.hotspot ? "Sharing the car's 5G connection" : "Off"}
+        right={<Toggle on={s.hotspot} onChange={() => s.set({ hotspot: !s.hotspot })} />}
+      />
+    </AppPage>
+  );
+}
+
+function SettingsSheet() {
+  const openSheet = useCar((s) => s.openSheet);
+  const items = [
+    { title: "Vehicle", sub: "Driving modes, chassis, lights and doors", open: () => openSheet("vehicle", "modes") },
+    { title: "Air conditioning", sub: "Temperature, fan and airflow", open: () => openSheet("vehicle", "climate") },
+    { title: "Devices", sub: "Bluetooth, Wi-Fi hotspot and paired phones", open: () => openSheet("devices") },
+    { title: "Notifications", sub: "Calls, messages and vehicle alerts", open: () => openSheet("notifications") },
+  ];
+  return (
+    <AppPage id="settings">
+      {items.map((it) => (
+        <Row key={it.title} title={it.title} sub={it.sub} onClick={it.open} right={<RowMeta />} />
+      ))}
+      <Row title="Software" sub="PCM 6 · Up to date" />
+    </AppPage>
+  );
+}

@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { ROUTE_LEN, STOPS, nextStep } from "./route";
 
 export type DriveMode = "wet" | "normal" | "sport" | "track";
-export type Sheet = null | "home" | "vehicle" | "media" | "phone";
+export type Sheet = null | "home" | "vehicle" | "media" | "phone" | "notifications" | "carplay" | "androidauto" | "devices" | "settings";
 export type VehicleTab =
   | "modes"
   | "chassis"
@@ -99,6 +99,7 @@ type State = {
   doorR: boolean;
   carViewReset: number;
   locked: boolean;
+  comfortAccess: boolean;
   lift: boolean;
   rideHeight: "low" | "normal" | "high";
   pasm: "comfort" | "sport";
@@ -109,6 +110,9 @@ type State = {
   innodrive: boolean;
   signs: boolean;
   parkAssist: boolean;
+  notesRead: boolean;
+  bluetooth: boolean;
+  hotspot: boolean;
 
   now: number;
   bootT: number;
@@ -177,6 +181,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   doorR: false,
   carViewReset: 0,
   locked: true,
+  comfortAccess: true,
   lift: false,
   rideHeight: "normal",
   pasm: "comfort",
@@ -187,6 +192,9 @@ export const useCar = create<State & Actions>((set, get) => ({
   innodrive: true,
   signs: true,
   parkAssist: false,
+  notesRead: false,
+  bluetooth: true,
+  hotspot: false,
 
   now: 0,
   bootT: 0,
@@ -205,7 +213,12 @@ export const useCar = create<State & Actions>((set, get) => ({
     get().setMode(MODE_ORDER[Math.min(MODE_ORDER.length - 1, Math.max(0, i + dir))]);
   },
   nextTrack: (dir) => set((s) => ({ track: (s.track + dir + TRACKS.length) % TRACKS.length, progress: 0, playing: true })),
-  openSheet: (sheet, tab) => set((s) => ({ sheet: s.sheet === sheet && !tab ? null : sheet, vehicleTab: tab ?? s.vehicleTab })),
+  openSheet: (sheet, tab) =>
+    set((s) => ({
+      sheet: s.sheet === sheet && !tab ? null : sheet,
+      vehicleTab: tab ?? s.vehicleTab,
+      notesRead: s.notesRead || sheet === "notifications",
+    })),
 
   tick: (dt, t) => {
     const s = get();
