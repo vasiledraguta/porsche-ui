@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { ContactShadows, Environment, Html, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
+import { Suspense, useMemo, useRef, useState, type RefObject } from "react";
+import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
+import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { useCar } from "@/lib/store";
@@ -97,6 +97,11 @@ const HIDE = [/CSR2_Badge/i];
 const FLAP = "TwiXeR_992_gt3rs_carbon_Wing_TwiXeR_992_carbon_roof001_0";
 const FLAP_DRS = -0.16;
 
+const PART_IDS = Object.keys(PARTS) as PartId[];
+const NORMALS = Object.fromEntries(PART_IDS.map((id) => [id, new THREE.Vector3(...PARTS[id].normal).normalize()])) as Record<PartId, THREE.Vector3>;
+
+type Callouts = RefObject<Partial<Record<PartId, HTMLDivElement | null>>>;
+
 function useParts() {
   return {
     hood: useCar((s) => s.frunkOpen),
@@ -114,13 +119,15 @@ export function togglePart(id: PartId) {
   s.set({ [key]: next, ...(next ? { locked: false } : {}) });
 }
 
-function Model() {
+function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHover: (id: PartId | null) => void; calloutsRef: Callouts }) {
   const { scene } = useGLTF(MODEL, false, true);
   const open = useParts();
   const lift = useCar((s) => s.lift);
   const drs = useCar((s) => s.drs);
   const lifted = useRef<THREE.Group>(null);
-  const [hover, setHover] = useState<PartId | null>(null);
+  const placed = useRef<THREE.Group>(null);
+  const spot = useMemo(() => new THREE.Vector3(), []);
+  const toCamera = useMemo(() => new THREE.Vector3(), []);
 
   // Build once: repaint, hide decals, and re-parent each openable part under a hinge pivot.
   const rig = useMemo(() => {
@@ -203,11 +210,26 @@ function Model() {
     }
   });
 
+  useFrame(({ camera, size }) => {
+    if (!placed.current) return;
+    for (const id of PART_IDS) {
+      const el = calloutsRef.current[id];
+      if (!el) continue;
+      placed.current.localToWorld(spot.copy(rig.spots[id]));
+      const facing = NORMALS[id].dot(toCamera.subVectors(camera.position, spot).normalize());
+      const o = THREE.MathUtils.clamp((facing - 0.05) * 4, 0, 1);
+      spot.project(camera);
+      el.style.transform = `translate3d(${((spot.x + 1) / 2) * size.width}px, ${((1 - spot.y) / 2) * size.height}px, 0)`;
+      el.style.opacity = String(o);
+      el.style.pointerEvents = o > 0.3 ? "auto" : "none";
+    }
+  });
+
   const partOf = (e: ThreeEvent<PointerEvent | MouseEvent>) => e.object.userData.part as PartId | undefined;
 
   return (
     <group ref={lifted}>
-      <group position={rig.offset}>
+      <group ref={placed} position={rig.offset}>
         <primitive
           object={rig.root}
           onPointerMove={(e: ThreeEvent<PointerEvent>) => {
@@ -232,75 +254,32 @@ function Model() {
             }
           }}
         />
-        {(Object.keys(PARTS) as PartId[]).map((id) => (
-          <Hotspot
-            key={id}
-            id={id}
-            label={PARTS[id].label}
-            pos={rig.spots[id]}
-            normal={PARTS[id].normal}
-            open={open[id]}
-            hot={hover === id}
-          />
-        ))}
       </group>
     </group>
   );
 }
 
 /** Leader-line callout pinned to the body; fades out when that side faces away from the camera. */
-function Hotspot({
-  id,
-  label,
-  pos,
-  normal,
-  open,
-  hot,
-}: {
-  id: PartId;
-  label: string;
-  pos: THREE.Vector3;
-  normal: [number, number, number];
-  open: boolean;
-  hot: boolean;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const anchor = useRef<THREE.Group>(null);
-  const n = useMemo(() => new THREE.Vector3(...normal).normalize(), [normal]);
-  const tmp = useMemo(() => new THREE.Vector3(), []);
-  const camera = useThree((s) => s.camera);
-
-  useFrame(() => {
-    if (!ref.current || !anchor.current) return;
-    anchor.current.getWorldPosition(tmp);
-    const facing = n.dot(tmp.subVectors(camera.position, tmp).normalize());
-    const o = THREE.MathUtils.clamp((facing - 0.05) * 4, 0, 1);
-    ref.current.style.opacity = String(o);
-    ref.current.style.pointerEvents = o > 0.3 ? "auto" : "none";
-  });
-
+function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => void; id: PartId; open: boolean; hot: boolean }) {
+  const { label } = PARTS[id];
   return (
-    <group ref={anchor} position={pos}>
-      <Html zIndexRange={[30, 0]}>
-        <div ref={ref} className="relative transition-opacity duration-150">
-          <button
-            onClick={() => togglePart(id)}
-            aria-label={`${open ? "Close" : "Open"} ${label}`}
-            className="group absolute bottom-0 left-0 flex -translate-x-1/2 translate-y-[3px] flex-col items-center whitespace-nowrap [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"
-          >
-            <span
-              className={`text-[11px] font-medium tracking-[0.04em] uppercase transition ${
-                open ? "text-[#6db3ff]" : hot ? "text-white" : "text-white/70 group-hover:text-white"
-              }`}
-            >
-              {label}
-            </span>
-            <span className={`mt-1 h-7 w-px transition ${hot ? "bg-white/70" : "bg-white/35 group-hover:bg-white/70"}`} />
-            <span className={`h-1.5 w-1.5 rounded-full ${open ? "bg-[#2f8fff]" : "bg-white"}`} />
-          </button>
-        </div>
-      </Html>
-    </group>
+    <div ref={ref} style={{ opacity: 0, pointerEvents: "none" }} className="absolute top-0 left-0 transition-opacity duration-150">
+      <button
+        onClick={() => togglePart(id)}
+        aria-label={`${open ? "Close" : "Open"} ${label}`}
+        className="group absolute bottom-0 left-0 flex -translate-x-1/2 translate-y-[3px] flex-col items-center whitespace-nowrap [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"
+      >
+        <span
+          className={`text-[11px] font-medium tracking-[0.04em] uppercase transition ${
+            open ? "text-[#6db3ff]" : hot ? "text-white" : "text-white/70 group-hover:text-white"
+          }`}
+        >
+          {label}
+        </span>
+        <span className={`mt-1 h-7 w-px transition ${hot ? "bg-white/70" : "bg-white/35 group-hover:bg-white/70"}`} />
+        <span className={`h-1.5 w-1.5 rounded-full ${open ? "bg-[#2f8fff]" : "bg-white"}`} />
+      </button>
+    </div>
   );
 }
 
@@ -342,32 +321,50 @@ function Rig() {
 
 /** Studio-lit, spinnable 3D car with openable lids and doors. */
 export default function Car3D() {
+  const open = useParts();
+  const [hover, setHover] = useState<PartId | null>(null);
+  const calloutsRef: Callouts = useRef({});
   return (
-    <Canvas
-      shadows="percentage"
-      dpr={[1, 2]}
-      // the display is CSS-scaled; measure layout size, not the transformed rect
-      resize={{ offsetSize: true }}
-      camera={{ position: HERO, fov: 30, near: 0.1, far: 100 }}
-      gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
-      className="!absolute inset-0"
-    >
-      <Suspense fallback={null}>
-        <Model />
-        <ContactShadows position={[0, 0.001, 0]} opacity={0.65} scale={9} blur={2.4} far={2} resolution={512} color="#000" />
-        {/* local studio light rig, no HDR download */}
-        <Environment resolution={256} frames={1}>
-          <Lightformer intensity={2.2} position={[0, 6, 0]} rotation-x={Math.PI / 2} scale={[10, 4, 1]} />
-          <Lightformer intensity={1.4} position={[-6, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 2, 1]} />
-          <Lightformer intensity={1.4} position={[6, 2, 0]} rotation-y={-Math.PI / 2} scale={[8, 2, 1]} />
-          <Lightformer intensity={0.8} position={[0, 1.5, -7]} scale={[8, 1.5, 1]} />
-          <Lightformer intensity={0.8} position={[0, 1.5, 7]} rotation-y={Math.PI} scale={[8, 1.5, 1]} />
-        </Environment>
-      </Suspense>
-      <ambientLight intensity={0.15} />
-      <directionalLight position={[4, 8, 3]} intensity={1.1} castShadow shadow-mapSize={[1024, 1024]} />
-      <Rig />
-    </Canvas>
+    <>
+      <Canvas
+        shadows="percentage"
+        dpr={[1, 2]}
+        // the display is CSS-scaled; measure layout size, not the transformed rect
+        resize={{ offsetSize: true }}
+        camera={{ position: HERO, fov: 30, near: 0.1, far: 100 }}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
+        className="!absolute inset-0"
+      >
+        <Suspense fallback={null}>
+          <Model hover={hover} setHover={setHover} calloutsRef={calloutsRef} />
+          <ContactShadows position={[0, 0.001, 0]} opacity={0.65} scale={9} blur={2.4} far={2} resolution={512} color="#000" />
+          {/* local studio light rig, no HDR download */}
+          <Environment resolution={256} frames={1}>
+            <Lightformer intensity={2.2} position={[0, 6, 0]} rotation-x={Math.PI / 2} scale={[10, 4, 1]} />
+            <Lightformer intensity={1.4} position={[-6, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 2, 1]} />
+            <Lightformer intensity={1.4} position={[6, 2, 0]} rotation-y={-Math.PI / 2} scale={[8, 2, 1]} />
+            <Lightformer intensity={0.8} position={[0, 1.5, -7]} scale={[8, 1.5, 1]} />
+            <Lightformer intensity={0.8} position={[0, 1.5, 7]} rotation-y={Math.PI} scale={[8, 1.5, 1]} />
+          </Environment>
+        </Suspense>
+        <ambientLight intensity={0.15} />
+        <directionalLight position={[4, 8, 3]} intensity={1.1} castShadow shadow-mapSize={[1024, 1024]} />
+        <Rig />
+      </Canvas>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {PART_IDS.map((id) => (
+          <Callout
+            key={id}
+            ref={(el) => {
+              calloutsRef.current[id] = el;
+            }}
+            id={id}
+            open={open[id]}
+            hot={hover === id}
+          />
+        ))}
+      </div>
+    </>
   );
 }
 
