@@ -74,8 +74,8 @@ export function Row({
   return (
     <Tag
       onClick={onClick}
-      className={`flex min-h-[60px] w-full items-center justify-between gap-4 border-b border-white/[0.07] py-3 text-left ${
-        onClick ? "cursor-pointer transition hover:bg-white/[0.03]" : ""
+      className={`flex min-h-[60px] items-center justify-between gap-4 border-b border-white/[0.07] text-left ${
+        onClick ? "-mx-4 w-[calc(100%+2rem)] cursor-pointer px-4 py-4 transition hover:bg-white/[0.04]" : "w-full py-3"
       }`}
     >
       <div className="min-w-0">
