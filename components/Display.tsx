@@ -18,17 +18,24 @@ const H = 900;
 /** One continuous screen, scaled to fit the browser like teslaui.com. */
 export function Display() {
   const wrap = useRef<HTMLDivElement>(null);
+  const screenScroll = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
-  const [scale, setScale] = useState(0);
+  const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const ambient = useCar((s) => AMBIENT[s.ambient]);
   const ambientLevel = useCar((s) => s.ambientLevel);
+  const mobile = viewport.width < 640 && viewport.height > viewport.width;
+  const scale = mobile
+    ? Math.min((viewport.width - 12) / 646, (viewport.height - 136) / (H + 28), 0.7)
+    : Math.min((viewport.width - 48) / (W + 28), (viewport.height - 48) / (H + 28));
+  const scaledWidth = (W + 28) * scale;
+  const scaledHeight = (H + 28) * scale;
 
   useLayoutEffect(() => {
     const el = wrap.current;
     if (!el) return;
     const ro = new ResizeObserver(([e]) => {
       const { width, height } = e.contentRect;
-      setScale(Math.min((width - 48) / (W + 28), (height - 48) / (H + 28)));
+      setViewport({ width, height });
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -43,11 +50,22 @@ export function Display() {
           background: `radial-gradient(60% 80% at 50% 100%, color-mix(in oklab, ${ambient} ${Math.round(ambientLevel / 7)}%, transparent), transparent 70%)`,
         }}
       />
+      {mobile && scale > 0 && (
+        <div className="absolute inset-x-4 top-3 flex items-center text-[12px] text-white/65">
+          <div className="flex gap-2">
+            <button type="button" onClick={() => screenScroll.current?.scrollTo({ left: 0, behavior: "smooth" })} className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-white">Vehicle</button>
+            <button type="button" onClick={() => screenScroll.current?.scrollTo({ left: (14 + 78 + 540 + (W - 78 - 540) / 2) * scale - viewport.width / 2, behavior: "smooth" })} className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-white">Map</button>
+          </div>
+        </div>
+      )}
       {scale > 0 && (
         <div
-          className="absolute top-1/2 left-1/2"
-          style={{ width: W + 28, height: H + 28, transform: `translate(-50%, -50%) scale(${scale})` }}
+          ref={screenScroll}
+          className={mobile ? "absolute inset-x-0 top-14 overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : "absolute top-1/2 left-1/2"}
+          style={mobile ? { height: scaledHeight } : { width: scaledWidth, height: scaledHeight, transform: "translate(-50%, -50%)" }}
         >
+          <div style={{ width: scaledWidth, height: scaledHeight }}>
+          <div style={{ width: W + 28, height: H + 28, transform: `scale(${scale})`, transformOrigin: "top left" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.985 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -89,6 +107,8 @@ export function Display() {
             }}
           />
           </motion.div>
+          </div>
+          </div>
         </div>
       )}
     </div>

@@ -107,7 +107,7 @@ function ControlsTray({ close }: { close: () => void }) {
   useEffect(() => () => useCar.getState().set({ throttle: 0, brake: 0 }), []);
 
   return (
-    <section id="demo-controls" aria-label="Driving controls" className="fixed bottom-16 left-4 z-[60] max-h-[min(78dvh,720px)] w-[min(360px,calc(100vw-32px))] overflow-y-auto rounded-[20px] border border-white/15 bg-[#171a1f]/95 p-4 text-white shadow-[0_20px_60px_rgba(0,0,0,0.65)] backdrop-blur-xl [scrollbar-width:thin]">
+    <section id="demo-controls" aria-label="Driving controls" className="fixed right-4 bottom-16 z-[60] max-h-[44dvh] w-[min(360px,calc(100vw-32px))] overflow-y-auto overscroll-contain rounded-[20px] border border-white/15 bg-[#171a1f]/95 p-4 text-white shadow-[0_20px_60px_rgba(0,0,0,0.65)] backdrop-blur-xl [scrollbar-width:thin] sm:right-auto sm:left-4 sm:max-h-[min(78dvh,720px)]">
       <div className="flex items-center justify-between">
         <div className="text-[16px] font-medium">Driving controls</div>
         <button type="button" onClick={close} aria-label="Close driving controls" className="grid h-9 w-9 place-items-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"><X size={18} /></button>
@@ -176,7 +176,7 @@ export function DemoControls() {
         aria-controls="demo-controls"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="fixed bottom-4 left-4 z-[60] flex h-9 items-center gap-2 rounded-full border border-white/15 bg-[#171a1f]/95 px-3 text-[12px] font-medium text-white/85 shadow-lg backdrop-blur-xl hover:bg-[#24282e]"
+        className="fixed right-4 bottom-4 z-[60] flex h-9 items-center gap-2 rounded-full border border-white/15 bg-[#171a1f]/95 px-3 text-[12px] font-medium text-white/85 shadow-lg backdrop-blur-xl hover:bg-[#24282e] sm:right-auto sm:left-4"
       >
         <Gamepad2 size={16} /> Controls
         {autopilot && <span className="ml-1 flex items-center gap-1.5 text-[#8bc3ff]"><span className="h-1.5 w-1.5 rounded-full bg-[#2f8fff]" />Demo drive</span>}
