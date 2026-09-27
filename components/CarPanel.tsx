@@ -142,7 +142,6 @@ function CarStage() {
       </AnimatePresence>
       <div className="pointer-events-none absolute top-3.5 left-4 leading-tight">
         <div className="text-[13px] font-medium tracking-[0.02em] text-white/85">911 GT3 RS</div>
-        <div className="text-[11px] text-white/35">992 · GT Silver Metallic</div>
       </div>
       <div className="absolute top-3 left-1/2 flex -translate-x-1/2 items-center gap-2">
         <button
