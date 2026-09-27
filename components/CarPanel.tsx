@@ -198,6 +198,7 @@ function CarStage() {
   const lift = useCar((s) => s.lift);
   const drs = useCar((s) => s.drs);
   const set = useCar((s) => s.set);
+  const toggleLock = useCar((s) => s.toggleLock);
   const anyOpen = useCar((s) => s.frunkOpen || s.trunkOpen || s.doorL || s.doorR);
   const driving = useCar((s) => s.gear !== "P");
   return (
@@ -232,7 +233,7 @@ function CarStage() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute top-3 right-4 rounded-full bg-[#2f8fff]/15 px-3 py-1 text-[12px] text-[#6db3ff]"
+              className="absolute top-3 right-4 rounded-full bg-(--ambient)/15 px-3 py-1 text-[12px] text-(--ambient)"
             >
               Lift active
             </motion.div>
@@ -255,23 +256,23 @@ function CarStage() {
       </AnimatePresence>
       <div className="absolute top-3 left-1/2 flex -translate-x-1/2 items-center gap-2">
         <button
-          onClick={() => set({ locked: !locked, ...(locked ? {} : { frunkOpen: false, trunkOpen: false, doorL: false, doorR: false }) })}
+          onClick={toggleLock}
           aria-label={locked ? "Unlock" : "Lock"}
           className="flex items-center gap-2 rounded-full bg-black/40 py-[7px] pr-3.5 pl-3 text-[12.5px] backdrop-blur-sm transition hover:bg-black/60"
         >
           {locked ? (
             <Lock size={15} strokeWidth={1.9} className="text-white" />
           ) : (
-            <LockOpen size={15} strokeWidth={1.9} className="text-[#2f8fff]" />
+            <LockOpen size={15} strokeWidth={1.9} className="text-(--ambient) transition-colors" />
           )}
-          <span className={locked ? "text-white" : "text-[#6db3ff]"}>{locked ? "Locked" : anyOpen ? "Open" : "Unlocked"}</span>
+          <span className={`transition-colors ${locked ? "text-white" : "text-(--ambient)"}`}>{locked ? "Locked" : anyOpen ? "Open" : "Unlocked"}</span>
         </button>
         <button
           onClick={() => set({ drs: !drs })}
           aria-pressed={drs}
           className="rounded-full bg-black/40 px-3.5 py-[7px] text-[12.5px] font-medium tracking-[0.06em] backdrop-blur-sm transition hover:bg-black/60"
         >
-          <span className={drs ? "text-[#6db3ff]" : "text-white"}>DRS</span>
+          <span className={`transition-colors ${drs ? "text-(--ambient)" : "text-white"}`}>DRS</span>
         </button>
       </div>
     </div>

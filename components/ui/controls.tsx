@@ -35,8 +35,6 @@ export function Segmented<T extends string>({
   value: T;
   options: { value: T; label: string }[];
   onChange: (v: T) => void;
-  /** kept for call-site readability; no longer needed for animation */
-  id?: string;
 }) {
   const { container, indicator } = useSlider(options.findIndex((o) => o.value === value));
   return (

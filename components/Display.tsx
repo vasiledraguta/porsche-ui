@@ -57,7 +57,7 @@ export function Display() {
           {/* screen */}
           <div
             className="relative flex h-full w-full overflow-hidden rounded-[22px] bg-black"
-            style={{ width: W, height: H }}
+            style={{ width: W, height: H, ["--ambient" as string]: ambient }}
           >
             <Rail />
             <div className="flex min-w-0 flex-1 flex-col">
