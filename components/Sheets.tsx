@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useDragControls, type PanInfo } from "motion/react";
 import {
   ArrowUpFromLine,
   Brush,
@@ -39,22 +39,40 @@ import { Row, Segmented, SectionTitle, Stepper, Toggle } from "./ui/controls";
 import { AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
+const slide = [0.16, 1, 0.3, 1] as const;
 
 /** Sheets slide over the map, like Tesla's controls panel and the PCM's app pages. */
 export function Sheets() {
   const sheet = useCar((s) => s.sheet);
   const set = useCar((s) => s.set);
+  const drag = useDragControls();
+  const release = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
+    if (info.offset.y > 120 || info.velocity.y > 600) set({ sheet: null });
+  };
   return (
     <AnimatePresence>
       {sheet && (
         <motion.div
           key={sheet}
           className="absolute inset-0 z-20 flex flex-col bg-[#121417]"
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 40 }}
-          transition={{ duration: 0.32, ease }}
+          initial={{ y: "100%" }}
+          animate={{ y: 0, transition: { duration: 0.4, ease: slide } }}
+          exit={{ y: "100%", transition: { duration: 0.25, ease: slide } }}
+          drag="y"
+          dragControls={drag}
+          dragListener={false}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0.05, bottom: 1 }}
+          dragTransition={{ bounceStiffness: 500, bounceDamping: 40 }}
+          onDragEnd={release}
         >
+          <div
+            aria-hidden
+            onPointerDown={(e) => drag.start(e)}
+            className="absolute top-0 left-1/2 z-10 flex h-7 w-32 -translate-x-1/2 cursor-grab touch-none justify-center pt-2.5 active:cursor-grabbing"
+          >
+            <span className="h-1 w-12 rounded-full bg-white/25" />
+          </div>
           <button
             onClick={() => set({ sheet: null })}
             aria-label="Close"
