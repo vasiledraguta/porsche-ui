@@ -5,7 +5,7 @@ import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { useCar } from "@/lib/store";
+import { AMBIENT, useCar } from "@/lib/store";
 
 /**
  * Porsche 911 GT3 RS (992) by Black Snow on Sketchfab, CC-BY-4.0 (credit in README).
@@ -20,6 +20,9 @@ const TARGET: [number, number, number] = [0, 0.5, 0];
 /** Porsche GT Silver Metallic, replacing the model's flat grey body shader. */
 const PAINT = "#b4b8bc";
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
+
+const AMBIENT_RIM = 4;
+const AMBIENT_FLOOR = 0.3;
 
 export type PartId = "hood" | "trunk" | "doorL" | "doorR";
 
@@ -319,6 +322,54 @@ function Rig() {
   );
 }
 
+function AmbientTint() {
+  const color = useCar((s) => AMBIENT[s.ambient]);
+  const level = useCar((s) => s.ambientLevel / 100);
+  const rimL = useRef<THREE.PointLight>(null);
+  const rimR = useRef<THREE.PointLight>(null);
+  const floor = useRef<THREE.MeshBasicMaterial>(null);
+  const target = useMemo(() => new THREE.Color(), []);
+  const glow = useMemo(() => {
+    const c = document.createElement("canvas");
+    c.width = c.height = 128;
+    const ctx = c.getContext("2d")!;
+    const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0, "rgba(255,255,255,1)");
+    g.addColorStop(0.55, "rgba(255,255,255,0.35)");
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 128, 128);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  }, []);
+
+  useFrame((_, dt) => {
+    target.set(color);
+    const k = 1 - Math.exp(-3 * dt);
+    for (const rim of [rimL.current, rimR.current]) {
+      if (!rim) continue;
+      rim.color.lerp(target, k);
+      rim.intensity = THREE.MathUtils.damp(rim.intensity, level * AMBIENT_RIM, 3, dt);
+    }
+    if (floor.current) {
+      floor.current.color.lerp(target, k);
+      floor.current.opacity = THREE.MathUtils.damp(floor.current.opacity, level * AMBIENT_FLOOR, 3, dt);
+    }
+  });
+
+  return (
+    <>
+      <pointLight ref={rimL} position={[-3.2, 0.35, 0]} intensity={0} distance={8} decay={2} />
+      <pointLight ref={rimR} position={[3.2, 0.35, 0]} intensity={0} distance={8} decay={2} />
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.0005, 0]} renderOrder={-1}>
+        <planeGeometry args={[5.5, 8]} />
+        <meshBasicMaterial ref={floor} map={glow} transparent opacity={0} depthWrite={false} toneMapped={false} />
+      </mesh>
+    </>
+  );
+}
+
 /** Studio-lit, spinnable 3D car with openable lids and doors. */
 export default function Car3D() {
   const open = useParts();
@@ -337,6 +388,7 @@ export default function Car3D() {
       >
         <Suspense fallback={null}>
           <Model hover={hover} setHover={setHover} calloutsRef={calloutsRef} />
+          <AmbientTint />
           <ContactShadows position={[0, 0.001, 0]} opacity={0.65} scale={9} blur={2.4} far={2} resolution={512} color="#000" />
           {/* local studio light rig, no HDR download */}
           <Environment resolution={256} frames={1}>
