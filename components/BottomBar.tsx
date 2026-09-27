@@ -120,7 +120,9 @@ function Temp({ value, onUp, onDown }: { value: number; onUp: () => void; onDown
 }
 
 const REPEAT_DELAY = 400;
-const REPEAT_INTERVAL = 90;
+const REPEAT_START = 250;
+const REPEAT_MIN = 60;
+const REPEAT_ACCEL = 0.85;
 
 function RepeatBtn({ onStep, ...props }: { onStep: () => void } & Omit<React.ComponentProps<"button">, "onClick">) {
   const step = useRef(onStep);
@@ -133,10 +135,10 @@ function RepeatBtn({ onStep, ...props }: { onStep: () => void } & Omit<React.Com
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const stop = () => clearTimeout(timer.current);
-  const repeat = (delay: number) => {
+  const repeat = (delay: number, next: number) => {
     timer.current = setTimeout(() => {
       step.current();
-      repeat(REPEAT_INTERVAL);
+      repeat(next, Math.max(REPEAT_MIN, next * REPEAT_ACCEL));
     }, delay);
   };
 
@@ -147,7 +149,7 @@ function RepeatBtn({ onStep, ...props }: { onStep: () => void } & Omit<React.Com
         if (e.button !== 0) return;
         stop();
         step.current();
-        repeat(REPEAT_DELAY);
+        repeat(REPEAT_DELAY, REPEAT_START);
       }}
       onPointerUp={stop}
       onPointerLeave={stop}
