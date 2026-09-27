@@ -75,6 +75,7 @@ type State = {
   sheet: Sheet;
   vehicleTab: VehicleTab;
   modePopupAt: number;
+  volumePopupAt: number;
   map3d: boolean;
   follow: boolean;
   zoomBias: number;
@@ -174,6 +175,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   sheet: null,
   vehicleTab: "modes",
   modePopupAt: -1e9,
+  volumePopupAt: -1e9,
   map3d: true,
   follow: true,
   zoomBias: 0,
@@ -236,7 +238,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   now: 0,
 
   set: (p) => set(p),
-  setVolume: (volume) => set((s) => ({ volume, lastVolume: volume > 0 ? volume : s.lastVolume })),
+  setVolume: (volume) => set((s) => ({ volume, lastVolume: volume > 0 ? volume : s.lastVolume, volumePopupAt: s.now })),
   setMode: (mode) =>
     set((s) => ({
       mode,
