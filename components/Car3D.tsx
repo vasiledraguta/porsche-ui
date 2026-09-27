@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useRef, useState, type RefObject } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -16,6 +16,7 @@ const MODEL = "/car/911-gt3-rs.glb";
 /** 3/4 front-left hero camera (model nose points to +Z, driver side is +X). */
 const HERO: [number, number, number] = [5.9, 2.2, 6.1];
 const TARGET: [number, number, number] = [0, 0.5, 0];
+const RESPIN_MS = 4000;
 
 const CHASE: [number, number, number] = [0, 2.2, -7.2];
 const CHASE_TARGET: [number, number, number] = [0, 0.7, 0];
@@ -295,6 +296,9 @@ function Rig() {
   const wasDriving = useRef(driving);
   const glide = useRef<"chase" | "hero" | null>(driving ? "chase" : null);
   const view = useRef({ at: new THREE.Spherical(), goal: new THREE.Spherical(), offset: new THREE.Vector3(), target: new THREE.Vector3() });
+  const idle = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(idle.current), []);
 
   useFrame((_, dt) => {
     const c = controls.current;
@@ -348,8 +352,14 @@ function Rig() {
       enabled={!driving}
       autoRotateSpeed={0.6}
       onStart={() => {
+        clearTimeout(idle.current);
         spin.current = false;
         glide.current = null;
+      }}
+      onEnd={() => {
+        idle.current = setTimeout(() => {
+          spin.current = true;
+        }, RESPIN_MS);
       }}
     />
   );
