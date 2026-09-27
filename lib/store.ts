@@ -71,7 +71,6 @@ type State = {
   throttle: number;
   brake: number;
   autopilot: boolean;
-  heading: number;
 
   sheet: Sheet;
   vehicleTab: VehicleTab;
@@ -136,7 +135,6 @@ type State = {
   hotspot: boolean;
 
   now: number;
-  bootT: number;
 };
 
 type Actions = {
@@ -172,7 +170,6 @@ export const useCar = create<State & Actions>((set, get) => ({
   throttle: 0,
   brake: 0,
   autopilot: true,
-  heading: 0,
 
   sheet: null,
   vehicleTab: "modes",
@@ -237,7 +234,6 @@ export const useCar = create<State & Actions>((set, get) => ({
   hotspot: false,
 
   now: 0,
-  bootT: 0,
 
   set: (p) => set(p),
   setVolume: (volume) => set((s) => ({ volume, lastVolume: volume > 0 ? volume : s.lastVolume })),
@@ -348,7 +344,6 @@ export const useCar = create<State & Actions>((set, get) => ({
 
     set({
       now: t,
-      bootT: s.bootT + dt,
       speed: nv * 3.6,
       powerKw: s.powerKw + (powerKw - s.powerKw) * Math.min(1, dt * 6),
       rpm,
