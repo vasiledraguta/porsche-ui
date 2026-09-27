@@ -5,7 +5,7 @@ import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { useCar } from "@/lib/store";
+import { PAINTS, useCar, type Paint } from "@/lib/store";
 
 /**
  * Porsche 911 GT3 RS (992) by Black Snow on Sketchfab, CC-BY-4.0 (credit in README).
@@ -17,8 +17,6 @@ const MODEL = "/car/911-gt3-rs.glb";
 const HERO: [number, number, number] = [5.9, 2.2, 6.1];
 const TARGET: [number, number, number] = [0, 0.5, 0];
 
-/** Porsche GT Silver Metallic, replacing the model's flat grey body shader. */
-const PAINT = "#b4b8bc";
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
 export type PartId = "hood" | "trunk" | "doorL" | "doorR";
@@ -124,6 +122,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
   const open = useParts();
   const lift = useCar((s) => s.lift);
   const drs = useCar((s) => s.drs);
+  const paint = useCar((s) => s.paint);
   const lifted = useRef<THREE.Group>(null);
   const placed = useRef<THREE.Group>(null);
   const spot = useMemo(() => new THREE.Vector3(), []);
@@ -135,7 +134,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
     root.updateMatrixWorld(true);
 
     const paint = new THREE.MeshPhysicalMaterial({
-      color: PAINT,
+      color: PAINTS.silver.color,
       metalness: 0.75,
       roughness: 0.32,
       clearcoat: 1,
@@ -188,15 +187,23 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
 
     const box = new THREE.Box3().setFromObject(root);
     const center = box.getCenter(new THREE.Vector3());
-    return { root, pivots, flap, spots, offset: new THREE.Vector3(-center.x, -box.min.y, -center.z) };
+    return { root, pivots, flap, spots, paint, offset: new THREE.Vector3(-center.x, -box.min.y, -center.z) };
   }, [scene]);
 
   // three.js objects are mutated every frame; keep them in a ref, outside React's immutable values
   // (the glTF scene is cached by useGLTF, so rig is built exactly once)
   const pivots = useRef(rig.pivots);
   const flap = useRef(rig.flap);
+  const paintFade = useRef<{ target: Paint; from: THREE.Color; to: THREE.Color; elapsed: number } | null>(null);
 
   useFrame((_, dt) => {
+    if (paintFade.current?.target !== paint) {
+      paintFade.current = { target: paint, from: rig.paint.color.clone(), to: new THREE.Color(PAINTS[paint].color), elapsed: 0 };
+    }
+    if (paintFade.current && paintFade.current.elapsed < 0.6) {
+      paintFade.current.elapsed = Math.min(0.6, paintFade.current.elapsed + dt);
+      rig.paint.color.lerpColors(paintFade.current.from, paintFade.current.to, paintFade.current.elapsed / 0.6);
+    }
     for (const id of Object.keys(PARTS) as PartId[]) {
       const def = PARTS[id];
       const p = pivots.current[id];
@@ -369,4 +376,3 @@ export default function Car3D() {
 }
 
 useGLTF.preload(MODEL, false, true);
-

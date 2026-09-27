@@ -4,9 +4,20 @@ import { create } from "zustand";
 import { ROUTE_LEN, STOPS, nextStep } from "./route";
 
 export type DriveMode = "wet" | "normal" | "sport" | "track";
+export const PAINTS = {
+  silver: { label: "GT Silver", color: "#b4b8bc" },
+  blue: { label: "Shark Blue", color: "#1878c6" },
+  green: { label: "Python Green", color: "#54b331" },
+  red: { label: "Guards Red", color: "#c9202b" },
+  black: { label: "Black", color: "#101215" },
+  grey: { label: "Arctic Grey", color: "#8b9294" },
+} as const;
+export type Paint = keyof typeof PAINTS;
+export const PAINT_ORDER = Object.keys(PAINTS) as Paint[];
 export type Sheet = null | "home" | "vehicle" | "chrono" | "media" | "phone" | "notifications" | "carplay" | "androidauto" | "devices" | "settings";
 export type VehicleTab =
   | "modes"
+  | "appearance"
   | "chassis"
   | "setup"
   | "engine"
@@ -68,6 +79,7 @@ type State = {
   tripFuelL: number;
   gear: "P" | "N" | "D";
   mode: DriveMode;
+  paint: Paint;
   throttle: number;
   brake: number;
   autopilot: boolean;
@@ -169,6 +181,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   tripFuelL: 0,
   gear: "D",
   mode: "normal",
+  paint: "silver",
   throttle: 0,
   brake: 0,
   autopilot: true,
