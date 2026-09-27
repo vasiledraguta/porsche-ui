@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Map } from "maplibre-gl";
 import { AnimatePresence, motion } from "motion/react";
-import { X } from "lucide-react";
+import { Keyboard, X } from "lucide-react";
 import { BottomBar } from "./BottomBar";
 import { CarPanel } from "./CarPanel";
 import { DemoDrive, EtaBar, MapControls, Maneuver, SearchBox, SpeedLimit } from "./MapOverlays";
@@ -150,44 +150,56 @@ function Shortcuts() {
   }, [open]);
 
   return (
-    <dialog
-      ref={ref}
-      aria-labelledby="shortcuts-title"
-      onClose={() => set({ shortcuts: false })}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) set({ shortcuts: false });
-      }}
-      className="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[18px] bg-[#1a1d22]/95 p-0 text-white shadow-[0_20px_60px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl backdrop:bg-black/55"
-    >
-      <div className="relative px-7 pt-6 pb-7">
-        <h2 id="shortcuts-title" className="text-[12px] tracking-[0.12em] text-white/45 uppercase">
-          Keyboard shortcuts
-        </h2>
-        <button
-          onClick={() => set({ shortcuts: false })}
-          aria-label="Close"
-          className="absolute top-3.5 right-3.5 grid h-9 w-9 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white"
-        >
-          <X size={18} />
-        </button>
-        <dl className="mt-4 grid grid-cols-[auto_1fr] items-center gap-x-6 gap-y-2.5">
-          {SHORTCUTS.map(([keys, action]) => (
-            <div key={action} className="contents">
-              <dt className="flex gap-1.5">
-                {keys.map((k) => (
-                  <kbd
-                    key={k}
-                    className="min-w-[28px] rounded-[6px] bg-white/[0.06] px-2 py-1 text-center font-sans text-[13px] text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)]"
-                  >
-                    {k}
-                  </kbd>
-                ))}
-              </dt>
-              <dd className="text-[14px] text-white/70">{action}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-    </dialog>
+    <>
+      <button
+        onClick={() => set({ shortcuts: true })}
+        aria-label="Keyboard shortcuts"
+        aria-haspopup="dialog"
+        aria-keyshortcuts="?"
+        title="Keyboard shortcuts (?)"
+        className="absolute right-4 bottom-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/[0.06] text-white/55 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-md transition hover:bg-white/[0.1] hover:text-white pointer-coarse:hidden"
+      >
+        <Keyboard size={18} strokeWidth={1.7} />
+      </button>
+      <dialog
+        ref={ref}
+        aria-labelledby="shortcuts-title"
+        onClose={() => set({ shortcuts: false })}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) set({ shortcuts: false });
+        }}
+        className="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[18px] bg-[#1a1d22]/95 p-0 text-white shadow-[0_20px_60px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl backdrop:bg-black/55"
+      >
+        <div className="relative px-7 pt-6 pb-7">
+          <h2 id="shortcuts-title" className="text-[12px] tracking-[0.12em] text-white/45 uppercase">
+            Keyboard shortcuts
+          </h2>
+          <button
+            onClick={() => set({ shortcuts: false })}
+            aria-label="Close"
+            className="absolute top-3.5 right-3.5 grid h-9 w-9 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white"
+          >
+            <X size={18} />
+          </button>
+          <dl className="mt-4 grid grid-cols-[auto_1fr] items-center gap-x-6 gap-y-2.5">
+            {SHORTCUTS.map(([keys, action]) => (
+              <div key={action} className="contents">
+                <dt className="flex gap-1.5">
+                  {keys.map((k) => (
+                    <kbd
+                      key={k}
+                      className="min-w-[28px] rounded-[6px] bg-white/[0.06] px-2 py-1 text-center font-sans text-[13px] text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)]"
+                    >
+                      {k}
+                    </kbd>
+                  ))}
+                </dt>
+                <dd className="text-[14px] text-white/70">{action}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </dialog>
+    </>
   );
 }
