@@ -173,7 +173,7 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
           center: pos,
           bearing: map.getBearing() + shortest(map.getBearing(), heading) * 0.12,
           zoom: map.getZoom() + (zoom - map.getZoom()) * 0.08,
-          pitch: s.map3d ? 58 : 0,
+          pitch: map.getPitch() + ((s.map3d ? 58 : 0) - map.getPitch()) * 0.15,
           padding: { top: 180, bottom: 0, left: 0, right: 0 },
         });
       }

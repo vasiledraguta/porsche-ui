@@ -390,6 +390,7 @@ export const useCar = create<State & Actions>((set, get) => ({
     set({
       now: t,
       speed: nv * 3.6,
+      lift: s.lift && kmh <= 35,
       powerKw: s.powerKw + (powerKw - s.powerKw) * Math.min(1, dt * 6),
       rpm,
       pdkGear: gearN,

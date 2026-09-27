@@ -157,8 +157,7 @@ export function MapControls({ mapRef }: { mapRef: RefObject<Map | null> }) {
   const zoomBias = useCar((s) => s.zoomBias);
   const zoom = (dir: 1 | -1) => {
     if (follow) set({ zoomBias: Math.max(-3, Math.min(2, zoomBias + dir * 0.7)) });
-    else if (dir === 1) mapRef.current?.zoomIn({ duration: 0 });
-    else mapRef.current?.zoomOut({ duration: 0 });
+    else if (mapRef.current) mapRef.current.easeTo({ zoom: mapRef.current.getZoom() + dir, duration: 300 });
   };
   return (
     <div className="absolute right-4 bottom-[92px] z-10 flex flex-col gap-2">
