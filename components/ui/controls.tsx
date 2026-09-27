@@ -47,6 +47,7 @@ export function Segmented<T extends string>({
         <button
           key={o.value}
           data-slot
+          aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
           className="relative flex-1 rounded-[8px] px-3 py-2 text-[14px]"
         >
