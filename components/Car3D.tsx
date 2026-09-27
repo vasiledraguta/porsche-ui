@@ -5,7 +5,7 @@ import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { useCar } from "@/lib/store";
+import { AMBIENT, PAINTS, useCar, type Paint, type PartId } from "@/lib/store";
 
 /**
  * Porsche 911 GT3 RS (992) by Black Snow on Sketchfab, CC-BY-4.0 (credit in README).
@@ -17,11 +17,9 @@ const MODEL = "/car/911-gt3-rs.glb";
 const HERO: [number, number, number] = [5.9, 2.2, 6.1];
 const TARGET: [number, number, number] = [0, 0.5, 0];
 
-/** Porsche GT Silver Metallic, replacing the model's flat grey body shader. */
-const PAINT = "#b4b8bc";
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
-export type PartId = "hood" | "trunk" | "doorL" | "doorR";
+const AMBIENT_RIM = 4;
 
 type PartDef = {
   label: string;
@@ -111,19 +109,12 @@ function useParts() {
   };
 }
 
-export function togglePart(id: PartId) {
-  const s = useCar.getState();
-  const key = id === "hood" ? "frunkOpen" : id === "trunk" ? "trunkOpen" : id;
-  const next = !s[key];
-  // opening anything from the car screen releases central locking, like the real car
-  s.set({ [key]: next, ...(next ? { locked: false } : {}) });
-}
-
 function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHover: (id: PartId | null) => void; calloutsRef: Callouts }) {
   const { scene } = useGLTF(MODEL, false, true);
   const open = useParts();
   const lift = useCar((s) => s.lift);
   const drs = useCar((s) => s.drs);
+  const paint = useCar((s) => s.paint);
   const lifted = useRef<THREE.Group>(null);
   const placed = useRef<THREE.Group>(null);
   const spot = useMemo(() => new THREE.Vector3(), []);
@@ -135,7 +126,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
     root.updateMatrixWorld(true);
 
     const paint = new THREE.MeshPhysicalMaterial({
-      color: PAINT,
+      color: PAINTS.silver.color,
       metalness: 0.75,
       roughness: 0.32,
       clearcoat: 1,
@@ -188,15 +179,23 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
 
     const box = new THREE.Box3().setFromObject(root);
     const center = box.getCenter(new THREE.Vector3());
-    return { root, pivots, flap, spots, offset: new THREE.Vector3(-center.x, -box.min.y, -center.z) };
+    return { root, pivots, flap, spots, paint, offset: new THREE.Vector3(-center.x, -box.min.y, -center.z) };
   }, [scene]);
 
   // three.js objects are mutated every frame; keep them in a ref, outside React's immutable values
   // (the glTF scene is cached by useGLTF, so rig is built exactly once)
   const pivots = useRef(rig.pivots);
   const flap = useRef(rig.flap);
+  const paintFade = useRef<{ target: Paint; from: THREE.Color; to: THREE.Color; elapsed: number } | null>(null);
 
   useFrame((_, dt) => {
+    if (paintFade.current?.target !== paint) {
+      paintFade.current = { target: paint, from: rig.paint.color.clone(), to: new THREE.Color(PAINTS[paint].color), elapsed: 0 };
+    }
+    if (paintFade.current && paintFade.current.elapsed < 0.6) {
+      paintFade.current.elapsed = Math.min(0.6, paintFade.current.elapsed + dt);
+      rig.paint.color.lerpColors(paintFade.current.from, paintFade.current.to, paintFade.current.elapsed / 0.6);
+    }
     for (const id of Object.keys(PARTS) as PartId[]) {
       const def = PARTS[id];
       const p = pivots.current[id];
@@ -250,7 +249,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
             const id = partOf(e);
             if (id) {
               e.stopPropagation();
-              togglePart(id);
+              useCar.getState().togglePart(id);
             }
           }}
         />
@@ -265,19 +264,19 @@ function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => v
   return (
     <div ref={ref} style={{ opacity: 0, pointerEvents: "none" }} className="absolute top-0 left-0 transition-opacity duration-150">
       <button
-        onClick={() => togglePart(id)}
+        onClick={() => useCar.getState().togglePart(id)}
         aria-label={`${open ? "Close" : "Open"} ${label}`}
         className="group absolute bottom-0 left-0 flex -translate-x-1/2 translate-y-[3px] flex-col items-center whitespace-nowrap [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"
       >
         <span
           className={`text-[11px] font-medium tracking-[0.04em] uppercase transition ${
-            open ? "text-[#6db3ff]" : hot ? "text-white" : "text-white/70 group-hover:text-white"
+            open ? "text-(--ambient)" : hot ? "text-white" : "text-white/70 group-hover:text-white"
           }`}
         >
           {label}
         </span>
         <span className={`mt-1 h-7 w-px transition ${hot ? "bg-white/70" : "bg-white/35 group-hover:bg-white/70"}`} />
-        <span className={`h-1.5 w-1.5 rounded-full ${open ? "bg-[#2f8fff]" : "bg-white"}`} />
+        <span className={`h-1.5 w-1.5 rounded-full transition-colors ${open ? "bg-(--ambient)" : "bg-white"}`} />
       </button>
     </div>
   );
@@ -344,6 +343,31 @@ function Rig() {
   );
 }
 
+function AmbientTint() {
+  const color = useCar((s) => AMBIENT[s.ambient]);
+  const level = useCar((s) => s.ambientLevel / 100);
+  const rimL = useRef<THREE.PointLight>(null);
+  const rimR = useRef<THREE.PointLight>(null);
+  const target = useMemo(() => new THREE.Color(), []);
+
+  useFrame((_, dt) => {
+    target.set(color);
+    const k = 1 - Math.exp(-3 * dt);
+    for (const rim of [rimL.current, rimR.current]) {
+      if (!rim) continue;
+      rim.color.lerp(target, k);
+      rim.intensity = THREE.MathUtils.damp(rim.intensity, level * AMBIENT_RIM, 3, dt);
+    }
+  });
+
+  return (
+    <>
+      <pointLight ref={rimL} position={[-3.2, 0.35, 0]} intensity={0} distance={8} decay={2} />
+      <pointLight ref={rimR} position={[3.2, 0.35, 0]} intensity={0} distance={8} decay={2} />
+    </>
+  );
+}
+
 /** Studio-lit, spinnable 3D car with openable lids and doors. */
 export default function Car3D() {
   const open = useParts();
@@ -362,6 +386,7 @@ export default function Car3D() {
       >
         <Suspense fallback={null}>
           <Model hover={hover} setHover={setHover} calloutsRef={calloutsRef} />
+          <AmbientTint />
           <ContactShadows position={[0, 0.001, 0]} opacity={0.65} scale={9} blur={2.4} far={2} resolution={512} color="#000" />
           {/* local studio light rig, no HDR download */}
           <Environment resolution={256} frames={1}>
@@ -394,4 +419,3 @@ export default function Car3D() {
 }
 
 useGLTF.preload(MODEL, false, true);
-

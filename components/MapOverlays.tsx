@@ -20,7 +20,7 @@ import {
   CornerUpLeft,
   CornerUpRight,
 } from "lucide-react";
-import { ROUTE, ROUTE_LEN, fmtDist, nextStep } from "@/lib/route";
+import { ROUTE, ROUTE_LEN, fmtDist, isSpeeding, nextStep, speedLimitAt } from "@/lib/route";
 import { fuelPercentForDistance, rangeFor, useCar } from "@/lib/store";
 import { useClock } from "@/lib/useClock";
 
@@ -85,6 +85,27 @@ export function SearchBox() {
         </button>
       </div>
     </div>
+  );
+}
+
+export function DemoDrive() {
+  const autopilot = useCar((s) => s.autopilot);
+  const set = useCar((s) => s.set);
+  return (
+    <button
+      onClick={() => set({ autopilot: !autopilot })}
+      aria-pressed={autopilot}
+      aria-keyshortcuts="A"
+      className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-[#1a1d22]/90 px-4 py-2.5 text-[13px] shadow-[0_10px_30px_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:bg-[#22262b]/90"
+    >
+      <span
+        className={`h-2 w-2 rounded-full ${autopilot ? "animate-[breathe_1.6s_ease-in-out_infinite] bg-[#2f8fff]" : "bg-white/30"}`}
+      />
+      <span className="text-white/85">Demo drive</span>
+      <span aria-hidden className={`font-medium ${autopilot ? "text-[#6db3ff]" : "text-white/45"}`}>
+        {autopilot ? "On" : "Off"}
+      </span>
+    </button>
   );
 }
 
@@ -183,12 +204,15 @@ function CtlBtn({ children, label, onClick }: { children: React.ReactNode; label
 export function SpeedLimit() {
   const d = useCar((s) => s.routeD);
   const signs = useCar((s) => s.signs);
+  const speeding = useCar((s) => isSpeeding(s.speed, s.routeD));
   if (!signs) return null;
-  // Romanian urban default; the airport approach drops to 30
-  const limit = d > 7900 ? 30 : 50;
   return (
-    <div className="absolute bottom-[92px] left-4 z-10 grid h-[54px] w-[54px] place-items-center rounded-full border-[5px] border-[#e5332a] bg-white shadow-lg">
-      <span className="text-[19px] font-semibold text-black tabular-nums">{limit}</span>
+    <div
+      className={`absolute bottom-[92px] left-4 z-10 grid h-[54px] w-[54px] place-items-center rounded-full border-[5px] border-[#e5332a] bg-white shadow-lg ${
+        speeding ? "animate-[limit-flash_0.6s_ease-in-out_3]" : ""
+      }`}
+    >
+      <span className="text-[19px] font-semibold text-black tabular-nums">{speedLimitAt(d)}</span>
     </div>
   );
 }
