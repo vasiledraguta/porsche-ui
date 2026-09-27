@@ -319,8 +319,18 @@ function Rig() {
   );
 }
 
+function FirstFrame({ onReady }: { onReady: () => void }) {
+  const done = useRef(false);
+  useFrame(() => {
+    if (done.current) return;
+    done.current = true;
+    onReady();
+  });
+  return null;
+}
+
 /** Studio-lit, spinnable 3D car with openable lids and doors. */
-export default function Car3D() {
+export default function Car3D({ onReady }: { onReady: () => void }) {
   const open = useParts();
   const [hover, setHover] = useState<PartId | null>(null);
   const calloutsRef: Callouts = useRef({});
@@ -337,6 +347,7 @@ export default function Car3D() {
       >
         <Suspense fallback={null}>
           <Model hover={hover} setHover={setHover} calloutsRef={calloutsRef} />
+          <FirstFrame onReady={onReady} />
           <ContactShadows position={[0, 0.001, 0]} opacity={0.65} scale={9} blur={2.4} far={2} resolution={512} color="#000" />
           {/* local studio light rig, no HDR download */}
           <Environment resolution={256} frames={1}>

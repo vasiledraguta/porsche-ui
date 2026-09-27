@@ -89,6 +89,15 @@ button:focus-visible {
   }
 }
 
+@keyframes shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
