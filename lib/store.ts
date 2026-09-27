@@ -163,6 +163,7 @@ type Actions = {
   set: (p: Partial<State>) => void;
   toggleLock: () => void;
   togglePart: (id: PartId) => void;
+  setGear: (gear: State["gear"]) => void;
   setVolume: (volume: number) => void;
   setMode: (m: DriveMode) => void;
   cycleMode: (dir: 1 | -1) => void;
@@ -272,6 +273,8 @@ export const useCar = create<State & Actions>((set, get) => ({
       const open = !s[key];
       return { [key]: open, ...(open ? { locked: false } : {}) };
     }),
+  setGear: (gear) =>
+    set(gear === "D" ? { gear, locked: true, frunkOpen: false, trunkOpen: false, doorL: false, doorR: false } : { gear }),
   setVolume: (volume) => set((s) => ({ volume, lastVolume: volume > 0 ? volume : s.lastVolume })),
   setMode: (mode) =>
     set((s) => ({

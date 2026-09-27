@@ -31,7 +31,7 @@ function DriveHeader() {
   const rpm = useCar((s) => s.rpm);
   const fuel = useCar((s) => s.fuel);
   const mode = useCar((s) => s.mode);
-  const set = useCar((s) => s.set);
+  const setGear = useCar((s) => s.setGear);
   const shift = rpm > 8300;
 
   return (
@@ -42,7 +42,7 @@ function DriveHeader() {
             <button
               key={g}
               disabled={g === "P" && speed > 0}
-              onClick={() => set({ gear: g })}
+              onClick={() => setGear(g)}
               className={g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}
             >
               {g === "D" && gear === "D" ? `D${pdkGear}` : g}
