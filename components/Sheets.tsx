@@ -175,22 +175,54 @@ function VehicleSheet() {
         <div className="mb-3 flex items-center gap-2 px-3 text-[18px] font-medium text-white">
           <CarFront size={20} strokeWidth={1.7} /> Vehicle
         </div>
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            data-slot
-            onClick={() => set({ vehicleTab: t.id })}
-            className="relative flex w-full items-center gap-3 rounded-[10px] px-3 py-[11px] text-left text-[14.5px]"
-          >
-            <t.icon size={18} strokeWidth={1.6} className={`relative ${tab === t.id ? "text-white" : "text-white/55"}`} />
-            <span className={`relative ${tab === t.id ? "text-white" : "text-white/70"}`}>{t.label}</span>
-          </button>
-        ))}
+        <div
+          role="tablist"
+          aria-label="Vehicle settings"
+          aria-orientation="vertical"
+          onKeyDown={(e) => {
+            const i = TABS.findIndex((t) => t.id === tab);
+            const next =
+              e.key === "ArrowDown"
+                ? (i + 1) % TABS.length
+                : e.key === "ArrowUp"
+                  ? (i - 1 + TABS.length) % TABS.length
+                  : e.key === "Home"
+                    ? 0
+                    : e.key === "End"
+                      ? TABS.length - 1
+                      : -1;
+            if (next < 0) return;
+            e.preventDefault();
+            e.stopPropagation();
+            set({ vehicleTab: TABS[next].id });
+            e.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]')[next]?.focus();
+          }}
+        >
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              id={`vehicle-tab-${t.id}`}
+              data-slot
+              role="tab"
+              aria-selected={tab === t.id}
+              aria-controls="vehicle-panel"
+              tabIndex={tab === t.id ? 0 : -1}
+              onClick={() => set({ vehicleTab: t.id })}
+              className="relative flex w-full items-center gap-3 rounded-[10px] px-3 py-[11px] text-left text-[14.5px]"
+            >
+              <t.icon size={18} strokeWidth={1.6} className={`relative ${tab === t.id ? "text-white" : "text-white/55"}`} />
+              <span className={`relative ${tab === t.id ? "text-white" : "text-white/70"}`}>{t.label}</span>
+            </button>
+          ))}
+        </div>
       </nav>
       <div className="relative min-w-0 flex-1 overflow-y-auto px-9 pt-7 pb-8 [scrollbar-width:none]">
         <AnimatePresence mode="wait">
           <motion.div
             key={tab}
+            id="vehicle-panel"
+            role="tabpanel"
+            aria-labelledby={`vehicle-tab-${tab}`}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
