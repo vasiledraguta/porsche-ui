@@ -9,7 +9,6 @@ import { useSlider } from "./ui/useSlider";
 // WebGL only runs client-side.
 const Car3D = dynamic(() => import("./Car3D"), { ssr: false });
 import { MODES, MODE_ORDER, REDLINE, rangeFor, useCar } from "@/lib/store";
-import { isSpeeding } from "@/lib/route";
 
 /** Left vehicle column: speed, PDK gear, rev bar, fuel, the 3D 911 GT3 RS, lock/view controls, drive mode, media. */
 export function CarPanel() {
@@ -33,7 +32,6 @@ function DriveHeader() {
   const fuel = useCar((s) => s.fuel);
   const mode = useCar((s) => s.mode);
   const set = useCar((s) => s.set);
-  const speeding = useCar((s) => s.signs && isSpeeding(s.speed, s.routeD));
   const shift = rpm > 8300;
 
   return (
@@ -52,9 +50,7 @@ function DriveHeader() {
           ))}
         </div>
         <div className="mt-2 flex items-baseline gap-2">
-          <span
-            className={`text-[64px] leading-[0.9] font-normal tabular-nums transition-colors duration-300 ${speeding ? "text-[#ff6b61]" : "text-white"}`}
-          >
+          <span className="text-[64px] leading-[0.9] font-normal text-white tabular-nums">
             {Math.round(speed)}
           </span>
           <span className="text-[14px] text-white/45">km/h</span>
