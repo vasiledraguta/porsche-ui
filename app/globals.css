@@ -75,6 +75,15 @@ input[type="range"].slim::-moz-range-thumb {
 button {
   cursor: pointer;
 }
+@utility press {
+  scale: 0.96;
+  box-shadow:
+    inset 0 0 0 999px rgb(255 255 255 / 0.08),
+    var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow, 0 0 #0000);
+  transition-duration: 120ms;
+}
+
 button:focus-visible {
   outline: 1px solid rgba(255, 255, 255, 0.5);
   outline-offset: 2px;

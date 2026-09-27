@@ -105,7 +105,7 @@ export function Display() {
           <button
             onClick={() => setNotice(false)}
             aria-label="Dismiss"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white active:press"
           >
             <X size={18} />
           </button>
@@ -208,7 +208,7 @@ function Shortcuts() {
         aria-haspopup="dialog"
         aria-keyshortcuts="?"
         title="Keyboard shortcuts (?)"
-        className="absolute right-4 bottom-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/[0.06] text-white/55 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-md transition hover:bg-white/[0.1] hover:text-white pointer-coarse:hidden"
+        className="absolute right-4 bottom-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/[0.06] text-white/55 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-md transition hover:bg-white/[0.1] hover:text-white active:press pointer-coarse:hidden"
       >
         <Keyboard size={18} strokeWidth={1.7} />
       </button>
@@ -228,7 +228,7 @@ function Shortcuts() {
           <button
             onClick={() => set({ shortcuts: false })}
             aria-label="Close"
-            className="absolute top-3.5 right-3.5 grid h-9 w-9 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white"
+            className="absolute top-3.5 right-3.5 grid h-9 w-9 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white active:press"
           >
             <X size={18} />
           </button>

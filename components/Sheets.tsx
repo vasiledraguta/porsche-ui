@@ -76,7 +76,7 @@ export function Sheets() {
           <button
             onClick={() => set({ sheet: null })}
             aria-label="Close"
-            className="absolute top-4 right-4 z-10 grid h-10 w-10 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white"
+            className="absolute top-4 right-4 z-10 grid h-10 w-10 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white active:press"
           >
             <X size={20} />
           </button>
@@ -162,7 +162,7 @@ function HomeSheet() {
             transition={{ duration: 0.3, delay: i * 0.02, ease }}
             className="group flex flex-col items-center gap-2.5"
           >
-            <span className="grid h-[86px] w-[86px] place-items-center rounded-[18px] bg-gradient-to-b from-[#2a2e34] to-[#1d2025] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_16px_rgba(0,0,0,0.35)] transition group-hover:from-[#32363d] group-active:scale-95">
+            <span className="grid h-[86px] w-[86px] place-items-center rounded-[18px] bg-gradient-to-b from-[#2a2e34] to-[#1d2025] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_16px_rgba(0,0,0,0.35)] transition group-hover:from-[#32363d] group-active:press">
               <Glyph id={id} size={36} />
             </span>
             <span className="text-[14px] text-white/85">{APPS[id].label}</span>
@@ -286,7 +286,7 @@ function ModesTab() {
         <button
           key={m}
           onClick={() => setMode(m)}
-          className={`rounded-[14px] p-5 text-left transition ${
+          className={`rounded-[14px] p-5 text-left transition active:press ${
             mode === m
               ? "bg-[#2f8fff]/[0.14] shadow-[inset_0_0_0_1.5px_#2f8fff]"
               : "bg-white/[0.04] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:bg-white/[0.06]"
@@ -316,7 +316,7 @@ export function PaintSwatches({ compact = false }: { compact?: boolean }) {
           onClick={() => set({ paint: id })}
           aria-label={PAINTS[id].label}
           aria-pressed={paint === id}
-          className={`flex items-center gap-2 rounded-[12px] text-left text-white transition ${compact ? "px-2 py-2 text-[11px]" : "px-4 py-4 text-[14px]"} ${paint === id ? "bg-[#2f8fff]/[0.14] ring-1 ring-[#2f8fff]" : "bg-white/[0.04] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
+          className={`flex items-center gap-2 rounded-[12px] text-left text-white transition active:press ${compact ? "px-2 py-2 text-[11px]" : "px-4 py-4 text-[14px]"} ${paint === id ? "bg-[#2f8fff]/[0.14] ring-1 ring-[#2f8fff]" : "bg-white/[0.04] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
         >
           <span className="h-5 w-5 shrink-0 rounded-full ring-1 ring-white/20" style={{ backgroundColor: PAINTS[id].color }} />
           <span>{PAINTS[id].label}</span>
@@ -532,7 +532,7 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
   return (
     <button
       onClick={onClick}
-      className={`flex h-[78px] flex-col items-center justify-center gap-2 rounded-[14px] transition ${
+      className={`flex h-[78px] flex-col items-center justify-center gap-2 rounded-[14px] transition active:press ${
         on ? "bg-[#2f8fff]/[0.16] text-[#6db3ff] shadow-[inset_0_0_0_1.5px_#2f8fff]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
       }`}
     >
@@ -571,7 +571,7 @@ function LightsTab() {
             key={c}
             aria-label={`Ambient ${i}`}
             onClick={() => s.set({ ambient: i })}
-            className="h-10 w-10 rounded-full transition"
+            className="h-10 w-10 rounded-full transition active:press"
             style={{
               background: c,
               boxShadow: s.ambient === i ? `0 0 0 3px #121417, 0 0 0 5px ${c}, 0 0 20px ${c}` : "inset 0 0 0 1px rgba(0,0,0,.3)",
@@ -735,13 +735,13 @@ function ChronoSheet() {
           <button
             onClick={lapChrono}
             disabled={!running && elapsed === 0}
-            className="h-[52px] w-[120px] rounded-full bg-white/[0.08] text-[15px] text-white transition hover:bg-white/[0.12] active:scale-95 disabled:opacity-30"
+            className="h-[52px] w-[120px] rounded-full bg-white/[0.08] text-[15px] text-white transition hover:bg-white/[0.12] active:press disabled:opacity-30"
           >
             {running || elapsed === 0 ? "Lap" : "Reset"}
           </button>
           <button
             onClick={toggleChrono}
-            className={`h-[52px] w-[120px] rounded-full text-[15px] font-medium transition active:scale-95 ${
+            className={`h-[52px] w-[120px] rounded-full text-[15px] font-medium transition active:press ${
               running ? "bg-[#ff4a4a]/20 text-[#ff7a70] hover:bg-[#ff4a4a]/30" : "bg-[#3fd46b]/20 text-[#5fe086] hover:bg-[#3fd46b]/30"
             }`}
           >
@@ -891,17 +891,17 @@ function MediaSheet() {
             <span>-{fmtTime(t.length - s.progress)}</span>
           </div>
           <div className="mt-5 flex items-center gap-8 text-white">
-            <button aria-label="Previous" onClick={() => s.nextTrack(-1)} className="opacity-80 hover:opacity-100">
+            <button aria-label="Previous" onClick={() => s.nextTrack(-1)} className="rounded-full opacity-80 transition hover:opacity-100 active:press">
               <SkipBack size={30} fill="currentColor" strokeWidth={1} />
             </button>
             <button
               aria-label="Play/pause"
               onClick={() => s.set({ playing: !s.playing })}
-              className="grid h-[68px] w-[68px] place-items-center rounded-full bg-white text-black transition active:scale-95"
+              className="grid h-[68px] w-[68px] place-items-center rounded-full bg-white text-black transition active:press"
             >
               {s.playing ? <Pause size={28} fill="currentColor" strokeWidth={0} /> : <Play size={28} fill="currentColor" strokeWidth={0} className="translate-x-0.5" />}
             </button>
-            <button aria-label="Next" onClick={() => s.nextTrack(1)} className="opacity-80 hover:opacity-100">
+            <button aria-label="Next" onClick={() => s.nextTrack(1)} className="rounded-full opacity-80 transition hover:opacity-100 active:press">
               <SkipForward size={30} fill="currentColor" strokeWidth={1} />
             </button>
           </div>
@@ -913,7 +913,7 @@ function MediaSheet() {
           <button
             key={tr.title}
             onClick={() => s.set({ track: i, progress: 0, playing: true })}
-            className={`flex w-full items-center gap-3 rounded-[10px] px-2 py-2.5 text-left transition hover:bg-white/[0.05] ${i === s.track ? "bg-white/[0.07]" : ""}`}
+            className={`flex w-full items-center gap-3 rounded-[10px] px-2 py-2.5 text-left transition hover:bg-white/[0.05] active:press ${i === s.track ? "bg-white/[0.07]" : ""}`}
           >
             <span className="h-9 w-9 shrink-0 rounded-[6px]" style={{ background: `linear-gradient(135deg, hsl(${tr.hue} 60% 50%), hsl(${(tr.hue + 50) % 360} 55% 22%))` }} />
             <span className="min-w-0">
@@ -965,7 +965,7 @@ function PhoneSheet() {
             key={l}
             data-slot
             onClick={() => setTab(l)}
-            className="relative flex w-full rounded-[10px] px-3 py-[11px] text-left text-[14.5px]"
+            className="relative flex w-full rounded-[10px] px-3 py-[11px] text-left text-[14.5px] transition active:press"
           >
             <span className={`relative ${tab === l ? "text-white" : "text-white/70"}`}>{l}</span>
           </button>
@@ -987,7 +987,7 @@ function PhoneSheet() {
               right={
                 <button
                   onClick={() => dial(c.n)}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#3fd46b]/15 text-[#3fd46b] transition hover:bg-[#3fd46b]/25 active:scale-95"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#3fd46b]/15 text-[#3fd46b] transition hover:bg-[#3fd46b]/25 active:press"
                   aria-label={`Call ${c.n}`}
                 >
                   <Phone size={17} fill="currentColor" strokeWidth={0} />
@@ -1014,7 +1014,7 @@ function CallBanner({ to, at, onEnd }: { to: string; at: number; onEnd: () => vo
       <button
         aria-label="End call"
         onClick={onEnd}
-        className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#ff4a4a] text-white transition hover:bg-[#ff5f5f] active:scale-95"
+        className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#ff4a4a] text-white transition hover:bg-[#ff5f5f] active:press"
       >
         <PhoneOff size={18} />
       </button>
@@ -1038,7 +1038,7 @@ function Keypad({ onCall }: { onCall: (to: string) => void }) {
           <button
             aria-label="Delete digit"
             onClick={() => setDigits((d) => d.slice(0, -1))}
-            className="grid h-10 w-10 shrink-0 place-items-center text-white/60 transition hover:text-white"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white/60 transition hover:text-white active:press"
           >
             <Delete size={20} strokeWidth={1.7} />
           </button>
@@ -1049,7 +1049,7 @@ function Keypad({ onCall }: { onCall: (to: string) => void }) {
           <button
             key={k}
             onClick={() => setDigits((d) => (d + k).slice(0, 15))}
-            className="h-14 rounded-[14px] bg-white/[0.05] text-[22px] text-white transition hover:bg-white/[0.08] active:scale-95"
+            className="h-14 rounded-[14px] bg-white/[0.05] text-[22px] text-white transition hover:bg-white/[0.08] active:press"
           >
             {k}
           </button>
@@ -1059,7 +1059,7 @@ function Keypad({ onCall }: { onCall: (to: string) => void }) {
         aria-label="Call"
         disabled={!digits}
         onClick={() => onCall(digits)}
-        className="mx-auto mt-5 grid h-14 w-14 place-items-center rounded-full bg-[#3fd46b] text-black transition active:scale-95 disabled:opacity-30"
+        className="mx-auto mt-5 grid h-14 w-14 place-items-center rounded-full bg-[#3fd46b] text-black transition active:press disabled:opacity-30"
       >
         <Phone size={20} fill="currentColor" strokeWidth={0} />
       </button>
@@ -1120,7 +1120,7 @@ function ProjectionSheet({ id, phone }: { id: "carplay" | "androidauto"; phone: 
       </p>
       <button
         onClick={() => openSheet("devices")}
-        className="mt-2 rounded-[12px] bg-white/[0.08] px-5 py-3 text-[15px] text-white transition hover:bg-white/[0.12] active:scale-95"
+        className="mt-2 rounded-[12px] bg-white/[0.08] px-5 py-3 text-[15px] text-white transition hover:bg-white/[0.12] active:press"
       >
         Open Devices
       </button>

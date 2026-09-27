@@ -17,7 +17,7 @@ export function MiniPlayer() {
   const t = TRACKS[s.track];
   return (
     <div className="overflow-hidden rounded-[14px] bg-[#16191d] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
-      <button onClick={() => s.openSheet("media")} className="flex w-full items-center gap-3.5 p-3 text-left">
+      <button onClick={() => s.openSheet("media")} className="flex w-full items-center gap-3.5 p-3 text-left transition active:press">
         <AlbumArt size={54} radius={8} />
         <div className="min-w-0 flex-1">
           <div className="truncate text-[15px] font-medium text-white">{t.title}</div>
@@ -51,7 +51,7 @@ function Btn({ children, label, onClick }: { children: React.ReactNode; label: s
     <button
       aria-label={label}
       onClick={onClick}
-      className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-white/[0.06] hover:text-white active:scale-95"
+      className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-white/[0.06] hover:text-white active:press"
     >
       {children}
     </button>
