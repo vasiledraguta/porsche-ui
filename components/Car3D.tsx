@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -17,6 +17,12 @@ const MODEL = "/car/911-gt3-rs.glb";
 const HERO: [number, number, number] = [5.9, 2.2, 6.1];
 const TARGET: [number, number, number] = [0, 0.5, 0];
 const RESPIN_MS = 4000;
+const SPIN_HOLD_MS = 600;
+const SPIN_SPEED = 0.6;
+const SPIN_RAMP_S = 1.6;
+const GLIDE_MIN_S = 0.8;
+const GLIDE_MAX_S = 1.8;
+const GLIDE_S_PER_RAD = 0.45;
 
 const CHASE: [number, number, number] = [0, 2.2, -7.2];
 const CHASE_TARGET: [number, number, number] = [0, 0.7, 0];
@@ -300,20 +306,40 @@ function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => v
   );
 }
 
-function Rig() {
+function Rig({ revealed }: { revealed: boolean }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const invalidate = useThree((s) => s.invalidate);
-  const spin = useRef(true);
+  const spin = useRef(false);
   const resetAt = useCar((s) => s.carViewReset);
   const last = useRef(resetAt);
   const driving = useCar((s) => s.gear !== "P");
   const wasDriving = useRef(driving);
   const glide = useRef<"chase" | "hero" | null>(driving ? "chase" : null);
-  const view = useRef({ at: new THREE.Spherical(), goal: new THREE.Spherical(), offset: new THREE.Vector3(), target: new THREE.Vector3() });
+  const view = useRef({
+    t: -1,
+    dur: GLIDE_MIN_S,
+    at: new THREE.Spherical(),
+    from: new THREE.Spherical(),
+    goal: new THREE.Spherical(),
+    offset: new THREE.Vector3(),
+    fromTarget: new THREE.Vector3(),
+    target: new THREE.Vector3(),
+  });
   const idle = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const resume = useRef(false);
 
   useEffect(() => () => clearTimeout(idle.current), []);
   useEffect(() => invalidate(), [resetAt, driving, invalidate]);
+  const land = useCallback(() => {
+    clearTimeout(idle.current);
+    idle.current = setTimeout(() => {
+      spin.current = true;
+      invalidate();
+    }, SPIN_HOLD_MS);
+  }, [invalidate]);
+  useEffect(() => {
+    if (revealed) land();
+  }, [revealed, land]);
 
   useFrame((_, dt) => {
     const c = controls.current;
@@ -322,35 +348,52 @@ function Rig() {
     if (resetAt !== last.current) {
       last.current = resetAt;
       glide.current = "hero";
-      spin.current = true;
+      view.current.t = -1;
+      clearTimeout(idle.current);
+      spin.current = false;
+      resume.current = true;
     }
     if (driving !== wasDriving.current) {
       wasDriving.current = driving;
       glide.current = driving ? "chase" : "hero";
-      if (!driving) spin.current = true;
+      view.current.t = -1;
+      clearTimeout(idle.current);
+      spin.current = false;
+      resume.current = !driving;
     }
     c.autoRotate = spin.current && !driving && !glide.current;
+    c.autoRotateSpeed = c.autoRotate ? Math.min(SPIN_SPEED, c.autoRotateSpeed + (SPIN_SPEED / SPIN_RAMP_S) * Math.min(dt, 1 / 30)) : 0;
     if (!glide.current) {
       if (c.autoRotate) invalidate();
       return;
     }
-    const chase = glide.current === "chase";
     const v = view.current;
-    const k = 1 - Math.exp(-3.5 * dt);
-    v.target.set(...(chase ? CHASE_TARGET : TARGET));
-    v.goal.setFromVector3(v.offset.set(...(chase ? CHASE : HERO)).sub(v.target));
-    c.target.lerp(v.target, k);
-    v.at.setFromVector3(v.offset.copy(c.object.position).sub(c.target));
-    const dTheta = Math.atan2(Math.sin(v.goal.theta - v.at.theta), Math.cos(v.goal.theta - v.at.theta));
-    const dPhi = v.goal.phi - v.at.phi;
-    const dRadius = v.goal.radius - v.at.radius;
-    v.at.theta += dTheta * k;
-    v.at.phi += dPhi * k;
-    v.at.radius += dRadius * k;
+    if (v.t < 0) {
+      const chase = glide.current === "chase";
+      v.fromTarget.copy(c.target);
+      v.target.set(...(chase ? CHASE_TARGET : TARGET));
+      v.from.setFromVector3(v.offset.copy(c.object.position).sub(c.target));
+      v.goal.setFromVector3(v.offset.set(...(chase ? CHASE : HERO)).sub(v.target));
+      v.goal.theta = v.from.theta + Math.atan2(Math.sin(v.goal.theta - v.from.theta), Math.cos(v.goal.theta - v.from.theta));
+      v.dur = THREE.MathUtils.clamp(GLIDE_MIN_S + Math.abs(v.goal.theta - v.from.theta) * GLIDE_S_PER_RAD, GLIDE_MIN_S, GLIDE_MAX_S);
+      v.t = 0;
+    }
+    v.t = Math.min(1, v.t + Math.min(dt, 1 / 30) / v.dur);
+    const e = v.t < 0.5 ? 4 * v.t ** 3 : 1 - (-2 * v.t + 2) ** 3 / 2;
+    c.target.lerpVectors(v.fromTarget, v.target, e);
+    v.at.set(
+      THREE.MathUtils.lerp(v.from.radius, v.goal.radius, e),
+      THREE.MathUtils.lerp(v.from.phi, v.goal.phi, e),
+      THREE.MathUtils.lerp(v.from.theta, v.goal.theta, e),
+    );
     c.object.position.copy(c.target).add(v.offset.setFromSpherical(v.at));
     c.update();
-    if (Math.abs(dTheta) < 0.002 && Math.abs(dPhi) < 0.002 && Math.abs(dRadius) < 0.005 && c.target.distanceTo(v.target) < 0.005) {
+    if (v.t >= 1) {
       glide.current = null;
+      if (resume.current) {
+        resume.current = false;
+        land();
+      }
     }
     if (glide.current || (spin.current && !driving)) invalidate();
   }, -0.5);
@@ -369,10 +412,10 @@ function Rig() {
       minPolarAngle={0.75}
       maxPolarAngle={1.5}
       enabled={!driving}
-      autoRotateSpeed={0.6}
       onStart={() => {
         clearTimeout(idle.current);
         spin.current = false;
+        resume.current = false;
         glide.current = null;
         if (controls.current) controls.current.autoRotate = false;
       }}
@@ -431,7 +474,7 @@ function AmbientTint() {
 }
 
 /** Studio-lit, spinnable 3D car with openable lids and doors. */
-export default function Car3D({ onReady }: { onReady: () => void }) {
+export default function Car3D({ onReady, revealed }: { onReady: () => void; revealed: boolean }) {
   const open = useParts();
   const [hover, setHover] = useState<PartId | null>(null);
   const calloutsRef: Callouts = useRef({});
@@ -463,7 +506,7 @@ export default function Car3D({ onReady }: { onReady: () => void }) {
         </Suspense>
         <ambientLight intensity={0.15} />
         <directionalLight position={[4, 8, 3]} intensity={1.1} castShadow shadow-mapSize={[1024, 1024]} />
-        <Rig />
+        <Rig revealed={revealed} />
       </Canvas>
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {PART_IDS.map((id) => (

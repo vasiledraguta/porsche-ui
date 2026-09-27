@@ -117,12 +117,13 @@ function CarStage() {
   const driving = useCar((s) => s.gear !== "P");
   const [ready, setReady] = useState(false);
   const [shimmered, setShimmered] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   return (
     <div className="relative mx-2 mt-1 flex-1 overflow-hidden rounded-[18px]">
       {/* floor glow */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[radial-gradient(55%_45%_at_50%_70%,rgba(255,255,255,0.06),transparent_70%)]" />
-      <Car3D onReady={() => setReady(true)} />
-      <AnimatePresence>
+      <Car3D onReady={() => setReady(true)} revealed={revealed} />
+      <AnimatePresence onExitComplete={() => setRevealed(true)}>
         {!(ready && shimmered) && (
           <motion.div
             role="status"
