@@ -283,20 +283,42 @@ function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => v
   );
 }
 
+const HERO_ORBIT = new THREE.Spherical().setFromVector3(new THREE.Vector3(...HERO).sub(new THREE.Vector3(...TARGET)));
+const orbit = new THREE.Spherical();
+const offset = new THREE.Vector3();
+
 function Rig() {
   const controls = useRef<OrbitControlsImpl>(null);
   const [spin, setSpin] = useState(true);
   const resetAt = useCar((s) => s.carViewReset);
   const last = useRef(resetAt);
+  const returning = useRef(false);
 
-  useFrame(() => {
+  useFrame((_, dt) => {
+    const c = controls.current;
+    if (!c) return;
     // "Reset view" from the overlay: return to the 3/4 front hero angle
-    if (resetAt !== last.current && controls.current) {
+    if (resetAt !== last.current) {
       last.current = resetAt;
-      controls.current.object.position.set(...HERO);
-      controls.current.target.set(...TARGET);
-      controls.current.update();
+      returning.current = true;
     }
+    if (!returning.current) return;
+    c.autoRotate = false;
+    c.target.set(...TARGET);
+    orbit.setFromVector3(offset.subVectors(c.object.position, c.target));
+    const dTheta = THREE.MathUtils.euclideanModulo(HERO_ORBIT.theta - orbit.theta + Math.PI, Math.PI * 2) - Math.PI;
+    const done = Math.abs(dTheta) < 1e-3 && Math.abs(HERO_ORBIT.phi - orbit.phi) < 1e-3 && Math.abs(HERO_ORBIT.radius - orbit.radius) < 1e-2;
+    if (done) {
+      orbit.copy(HERO_ORBIT);
+      returning.current = false;
+      c.autoRotate = spin;
+    } else {
+      orbit.theta = THREE.MathUtils.damp(orbit.theta, orbit.theta + dTheta, 5, dt);
+      orbit.phi = THREE.MathUtils.damp(orbit.phi, HERO_ORBIT.phi, 5, dt);
+      orbit.radius = THREE.MathUtils.damp(orbit.radius, HERO_ORBIT.radius, 5, dt);
+    }
+    c.object.position.setFromSpherical(orbit).add(c.target);
+    c.update();
   });
 
   return (
@@ -314,7 +336,10 @@ function Rig() {
       maxPolarAngle={1.5}
       autoRotate={spin}
       autoRotateSpeed={0.6}
-      onStart={() => setSpin(false)}
+      onStart={() => {
+        returning.current = false;
+        setSpin(false);
+      }}
     />
   );
 }
