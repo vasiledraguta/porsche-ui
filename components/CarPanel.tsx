@@ -24,12 +24,18 @@ export function CarPanel() {
   );
 }
 
-const DIAL_START = -135;
-const DIAL_SWEEP = 270;
+const DIAL_MAX = 10000;
+const DIAL_START = -116.5;
+const DIAL_SWEEP = 233;
+const SHIFT_FROM = 6000;
+const SHIFT_AT = 8300;
+const WINDOW_TOP = 42;
+const WINDOW_R = 94;
+const WINDOW_HALF = Math.sqrt(WINDOW_R ** 2 - WINDOW_TOP ** 2);
 
 function polar(deg: number, r: number) {
   const a = (deg * Math.PI) / 180;
-  return [150 + r * Math.sin(a), 150 - r * Math.cos(a)] as const;
+  return [r * Math.sin(a), -r * Math.cos(a)] as const;
 }
 
 function arc(from: number, to: number, r: number) {
@@ -38,7 +44,7 @@ function arc(from: number, to: number, r: number) {
   return `M ${x1} ${y1} A ${r} ${r} 0 ${to - from > 180 ? 1 : 0} 1 ${x2} ${y2}`;
 }
 
-const rpmDeg = (rpm: number) => DIAL_START + (Math.min(rpm, REDLINE) / REDLINE) * DIAL_SWEEP;
+const rpmDeg = (rpm: number) => DIAL_START + (Math.min(Math.max(rpm, 0), DIAL_MAX) / DIAL_MAX) * DIAL_SWEEP;
 
 function DriveHeader() {
   const speed = useCar((s) => s.speed);
@@ -102,78 +108,98 @@ function Cluster() {
   const gear = useCar((s) => s.gear);
   const pdkGear = useCar((s) => s.pdkGear);
   const rpm = useCar((s) => s.rpm);
-  const shift = rpm > 8300;
-  const pct = Math.min(1, rpm / REDLINE);
-  const needle = rpmDeg(rpm);
-  const [n1x, n1y] = polar(needle, 44);
-  const [n2x, n2y] = polar(needle, 124);
+  const shift = rpm >= SHIFT_AT;
+  const fill = Math.min(1, Math.max(0, (rpm - SHIFT_FROM) / (SHIFT_AT - SHIFT_FROM)));
 
   return (
-    <div className="relative h-[300px] w-[300px]">
-      <svg viewBox="0 0 300 300" className="absolute inset-0 h-full w-full" aria-hidden>
-        <path d={arc(DIAL_START, DIAL_START + DIAL_SWEEP, 134)} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={4} />
-        <path d={arc(rpmDeg(8000), DIAL_START + DIAL_SWEEP, 134)} fill="none" stroke="#ff3b30" strokeOpacity={0.55} strokeWidth={4} />
-        <path
-          d={arc(DIAL_START, DIAL_START + DIAL_SWEEP, 134)}
-          pathLength={1}
-          strokeDasharray={`${pct} 1`}
-          fill="none"
-          stroke={shift ? "#ff3b30" : pct > 0.78 ? "#ffb020" : "#f2f4f7"}
-          strokeWidth={4}
-        />
-        {Array.from({ length: 19 }, (_, i) => {
-          const r = i * 500;
-          const major = i % 2 === 0;
-          const [x1, y1] = polar(rpmDeg(r), 126);
-          const [x2, y2] = polar(rpmDeg(r), major ? 112 : 119);
-          return (
-            <line
-              key={i}
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              stroke={r >= 8000 ? "#ff3b30" : major ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.3)"}
-              strokeWidth={major ? 2 : 1.2}
-            />
-          );
+    <div className="flex items-center gap-5">
+      <ShiftBar fill={fill} shift={shift} />
+      <svg viewBox="-160 -160 320 320" className="h-[300px] w-[300px]" aria-hidden style={{ fontVariantNumeric: "tabular-nums" }}>
+        <defs>
+          <radialGradient id="tach-face">
+            <stop offset="0" stopColor="#17181b" />
+            <stop offset="1" stopColor="#08090a" />
+          </radialGradient>
+          <linearGradient id="tach-bezel" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#8b9096" />
+            <stop offset="0.5" stopColor="#232428" />
+            <stop offset="1" stopColor="#5d6167" />
+          </linearGradient>
+        </defs>
+        <circle r={155} fill="none" stroke="url(#tach-bezel)" strokeWidth={6} />
+        <circle r={152} fill="url(#tach-face)" />
+        <circle r={111} fill="none" stroke="#18191d" strokeWidth={33} />
+        {[98, 104, 118, 124].map((r) => (
+          <circle key={r} r={r} fill="none" stroke="rgba(255,255,255,0.035)" />
+        ))}
+        <path d={arc(rpmDeg(REDLINE), rpmDeg(DIAL_MAX), 141)} fill="none" stroke="#e5322b" strokeWidth={3} />
+        {Array.from({ length: 21 }, (_, i) => {
+          const deg = rpmDeg(i * 500);
+          const red = i * 500 >= REDLINE;
+          if (i % 2 === 0) {
+            const [x1, y1] = polar(deg, 133);
+            const [x2, y2] = polar(deg, 146);
+            return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={red ? "#e5322b" : "#e9ecef"} strokeWidth={3} />;
+          }
+          const [x, y] = polar(deg, 142);
+          return <circle key={i} cx={x} cy={y} r={1.8} fill={red ? "#e5322b" : "rgba(233,236,239,0.8)"} />;
         })}
-        {Array.from({ length: 10 }, (_, k) => {
-          const [x, y] = polar(rpmDeg(k * 1000), 97);
+        {Array.from({ length: 11 }, (_, k) => {
+          const [x, y] = polar(rpmDeg(k * 1000), 111);
           return (
-            <text
-              key={k}
-              x={x}
-              y={y}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize={15}
-              fill={k >= 8 ? "#ff6b61" : "rgba(255,255,255,0.6)"}
-              className="tabular-nums"
-            >
+            <text key={k} x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={20} fontWeight={500} fill="#f2f4f7">
               {k}
             </text>
           );
         })}
-        <text x={150} y={214} textAnchor="middle" fontSize={10} letterSpacing={0.6} fill="rgba(255,255,255,0.35)">
-          × 1000 rpm
+        <text y={-40} textAnchor="middle" dominantBaseline="central" fontSize={22} fontWeight={700} fontStyle="italic" letterSpacing={0.5} fill="#f2f4f7">
+          GT3 RS
         </text>
-        <line x1={n1x} y1={n1y} x2={n2x} y2={n2y} stroke="#ff4b2b" strokeWidth={3} strokeLinecap="round" />
+        <path
+          d={`M ${-WINDOW_HALF} ${WINDOW_TOP} L ${WINDOW_HALF} ${WINDOW_TOP} A ${WINDOW_R} ${WINDOW_R} 0 0 1 ${-WINDOW_HALF} ${WINDOW_TOP} Z`}
+          fill="#030405"
+          stroke="rgba(255,255,255,0.08)"
+        />
+        <text y={73} textAnchor="middle" fontSize={27} fontWeight={400} fill="#f2f4f7">
+          {Math.round(speed)}
+        </text>
+        <text y={86} textAnchor="middle" fontSize={8.5} fill="rgba(242,244,247,0.5)">
+          km/h
+        </text>
+        <g transform="translate(41 62)">
+          <rect x={-10} y={-11} width={20} height={22} rx={4} fill="none" stroke="rgba(255,255,255,0.25)" />
+          <text textAnchor="middle" dominantBaseline="central" fontSize={15} fontWeight={600} fill="#f2f4f7">
+            {gear === "D" ? pdkGear : gear}
+          </text>
+        </g>
+        {rpm === 0 && (
+          <g transform="translate(-41 62)">
+            <rect x={-9} y={-10} width={18} height={20} rx={3} fill="none" stroke="#4ca765" />
+            <text textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600} fill="#75d28b">
+              A
+            </text>
+          </g>
+        )}
+        <g transform={`rotate(${rpmDeg(rpm)})`}>
+          <polygon points="-2.6,0 -1.2,-128 1.2,-128 2.6,0 1.8,24 -1.8,24" fill="#f4f5f6" />
+        </g>
+        <circle r={13} fill="#1c1d21" stroke="#3b3d42" strokeWidth={1.5} />
+        <circle r={4} fill="#0c0d0f" />
       </svg>
-      <div className="absolute inset-x-0 top-[92px] flex flex-col items-center">
-        <span className="text-[76px] leading-none font-normal text-white tabular-nums">{Math.round(speed)}</span>
-        <span className="mt-1.5 text-[13px] text-white/45">km/h</span>
-      </div>
-      <div className="absolute bottom-[10px] left-1/2 flex -translate-x-1/2 items-center gap-2">
-        <span
-          className={`grid h-11 min-w-11 place-items-center rounded-[10px] border px-2 text-[26px] leading-none font-medium tabular-nums transition-colors ${
-            shift ? "border-[#ff3b30] text-[#ff6b61]" : "border-white/15 text-white"
-          }`}
-        >
-          {gear === "D" ? pdkGear : gear}
-        </span>
-        {rpm === 0 && <StartStop />}
-      </div>
+      <ShiftBar fill={fill} shift={shift} />
+    </div>
+  );
+}
+
+function ShiftBar({ fill, shift }: { fill: number; shift: boolean }) {
+  return (
+    <div className="relative h-[120px] w-[6px] overflow-hidden rounded-full bg-white/[0.08]">
+      <motion.span
+        className="absolute inset-x-0 bottom-0 rounded-full"
+        style={{ height: `${(shift ? 1 : fill) * 100}%`, background: shift ? "#2f8fff" : "#ffd100" }}
+        animate={{ opacity: shift ? [1, 0.15] : 1 }}
+        transition={shift ? { duration: 0.12, repeat: Infinity, repeatType: "reverse" } : { duration: 0 }}
+      />
     </div>
   );
 }
