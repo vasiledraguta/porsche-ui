@@ -163,6 +163,7 @@ type Actions = {
   set: (p: Partial<State>) => void;
   toggleLock: () => void;
   togglePart: (id: PartId) => void;
+  setGear: (gear: State["gear"]) => void;
   setVolume: (volume: number) => void;
   setMode: (m: DriveMode) => void;
   cycleMode: (dir: 1 | -1) => void;
@@ -189,7 +190,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   stopIdx: 0,
   tripTime: 0,
   tripFuelL: 0,
-  gear: "D",
+  gear: "P",
   mode: "normal",
   paint: "silver",
   throttle: 0,
@@ -272,6 +273,8 @@ export const useCar = create<State & Actions>((set, get) => ({
       const open = !s[key];
       return { [key]: open, ...(open ? { locked: false } : {}) };
     }),
+  setGear: (gear) =>
+    set(gear === "D" ? { gear, locked: true, frunkOpen: false, trunkOpen: false, doorL: false, doorR: false } : { gear }),
   setVolume: (volume) => set((s) => ({ volume, lastVolume: volume > 0 ? volume : s.lastVolume })),
   setMode: (mode) =>
     set((s) => ({
@@ -302,7 +305,7 @@ export const useCar = create<State & Actions>((set, get) => ({
     let brake = s.brake;
     let { holdUntil, stopIdx, routeD } = s;
 
-    if (s.autopilot && s.throttle === 0 && s.brake === 0) {
+    if (s.autopilot && s.gear === "D" && s.throttle === 0 && s.brake === 0) {
       // Cruise the route at believable city speeds: slow for turns, stop at lights.
       const { step, dist } = nextStep(routeD);
       let target = 50;
@@ -354,7 +357,7 @@ export const useCar = create<State & Actions>((set, get) => ({
     const wheelRpm = s.gear === "D" ? (kmh / GEAR_TOP[gearN]) * REDLINE : 0;
     const launch = IDLE_RPM + throttle * (s.gear === "D" ? 2400 : 6000);
     const targetRpm = Math.min(REDLINE, Math.max(wheelRpm, kmh < 12 ? launch : IDLE_RPM));
-    const engineStopped = s.startStop && kmh === 0 && throttle === 0;
+    const engineStopped = s.startStop && s.gear === "D" && kmh === 0 && throttle === 0;
     const rpm = engineStopped ? 0 : s.rpm === 0 ? IDLE_RPM : s.rpm + (targetRpm - s.rpm) * Math.min(1, dt * (targetRpm > s.rpm ? 9 : 6));
 
     const powerKw = nv > 0.3 ? Math.max(0, driveForce * nv) / 1000 : 0;
