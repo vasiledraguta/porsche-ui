@@ -17,8 +17,8 @@ const MODEL = "/car/911-gt3-rs.glb";
 const HERO: [number, number, number] = [5.9, 2.2, 6.1];
 const TARGET: [number, number, number] = [0, 0.5, 0];
 
-const CHASE: [number, number, number] = [0, 3, -8.1];
-const CHASE_TARGET: [number, number, number] = [0, 1.6, 0];
+const CHASE: [number, number, number] = [0, 2.2, -7.2];
+const CHASE_TARGET: [number, number, number] = [0, 0.7, 0];
 
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
