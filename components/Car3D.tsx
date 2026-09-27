@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useRef, useState, type RefObject } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -16,6 +16,7 @@ const MODEL = "/car/911-gt3-rs.glb";
 /** 3/4 front-left hero camera (model nose points to +Z, driver side is +X). */
 const HERO: [number, number, number] = [5.9, 2.2, 6.1];
 const TARGET: [number, number, number] = [0, 0.5, 0];
+const RESPIN_MS = 4000;
 
 /** Porsche GT Silver Metallic, replacing the model's flat grey body shader. */
 const PAINT = "#b4b8bc";
@@ -288,6 +289,9 @@ function Rig() {
   const [spin, setSpin] = useState(true);
   const resetAt = useCar((s) => s.carViewReset);
   const last = useRef(resetAt);
+  const idle = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(idle.current), []);
 
   useFrame(() => {
     // "Reset view" from the overlay: return to the 3/4 front hero angle
@@ -314,7 +318,13 @@ function Rig() {
       maxPolarAngle={1.5}
       autoRotate={spin}
       autoRotateSpeed={0.6}
-      onStart={() => setSpin(false)}
+      onStart={() => {
+        clearTimeout(idle.current);
+        setSpin(false);
+      }}
+      onEnd={() => {
+        idle.current = setTimeout(() => setSpin(true), RESPIN_MS);
+      }}
     />
   );
 }
