@@ -18,6 +18,9 @@ const HERO: [number, number, number] = [5.9, 2.2, 6.1];
 const TARGET: [number, number, number] = [0, 0.5, 0];
 const RESPIN_MS = 4000;
 
+const CHASE: [number, number, number] = [0, 2.2, -7.2];
+const CHASE_TARGET: [number, number, number] = [0, 0.7, 0];
+
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
 const AMBIENT_RIM = 4;
@@ -116,6 +119,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
   const lift = useCar((s) => s.lift);
   const drs = useCar((s) => s.drs);
   const paint = useCar((s) => s.paint);
+  const driving = useCar((s) => s.gear !== "P");
   const lifted = useRef<THREE.Group>(null);
   const placed = useRef<THREE.Group>(null);
   const spot = useMemo(() => new THREE.Vector3(), []);
@@ -217,7 +221,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
       if (!el) continue;
       placed.current.localToWorld(spot.copy(rig.spots[id]));
       const facing = NORMALS[id].dot(toCamera.subVectors(camera.position, spot).normalize());
-      const o = THREE.MathUtils.clamp((facing - 0.05) * 4, 0, 1);
+      const o = driving ? 0 : THREE.MathUtils.clamp((facing - 0.05) * 4, 0, 1);
       spot.project(camera);
       el.style.transform = `translate3d(${((spot.x + 1) / 2) * size.width}px, ${((1 - spot.y) / 2) * size.height}px, 0)`;
       el.style.opacity = String(o);
@@ -234,7 +238,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
           object={rig.root}
           onPointerMove={(e: ThreeEvent<PointerEvent>) => {
             e.stopPropagation();
-            const id = partOf(e) ?? null;
+            const id = driving ? null : (partOf(e) ?? null);
             if (id !== hover) {
               setHover(id);
               document.body.style.cursor = id ? "pointer" : "";
@@ -246,7 +250,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
           }}
           onClick={(e: ThreeEvent<MouseEvent>) => {
             // ignore clicks that were really a drag-to-rotate
-            if (e.delta > 4) return;
+            if (driving || e.delta > 4) return;
             const id = partOf(e);
             if (id) {
               e.stopPropagation();
@@ -283,16 +287,15 @@ function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => v
   );
 }
 
-const HERO_ORBIT = new THREE.Spherical().setFromVector3(new THREE.Vector3(...HERO).sub(new THREE.Vector3(...TARGET)));
-const orbit = new THREE.Spherical();
-const offset = new THREE.Vector3();
-
 function Rig() {
   const controls = useRef<OrbitControlsImpl>(null);
-  const [spin, setSpin] = useState(true);
+  const spin = useRef(true);
   const resetAt = useCar((s) => s.carViewReset);
   const last = useRef(resetAt);
-  const returning = useRef(false);
+  const driving = useCar((s) => s.gear !== "P");
+  const wasDriving = useRef(driving);
+  const glide = useRef<"chase" | "hero" | null>(driving ? "chase" : null);
+  const view = useRef({ at: new THREE.Spherical(), goal: new THREE.Spherical(), offset: new THREE.Vector3(), target: new THREE.Vector3() });
   const idle = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => () => clearTimeout(idle.current), []);
@@ -303,25 +306,34 @@ function Rig() {
     // "Reset view" from the overlay: return to the 3/4 front hero angle
     if (resetAt !== last.current) {
       last.current = resetAt;
-      returning.current = true;
+      glide.current = "hero";
+      spin.current = true;
     }
-    if (!returning.current) return;
-    c.autoRotate = false;
-    c.target.set(...TARGET);
-    orbit.setFromVector3(offset.subVectors(c.object.position, c.target));
-    const dTheta = THREE.MathUtils.euclideanModulo(HERO_ORBIT.theta - orbit.theta + Math.PI, Math.PI * 2) - Math.PI;
-    const done = Math.abs(dTheta) < 1e-3 && Math.abs(HERO_ORBIT.phi - orbit.phi) < 1e-3 && Math.abs(HERO_ORBIT.radius - orbit.radius) < 1e-2;
-    if (done) {
-      orbit.copy(HERO_ORBIT);
-      returning.current = false;
-      c.autoRotate = spin;
-    } else {
-      orbit.theta = THREE.MathUtils.damp(orbit.theta, orbit.theta + dTheta, 5, dt);
-      orbit.phi = THREE.MathUtils.damp(orbit.phi, HERO_ORBIT.phi, 5, dt);
-      orbit.radius = THREE.MathUtils.damp(orbit.radius, HERO_ORBIT.radius, 5, dt);
+    if (driving !== wasDriving.current) {
+      wasDriving.current = driving;
+      glide.current = driving ? "chase" : "hero";
+      if (!driving) spin.current = true;
     }
-    c.object.position.setFromSpherical(orbit).add(c.target);
+    c.autoRotate = spin.current && !driving && !glide.current;
+    if (!glide.current) return;
+    const chase = glide.current === "chase";
+    const v = view.current;
+    const k = 1 - Math.exp(-3.5 * dt);
+    v.target.set(...(chase ? CHASE_TARGET : TARGET));
+    v.goal.setFromVector3(v.offset.set(...(chase ? CHASE : HERO)).sub(v.target));
+    c.target.lerp(v.target, k);
+    v.at.setFromVector3(v.offset.copy(c.object.position).sub(c.target));
+    const dTheta = Math.atan2(Math.sin(v.goal.theta - v.at.theta), Math.cos(v.goal.theta - v.at.theta));
+    const dPhi = v.goal.phi - v.at.phi;
+    const dRadius = v.goal.radius - v.at.radius;
+    v.at.theta += dTheta * k;
+    v.at.phi += dPhi * k;
+    v.at.radius += dRadius * k;
+    c.object.position.copy(c.target).add(v.offset.setFromSpherical(v.at));
     c.update();
+    if (Math.abs(dTheta) < 0.002 && Math.abs(dPhi) < 0.002 && Math.abs(dRadius) < 0.005 && c.target.distanceTo(v.target) < 0.005) {
+      glide.current = null;
+    }
   });
 
   return (
@@ -337,15 +349,17 @@ function Rig() {
       maxDistance={13}
       minPolarAngle={0.75}
       maxPolarAngle={1.5}
-      autoRotate={spin}
+      enabled={!driving}
       autoRotateSpeed={0.6}
       onStart={() => {
         clearTimeout(idle.current);
-        returning.current = false;
-        setSpin(false);
+        spin.current = false;
+        glide.current = null;
       }}
       onEnd={() => {
-        idle.current = setTimeout(() => setSpin(true), RESPIN_MS);
+        idle.current = setTimeout(() => {
+          spin.current = true;
+        }, RESPIN_MS);
       }}
     />
   );

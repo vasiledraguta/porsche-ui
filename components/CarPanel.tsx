@@ -31,7 +31,7 @@ function DriveHeader() {
   const rpm = useCar((s) => s.rpm);
   const fuel = useCar((s) => s.fuel);
   const mode = useCar((s) => s.mode);
-  const set = useCar((s) => s.set);
+  const setGear = useCar((s) => s.setGear);
   const shift = rpm > 8300;
 
   return (
@@ -42,7 +42,7 @@ function DriveHeader() {
             <button
               key={g}
               disabled={g === "P" && speed > 0}
-              onClick={() => set({ gear: g })}
+              onClick={() => setGear(g)}
               className={g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}
             >
               {g === "D" && gear === "D" ? `D${pdkGear}` : g}
@@ -113,6 +113,7 @@ function CarStage() {
   const set = useCar((s) => s.set);
   const toggleLock = useCar((s) => s.toggleLock);
   const anyOpen = useCar((s) => s.frunkOpen || s.trunkOpen || s.doorL || s.doorR);
+  const driving = useCar((s) => s.gear !== "P");
   return (
     <div className="relative mx-2 mt-1 flex-1 overflow-hidden rounded-[18px]">
       {/* floor glow */}
@@ -143,16 +144,24 @@ function CarStage() {
           <span className={`transition-colors ${drs ? "text-(--ambient)" : "text-white"}`}>DRS</span>
         </button>
       </div>
-      <div className="pointer-events-none absolute bottom-2 left-4 flex items-center gap-1.5 text-[11px] text-white/30">
-        <Move3d size={13} strokeWidth={1.6} /> Drag to rotate · tap a part to open
-      </div>
-      <button
-        onClick={() => set({ carViewReset: Date.now() })}
-        aria-label="Reset view"
-        className="absolute right-3 bottom-2 grid h-8 w-8 place-items-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+      <motion.div
+        initial={false}
+        animate={{ opacity: driving ? 0 : 1 }}
+        transition={{ duration: 0.4 }}
+        inert={driving}
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-12"
       >
-        <RotateCcw size={14} strokeWidth={1.8} />
-      </button>
+        <div className="absolute bottom-2 left-4 flex items-center gap-1.5 text-[11px] text-white/30">
+          <Move3d size={13} strokeWidth={1.6} /> Drag to rotate · tap a part to open
+        </div>
+        <button
+          onClick={() => set({ carViewReset: Date.now() })}
+          aria-label="Reset view"
+          className="pointer-events-auto absolute right-3 bottom-2 grid h-8 w-8 place-items-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+        >
+          <RotateCcw size={14} strokeWidth={1.8} />
+        </button>
+      </motion.div>
       <AnimatePresence>
         {lift && (
           <motion.div
