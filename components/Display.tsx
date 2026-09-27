@@ -219,7 +219,7 @@ function Shortcuts() {
         onClick={(e) => {
           if (e.target === e.currentTarget) set({ shortcuts: false });
         }}
-        className="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[18px] bg-[#1a1d22]/95 p-0 text-white shadow-[0_20px_60px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl backdrop:bg-black/55"
+        className="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[18px] bg-[#1a1d22]/95 p-0 text-white shadow-[0_20px_60px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl translate-y-2.5 scale-96 opacity-0 transition-[opacity,scale,translate,overlay,display] transition-discrete duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] open:translate-y-0 open:scale-100 open:opacity-100 open:duration-300 starting:open:translate-y-2.5 starting:open:scale-96 starting:open:opacity-0 backdrop:bg-black/0 backdrop:transition-[background-color,overlay,display] backdrop:transition-discrete backdrop:duration-200 open:backdrop:bg-black/55 open:backdrop:duration-300 starting:open:backdrop:bg-black/0"
       >
         <div className="relative px-7 pt-6 pb-7">
           <h2 id="shortcuts-title" className="text-[12px] tracking-[0.12em] text-white/45 uppercase">
