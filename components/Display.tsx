@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 import { BottomBar } from "./BottomBar";
 import { CarPanel } from "./CarPanel";
-import { EtaBar, MapControls, Maneuver, SearchBox, SpeedLimit } from "./MapOverlays";
+import { DemoDrive, EtaBar, MapControls, Maneuver, SearchBox, SpeedLimit } from "./MapOverlays";
 import { NavMap } from "./NavMap";
 import { Rail } from "./Rail";
 import { Sheets } from "./Sheets";
@@ -58,7 +58,7 @@ export function Display() {
           {/* screen */}
           <div
             className="relative flex h-full w-full overflow-hidden rounded-[22px] bg-black"
-            style={{ width: W, height: H }}
+            style={{ width: W, height: H, ["--ambient" as string]: ambient }}
           >
             <Rail />
             <div className="flex min-w-0 flex-1 flex-col">
@@ -67,6 +67,7 @@ export function Display() {
                 <main className="relative min-w-0 flex-1 overflow-hidden">
                   <NavMap mapRef={mapRef} />
                   <Maneuver />
+                  <DemoDrive />
                   <SearchBox />
                   <SpeedLimit />
                   <MapControls mapRef={mapRef} />
