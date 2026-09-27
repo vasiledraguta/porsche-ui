@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Fan, Volume2, VolumeX } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
@@ -93,9 +94,9 @@ function DockBtn({
 function Temp({ value, onUp, onDown }: { value: number; onUp: () => void; onDown: () => void }) {
   return (
     <div className="flex items-center gap-1">
-      <button aria-label="Cooler" onClick={onDown} className="grid h-11 w-9 place-items-center rounded-[10px] text-white/50 transition hover:text-white active:press">
+      <RepeatBtn aria-label="Cooler" onStep={onDown} className="grid h-11 w-9 place-items-center rounded-[10px] text-white/50 transition hover:text-white active:press">
         <ChevronDown size={22} strokeWidth={1.8} />
-      </button>
+      </RepeatBtn>
       <div className="relative w-[64px] overflow-hidden text-center">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.span
@@ -111,10 +112,53 @@ function Temp({ value, onUp, onDown }: { value: number; onUp: () => void; onDown
         </AnimatePresence>
         <span className="absolute top-0 right-0 text-[12px] text-white/40">°</span>
       </div>
-      <button aria-label="Warmer" onClick={onUp} className="grid h-11 w-9 place-items-center rounded-[10px] text-white/50 transition hover:text-white active:press">
+      <RepeatBtn aria-label="Warmer" onStep={onUp} className="grid h-11 w-9 place-items-center rounded-[10px] text-white/50 transition hover:text-white active:press">
         <ChevronUp size={22} strokeWidth={1.8} />
-      </button>
+      </RepeatBtn>
     </div>
+  );
+}
+
+const REPEAT_DELAY = 400;
+const REPEAT_START = 250;
+const REPEAT_MIN = 60;
+const REPEAT_ACCEL = 0.85;
+
+function RepeatBtn({ onStep, ...props }: { onStep: () => void } & Omit<React.ComponentProps<"button">, "onClick">) {
+  const step = useRef(onStep);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => {
+    step.current = onStep;
+  });
+
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const stop = () => clearTimeout(timer.current);
+  const repeat = (delay: number, next: number) => {
+    timer.current = setTimeout(() => {
+      step.current();
+      repeat(next, Math.max(REPEAT_MIN, next * REPEAT_ACCEL));
+    }, delay);
+  };
+
+  return (
+    <button
+      {...props}
+      onPointerDown={(e) => {
+        if (e.button !== 0) return;
+        stop();
+        step.current();
+        repeat(REPEAT_DELAY, REPEAT_START);
+      }}
+      onPointerUp={stop}
+      onPointerLeave={stop}
+      onPointerCancel={stop}
+      onContextMenu={(e) => e.preventDefault()}
+      onClick={(e) => {
+        if (e.detail === 0) onStep();
+      }}
+    />
   );
 }
 
@@ -147,13 +191,13 @@ function Volume() {
   const setVolume = useCar((s) => s.setVolume);
   return (
     <div className="flex items-center gap-1">
-      <button
+      <RepeatBtn
         aria-label="Volume down"
-        onClick={() => setVolume(Math.max(0, Math.ceil(volume / VOLUME_STEP) * VOLUME_STEP - VOLUME_STEP))}
+        onStep={() => setVolume(Math.max(0, Math.ceil(volume / VOLUME_STEP) * VOLUME_STEP - VOLUME_STEP))}
         className="grid h-11 w-9 place-items-center rounded-[10px] text-white/50 transition hover:text-white active:press"
       >
         <ChevronLeft size={20} />
-      </button>
+      </RepeatBtn>
       <button
         aria-label={volume ? "Mute" : "Unmute"}
         onClick={() => setVolume(volume ? 0 : lastVolume)}
@@ -164,13 +208,13 @@ function Volume() {
           <span className="block h-full rounded-full bg-white/70" style={{ width: `${volume}%` }} />
         </span>
       </button>
-      <button
+      <RepeatBtn
         aria-label="Volume up"
-        onClick={() => setVolume(Math.min(100, Math.floor(volume / VOLUME_STEP) * VOLUME_STEP + VOLUME_STEP))}
+        onStep={() => setVolume(Math.min(100, Math.floor(volume / VOLUME_STEP) * VOLUME_STEP + VOLUME_STEP))}
         className="grid h-11 w-9 place-items-center rounded-[10px] text-white/50 transition hover:text-white active:press"
       >
         <ChevronRight size={20} />
-      </button>
+      </RepeatBtn>
     </div>
   );
 }
