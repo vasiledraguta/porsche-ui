@@ -4,9 +4,30 @@ import { create } from "zustand";
 import { ROUTE_LEN, STOPS, nextStep } from "./route";
 
 export type DriveMode = "wet" | "normal" | "sport" | "track";
+export type PartId = "hood" | "trunk" | "doorL" | "doorR";
+export const PAINTS = {
+  silver: { label: "GT Silver Metallic", color: "#b4b8bc" },
+  white: { label: "White", color: "#f4f3ef" },
+  carrara: { label: "Carrara White Metallic", color: "#dedfdd" },
+  ice: { label: "Ice Grey Metallic", color: "#c6cccf" },
+  grey: { label: "Arctic Grey", color: "#8b9294" },
+  crayon: { label: "Crayon", color: "#b8b5ad" },
+  agate: { label: "Agate Grey Metallic", color: "#55585a" },
+  black: { label: "Black", color: "#101215" },
+  jetBlack: { label: "Jet Black Metallic", color: "#252a2e" },
+  red: { label: "Guards Red", color: "#c9202b" },
+  orange: { label: "Lava Orange", color: "#ec541a" },
+  yellow: { label: "Racing Yellow", color: "#f4ca15" },
+  green: { label: "Python Green", color: "#54b331" },
+  blue: { label: "Shark Blue", color: "#1878c6" },
+  gentian: { label: "Gentian Blue Metallic", color: "#173a6c" },
+} as const;
+export type Paint = keyof typeof PAINTS;
+export const PAINT_ORDER = Object.keys(PAINTS) as Paint[];
 export type Sheet = null | "home" | "vehicle" | "chrono" | "media" | "phone" | "notifications" | "carplay" | "androidauto" | "devices" | "settings";
 export type VehicleTab =
   | "modes"
+  | "appearance"
   | "chassis"
   | "setup"
   | "engine"
@@ -68,6 +89,7 @@ type State = {
   tripFuelL: number;
   gear: "P" | "N" | "D";
   mode: DriveMode;
+  paint: Paint;
   throttle: number;
   brake: number;
   autopilot: boolean;
@@ -75,6 +97,8 @@ type State = {
   sheet: Sheet;
   vehicleTab: VehicleTab;
   modePopupAt: number;
+  shortcuts: boolean;
+  volumePopupAt: number;
   map3d: boolean;
   follow: boolean;
   zoomBias: number;
@@ -139,6 +163,9 @@ type State = {
 
 type Actions = {
   set: (p: Partial<State>) => void;
+  toggleLock: () => void;
+  togglePart: (id: PartId) => void;
+  setGear: (gear: State["gear"]) => void;
   setVolume: (volume: number) => void;
   setMode: (m: DriveMode) => void;
   cycleMode: (dir: 1 | -1) => void;
@@ -165,8 +192,9 @@ export const useCar = create<State & Actions>((set, get) => ({
   stopIdx: 0,
   tripTime: 0,
   tripFuelL: 0,
-  gear: "D",
+  gear: "P",
   mode: "normal",
+  paint: "silver",
   throttle: 0,
   brake: 0,
   autopilot: true,
@@ -174,6 +202,8 @@ export const useCar = create<State & Actions>((set, get) => ({
   sheet: null,
   vehicleTab: "modes",
   modePopupAt: -1e9,
+  shortcuts: false,
+  volumePopupAt: -1e9,
   map3d: true,
   follow: true,
   zoomBias: 0,
@@ -181,8 +211,8 @@ export const useCar = create<State & Actions>((set, get) => ({
   track: 0,
   playing: true,
   progress: 71,
-  volume: 38,
-  lastVolume: 38,
+  volume: 40,
+  lastVolume: 40,
   liked: [0],
 
   chronoRunning: false,
@@ -236,7 +266,20 @@ export const useCar = create<State & Actions>((set, get) => ({
   now: 0,
 
   set: (p) => set(p),
-  setVolume: (volume) => set((s) => ({ volume, lastVolume: volume > 0 ? volume : s.lastVolume })),
+  toggleLock: () =>
+    set((s) => ({
+      locked: !s.locked,
+      ...(!s.locked ? { frunkOpen: false, trunkOpen: false, doorL: false, doorR: false } : {}),
+    })),
+  togglePart: (id) =>
+    set((s) => {
+      const key = id === "hood" ? "frunkOpen" : id === "trunk" ? "trunkOpen" : id;
+      const open = !s[key];
+      return { [key]: open, ...(open ? { locked: false } : {}) };
+    }),
+  setGear: (gear) =>
+    set(gear === "D" ? { gear, locked: true, frunkOpen: false, trunkOpen: false, doorL: false, doorR: false } : { gear }),
+  setVolume: (volume) => set((s) => ({ volume, lastVolume: volume > 0 ? volume : s.lastVolume, volumePopupAt: s.now })),
   setMode: (mode) =>
     set((s) => ({
       mode,
@@ -246,7 +289,7 @@ export const useCar = create<State & Actions>((set, get) => ({
     })),
   cycleMode: (dir) => {
     const i = MODE_ORDER.indexOf(get().mode);
-    get().setMode(MODE_ORDER[Math.min(MODE_ORDER.length - 1, Math.max(0, i + dir))]);
+    get().setMode(MODE_ORDER[(i + dir + MODE_ORDER.length) % MODE_ORDER.length]);
   },
   nextTrack: (dir) => set((s) => ({ track: (s.track + dir + TRACKS.length) % TRACKS.length, progress: 0, playing: true })),
   openSheet: (sheet, tab) =>
@@ -266,7 +309,7 @@ export const useCar = create<State & Actions>((set, get) => ({
     let brake = s.brake;
     let { holdUntil, stopIdx, routeD } = s;
 
-    if (s.autopilot && s.throttle === 0 && s.brake === 0) {
+    if (s.autopilot && s.gear === "D" && s.throttle === 0 && s.brake === 0) {
       // Cruise the route at believable city speeds: slow for turns, stop at lights.
       const { step, dist } = nextStep(routeD);
       let target = 50;
@@ -318,7 +361,7 @@ export const useCar = create<State & Actions>((set, get) => ({
     const wheelRpm = s.gear === "D" ? (kmh / GEAR_TOP[gearN]) * REDLINE : 0;
     const launch = IDLE_RPM + throttle * (s.gear === "D" ? 2400 : 6000);
     const targetRpm = Math.min(REDLINE, Math.max(wheelRpm, kmh < 12 ? launch : IDLE_RPM));
-    const engineStopped = s.startStop && kmh === 0 && throttle === 0;
+    const engineStopped = s.startStop && s.gear === "D" && kmh === 0 && throttle === 0;
     const rpm = engineStopped ? 0 : s.rpm === 0 ? IDLE_RPM : s.rpm + (targetRpm - s.rpm) * Math.min(1, dt * (targetRpm > s.rpm ? 9 : 6));
 
     const powerKw = nv > 0.3 ? Math.max(0, driveForce * nv) / 1000 : 0;
