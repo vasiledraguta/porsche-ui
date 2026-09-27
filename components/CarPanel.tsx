@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
 import { Fuel, Lock, LockOpen, Move3d, RotateCcw } from "lucide-react";
@@ -114,11 +115,30 @@ function CarStage() {
   const toggleLock = useCar((s) => s.toggleLock);
   const anyOpen = useCar((s) => s.frunkOpen || s.trunkOpen || s.doorL || s.doorR);
   const driving = useCar((s) => s.gear !== "P");
+  const [ready, setReady] = useState(false);
+  const [shimmered, setShimmered] = useState(false);
   return (
     <div className="relative mx-2 mt-1 flex-1 overflow-hidden rounded-[18px]">
       {/* floor glow */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[radial-gradient(55%_45%_at_50%_70%,rgba(255,255,255,0.06),transparent_70%)]" />
-      <Car3D />
+      <Car3D onReady={() => setReady(true)} />
+      <AnimatePresence>
+        {!(ready && shimmered) && (
+          <motion.div
+            role="status"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
+            className="pointer-events-none absolute inset-0 grid place-items-center bg-[#0e1013]"
+          >
+            <span className="sr-only">Loading the 3D car</span>
+            <span
+              aria-hidden
+              onAnimationIteration={() => setShimmered(true)}
+              className="h-[150px] w-[117px] animate-[shimmer_2.4s_linear_infinite] bg-[linear-gradient(100deg,rgba(255,255,255,0.4)_35%,rgba(255,255,255,0.95)_50%,rgba(255,255,255,0.4)_65%)] bg-[length:200%_100%] [mask:url(/brand/porsche-crest.svg)_center/contain_no-repeat]"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="pointer-events-none absolute top-3.5 left-4 leading-tight">
         <div className="text-[13px] font-medium tracking-[0.02em] text-white/85">911 GT3 RS</div>
         <div className="text-[11px] text-white/35">992 · GT Silver Metallic</div>
