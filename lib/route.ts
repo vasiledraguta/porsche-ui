@@ -80,3 +80,10 @@ export function fmtDist(m: number) {
 
 /** Traffic lights on the Cluj route (metres along it): Calea Dorobanților, Teodor Mihali, Aurel Vlaicu, Traian Vuia. */
 export const STOPS = [1150, 2370, 3620, 5480, 7080];
+
+// Romanian urban default; the airport approach drops to 30
+export const speedLimitAt = (d: number) => (d > 7900 ? 30 : 50);
+
+const SPEEDING_MARGIN = 3;
+
+export const isSpeeding = (kmh: number, d: number) => Math.round(kmh) >= speedLimitAt(d) + SPEEDING_MARGIN;

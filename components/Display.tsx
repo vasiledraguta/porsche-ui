@@ -1,12 +1,12 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Map } from "maplibre-gl";
 import { AnimatePresence, motion } from "motion/react";
-import { Monitor, X } from "lucide-react";
+import { Keyboard, Monitor, Volume2, VolumeX, X } from "lucide-react";
 import { BottomBar } from "./BottomBar";
 import { CarPanel } from "./CarPanel";
-import { EtaBar, MapControls, Maneuver, SearchBox, SpeedLimit } from "./MapOverlays";
+import { DemoDrive, EtaBar, MapControls, Maneuver, SearchBox, SpeedLimit } from "./MapOverlays";
 import { NavMap } from "./NavMap";
 import { Rail } from "./Rail";
 import { Sheets } from "./Sheets";
@@ -59,7 +59,7 @@ export function Display() {
           {/* screen */}
           <div
             className="relative flex h-full w-full overflow-hidden rounded-[22px] bg-black"
-            style={{ width: W, height: H }}
+            style={{ width: W, height: H, ["--ambient" as string]: ambient }}
           >
             <Rail />
             <div className="flex min-w-0 flex-1 flex-col">
@@ -68,12 +68,14 @@ export function Display() {
                 <main className="relative min-w-0 flex-1 overflow-hidden">
                   <NavMap mapRef={mapRef} />
                   <Maneuver />
+                  <DemoDrive />
                   <SearchBox />
                   <SpeedLimit />
                   <MapControls mapRef={mapRef} />
                   <EtaBar />
                   <Sheets />
                   <ModePopup />
+                  <VolumePopup />
                 </main>
               </div>
               <BottomBar />
@@ -94,7 +96,7 @@ export function Display() {
         </div>
       )}
       {notice && (
-        <div className="absolute inset-x-4 bottom-4 z-10 mx-auto hidden max-w-[420px] items-center gap-3.5 rounded-[14px] bg-[#1a1d22]/95 py-3 pr-2 pl-4 shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-md max-sm:flex portrait:flex">
+        <div className="absolute inset-x-4 top-4 z-10 mx-auto hidden max-w-[420px] items-center gap-3.5 rounded-[14px] bg-[#1a1d22]/95 py-3 pr-2 pl-4 shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-md max-sm:flex portrait:flex">
           <Monitor size={20} strokeWidth={1.7} className="shrink-0 text-white/70" />
           <div className="min-w-0 flex-1">
             <div className="text-[14px] font-medium text-white">Best on a desktop</div>
@@ -109,6 +111,7 @@ export function Display() {
           </button>
         </div>
       )}
+      <Shortcuts />
     </div>
   );
 }
@@ -135,5 +138,119 @@ function ModePopup() {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+function VolumePopup() {
+  const at = useCar((s) => s.volumePopupAt);
+  const now = useCar((s) => s.now);
+  const volume = useCar((s) => s.volume);
+  const show = now - at < 1600;
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          key="volume"
+          initial={{ opacity: 0, y: 12, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 8 }}
+          transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
+          className="absolute bottom-[96px] left-1/2 z-40 flex w-[340px] -translate-x-1/2 items-center gap-4 rounded-[18px] bg-[#1a1d22]/95 px-6 py-4 shadow-[0_20px_60px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl"
+        >
+          {volume ? (
+            <Volume2 size={22} strokeWidth={1.7} className="shrink-0 text-white" />
+          ) : (
+            <VolumeX size={22} strokeWidth={1.7} className="shrink-0 text-white/60" />
+          )}
+          <span className="relative h-[4px] flex-1 overflow-hidden rounded-full bg-white/12">
+            <span
+              className="absolute inset-y-0 left-0 rounded-full bg-white transition-[width] duration-150"
+              style={{ width: `${volume}%` }}
+            />
+          </span>
+          <span className="w-9 text-right text-[18px] font-medium text-white tabular-nums">{volume || "Off"}</span>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+const SHORTCUTS: [string[], string][] = [
+  [["W", "↑"], "Throttle, ends demo drive"],
+  [["S", "↓"], "Brake"],
+  [["A"], "Demo drive on or off, in D"],
+  [["M"], "Next driving mode"],
+  [["⇧ M"], "Previous driving mode"],
+  [["Space"], "Play or pause"],
+  [["←", "→"], "Previous or next track"],
+  [["H"], "Home"],
+  [["Esc"], "Close"],
+  [["?"], "Keyboard shortcuts"],
+];
+
+function Shortcuts() {
+  const open = useCar((s) => s.shortcuts);
+  const set = useCar((s) => s.set);
+  const ref = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (open && !d.open) d.showModal();
+    if (!open && d.open) d.close();
+  }, [open]);
+
+  return (
+    <>
+      <button
+        onClick={() => set({ shortcuts: true })}
+        aria-label="Keyboard shortcuts"
+        aria-haspopup="dialog"
+        aria-keyshortcuts="?"
+        title="Keyboard shortcuts (?)"
+        className="absolute right-4 bottom-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/[0.06] text-white/55 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-md transition hover:bg-white/[0.1] hover:text-white pointer-coarse:hidden"
+      >
+        <Keyboard size={18} strokeWidth={1.7} />
+      </button>
+      <dialog
+        ref={ref}
+        aria-labelledby="shortcuts-title"
+        onClose={() => set({ shortcuts: false })}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) set({ shortcuts: false });
+        }}
+        className="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[18px] bg-[#1a1d22]/95 p-0 text-white shadow-[0_20px_60px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl backdrop:bg-black/55"
+      >
+        <div className="relative px-7 pt-6 pb-7">
+          <h2 id="shortcuts-title" className="text-[12px] tracking-[0.12em] text-white/45 uppercase">
+            Keyboard shortcuts
+          </h2>
+          <button
+            onClick={() => set({ shortcuts: false })}
+            aria-label="Close"
+            className="absolute top-3.5 right-3.5 grid h-9 w-9 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white"
+          >
+            <X size={18} />
+          </button>
+          <dl className="mt-4 grid grid-cols-[auto_1fr] items-center gap-x-6 gap-y-2.5">
+            {SHORTCUTS.map(([keys, action]) => (
+              <div key={action} className="contents">
+                <dt className="flex gap-1.5">
+                  {keys.map((k) => (
+                    <kbd
+                      key={k}
+                      className="min-w-[28px] rounded-[6px] bg-white/[0.06] px-2 py-1 text-center font-sans text-[13px] text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)]"
+                    >
+                      {k}
+                    </kbd>
+                  ))}
+                </dt>
+                <dd className="text-[14px] text-white/70">{action}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </dialog>
+    </>
   );
 }
