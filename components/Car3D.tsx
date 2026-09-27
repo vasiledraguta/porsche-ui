@@ -5,7 +5,7 @@ import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { PAINTS, useCar, type Paint } from "@/lib/store";
+import { PAINTS, useCar, type Paint, type PartId } from "@/lib/store";
 
 /**
  * Porsche 911 GT3 RS (992) by Black Snow on Sketchfab, CC-BY-4.0 (credit in README).
@@ -18,8 +18,6 @@ const HERO: [number, number, number] = [5.9, 2.2, 6.1];
 const TARGET: [number, number, number] = [0, 0.5, 0];
 
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
-
-export type PartId = "hood" | "trunk" | "doorL" | "doorR";
 
 type PartDef = {
   label: string;
@@ -107,14 +105,6 @@ function useParts() {
     doorL: useCar((s) => s.doorL),
     doorR: useCar((s) => s.doorR),
   };
-}
-
-export function togglePart(id: PartId) {
-  const s = useCar.getState();
-  const key = id === "hood" ? "frunkOpen" : id === "trunk" ? "trunkOpen" : id;
-  const next = !s[key];
-  // opening anything from the car screen releases central locking, like the real car
-  s.set({ [key]: next, ...(next ? { locked: false } : {}) });
 }
 
 function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHover: (id: PartId | null) => void; calloutsRef: Callouts }) {
@@ -257,7 +247,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
             const id = partOf(e);
             if (id) {
               e.stopPropagation();
-              togglePart(id);
+              useCar.getState().togglePart(id);
             }
           }}
         />
@@ -272,7 +262,7 @@ function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => v
   return (
     <div ref={ref} style={{ opacity: 0, pointerEvents: "none" }} className="absolute top-0 left-0 transition-opacity duration-150">
       <button
-        onClick={() => togglePart(id)}
+        onClick={() => useCar.getState().togglePart(id)}
         aria-label={`${open ? "Close" : "Open"} ${label}`}
         className="group absolute bottom-0 left-0 flex -translate-x-1/2 translate-y-[3px] flex-col items-center whitespace-nowrap [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"
       >
