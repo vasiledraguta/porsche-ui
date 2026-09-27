@@ -129,7 +129,6 @@ const SHORTCUTS: [string[], string][] = [
   [["A"], "Demo drive on or off, in D"],
   [["M"], "Next driving mode"],
   [["⇧ M"], "Previous driving mode"],
-  [["1", "2", "3", "4"], "Wet, Normal, Sport, Track"],
   [["Space"], "Play or pause"],
   [["←", "→"], "Previous or next track"],
   [["H"], "Home"],

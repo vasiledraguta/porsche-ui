@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { MODE_ORDER, useCar } from "@/lib/store";
+import { useCar } from "@/lib/store";
 
 /** Runs the vehicle sim and wires keyboard shortcuts. */
 export function Ticker() {
@@ -27,7 +27,6 @@ export function Ticker() {
       else if (k === "arrowdown" || k === "s") s.set({ brake: 1 });
       else if (e.repeat) return;
       else if (k === "m") s.cycleMode(e.shiftKey ? -1 : 1);
-      else if (["1", "2", "3", "4"].includes(k)) s.setMode(MODE_ORDER[Number(k) - 1]);
       else if (k === " ") {
         e.preventDefault();
         s.set({ playing: !s.playing });
