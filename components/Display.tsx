@@ -124,9 +124,9 @@ function ModePopup() {
 }
 
 const SHORTCUTS: [string[], string][] = [
-  [["W", "↑"], "Accelerate, ends demo drive"],
+  [["W", "↑"], "Throttle, ends demo drive"],
   [["S", "↓"], "Brake"],
-  [["A"], "Demo drive on or off"],
+  [["A"], "Demo drive on or off, in D"],
   [["M"], "Next driving mode"],
   [["⇧ M"], "Previous driving mode"],
   [["1", "2", "3", "4"], "Wet, Normal, Sport, Track"],
