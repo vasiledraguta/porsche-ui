@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
-import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
@@ -192,26 +192,39 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
   const pivots = useRef(rig.pivots);
   const flap = useRef(rig.flap);
   const paintFade = useRef<{ target: Paint; from: THREE.Color; to: THREE.Color; elapsed: number } | null>(null);
+  const invalidate = useThree((s) => s.invalidate);
+
+  useEffect(() => invalidate(), [open.hood, open.trunk, open.doorL, open.doorR, lift, drs, paint, driving, invalidate]);
 
   useFrame((_, dt) => {
+    let moving = false;
     if (paintFade.current?.target !== paint) {
       paintFade.current = { target: paint, from: rig.paint.color.clone(), to: new THREE.Color(PAINTS[paint].color), elapsed: 0 };
     }
     if (paintFade.current && paintFade.current.elapsed < 0.6) {
       paintFade.current.elapsed = Math.min(0.6, paintFade.current.elapsed + dt);
       rig.paint.color.lerpColors(paintFade.current.from, paintFade.current.to, paintFade.current.elapsed / 0.6);
+      moving = paintFade.current.elapsed < 0.6;
     }
     for (const id of Object.keys(PARTS) as PartId[]) {
       const def = PARTS[id];
       const p = pivots.current[id];
       const target = open[id] ? def.open : 0;
       p.rotation[def.axis] = THREE.MathUtils.damp(p.rotation[def.axis], target, 4.2, dt);
+      if (Math.abs(p.rotation[def.axis] - target) > 0.001) moving = true;
+      else p.rotation[def.axis] = target;
     }
-    flap.current.rotation.x = THREE.MathUtils.damp(flap.current.rotation.x, drs ? FLAP_DRS : 0, 6, dt);
+    const flapTarget = drs ? FLAP_DRS : 0;
+    flap.current.rotation.x = THREE.MathUtils.damp(flap.current.rotation.x, flapTarget, 6, dt);
+    if (Math.abs(flap.current.rotation.x - flapTarget) > 0.001) moving = true;
+    else flap.current.rotation.x = flapTarget;
     if (lifted.current) {
       const y = lift ? 0.05 : 0;
       lifted.current.position.y = THREE.MathUtils.damp(lifted.current.position.y, y, 3, dt);
+      if (Math.abs(lifted.current.position.y - y) > 0.0001) moving = true;
+      else lifted.current.position.y = y;
     }
+    if (moving) invalidate();
   });
 
   useFrame(({ camera, size }) => {
@@ -289,6 +302,7 @@ function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => v
 
 function Rig() {
   const controls = useRef<OrbitControlsImpl>(null);
+  const invalidate = useThree((s) => s.invalidate);
   const spin = useRef(true);
   const resetAt = useCar((s) => s.carViewReset);
   const last = useRef(resetAt);
@@ -299,6 +313,7 @@ function Rig() {
   const idle = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => () => clearTimeout(idle.current), []);
+  useEffect(() => invalidate(), [resetAt, driving, invalidate]);
 
   useFrame((_, dt) => {
     const c = controls.current;
@@ -315,7 +330,10 @@ function Rig() {
       if (!driving) spin.current = true;
     }
     c.autoRotate = spin.current && !driving && !glide.current;
-    if (!glide.current) return;
+    if (!glide.current) {
+      if (c.autoRotate) invalidate();
+      return;
+    }
     const chase = glide.current === "chase";
     const v = view.current;
     const k = 1 - Math.exp(-3.5 * dt);
@@ -334,7 +352,8 @@ function Rig() {
     if (Math.abs(dTheta) < 0.002 && Math.abs(dPhi) < 0.002 && Math.abs(dRadius) < 0.005 && c.target.distanceTo(v.target) < 0.005) {
       glide.current = null;
     }
-  });
+    if (glide.current || (spin.current && !driving)) invalidate();
+  }, -0.5);
 
   return (
     <OrbitControls
@@ -355,10 +374,12 @@ function Rig() {
         clearTimeout(idle.current);
         spin.current = false;
         glide.current = null;
+        if (controls.current) controls.current.autoRotate = false;
       }}
       onEnd={() => {
         idle.current = setTimeout(() => {
           spin.current = true;
+          invalidate();
         }, RESPIN_MS);
       }}
     />
@@ -378,18 +399,27 @@ function FirstFrame({ onReady }: { onReady: () => void }) {
 function AmbientTint() {
   const color = useCar((s) => AMBIENT[s.ambient]);
   const level = useCar((s) => s.ambientLevel / 100);
+  const invalidate = useThree((s) => s.invalidate);
   const rimL = useRef<THREE.PointLight>(null);
   const rimR = useRef<THREE.PointLight>(null);
   const target = useMemo(() => new THREE.Color(), []);
 
+  useEffect(() => invalidate(), [color, level, invalidate]);
+
   useFrame((_, dt) => {
     target.set(color);
     const k = 1 - Math.exp(-3 * dt);
+    let moving = false;
     for (const rim of [rimL.current, rimR.current]) {
       if (!rim) continue;
       rim.color.lerp(target, k);
       rim.intensity = THREE.MathUtils.damp(rim.intensity, level * AMBIENT_RIM, 3, dt);
+      if (Math.max(Math.abs(rim.color.r - target.r), Math.abs(rim.color.g - target.g), Math.abs(rim.color.b - target.b)) > 0.001) moving = true;
+      else rim.color.copy(target);
+      if (Math.abs(rim.intensity - level * AMBIENT_RIM) > 0.001) moving = true;
+      else rim.intensity = level * AMBIENT_RIM;
     }
+    if (moving) invalidate();
   });
 
   return (
@@ -408,6 +438,7 @@ export default function Car3D({ onReady }: { onReady: () => void }) {
   return (
     <>
       <Canvas
+        frameloop="demand"
         shadows="percentage"
         dpr={[1, 2]}
         // the display is CSS-scaled; measure layout size, not the transformed rect
