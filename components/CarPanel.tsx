@@ -131,10 +131,8 @@ function CarStage() {
             <span className="sr-only">Loading the 3D car</span>
             <span
               aria-hidden
-              className="animate-[shimmer_2.4s_linear_infinite] bg-[linear-gradient(100deg,rgba(255,255,255,0.3)_35%,rgba(255,255,255,0.9)_50%,rgba(255,255,255,0.3)_65%)] bg-[length:200%_100%] bg-clip-text pl-[0.55em] text-[22px] font-medium tracking-[0.55em] text-transparent"
-            >
-              PORSCHE
-            </span>
+              className="h-[150px] w-[117px] animate-[shimmer_2.4s_linear_infinite] bg-[linear-gradient(100deg,rgba(255,255,255,0.4)_35%,rgba(255,255,255,0.95)_50%,rgba(255,255,255,0.4)_65%)] bg-[length:200%_100%] [mask:url(/brand/porsche-crest.svg)_center/contain_no-repeat]"
+            />
           </motion.div>
         )}
       </AnimatePresence>
