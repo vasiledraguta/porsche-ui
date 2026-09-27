@@ -288,7 +288,7 @@ function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => v
 
 function Rig() {
   const controls = useRef<OrbitControlsImpl>(null);
-  const [spin, setSpin] = useState(true);
+  const spin = useRef(true);
   const resetAt = useCar((s) => s.carViewReset);
   const last = useRef(resetAt);
   const driving = useCar((s) => s.gear !== "P");
@@ -305,11 +305,14 @@ function Rig() {
       c.object.position.set(...HERO);
       c.target.set(...TARGET);
       c.update();
+      spin.current = true;
     }
     if (driving !== wasDriving.current) {
       wasDriving.current = driving;
       glide.current = driving ? "chase" : "hero";
+      if (!driving) spin.current = true;
     }
+    c.autoRotate = spin.current && !driving && !glide.current;
     if (!glide.current) return;
     const chase = glide.current === "chase";
     const v = view.current;
@@ -345,10 +348,9 @@ function Rig() {
       minPolarAngle={0.75}
       maxPolarAngle={1.5}
       enabled={!driving}
-      autoRotate={spin && !driving}
       autoRotateSpeed={0.6}
       onStart={() => {
-        setSpin(false);
+        spin.current = false;
         glide.current = null;
       }}
     />
