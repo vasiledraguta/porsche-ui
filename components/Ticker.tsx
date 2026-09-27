@@ -21,7 +21,9 @@ export function Ticker() {
       if ((e.target as HTMLElement)?.tagName === "INPUT") return;
       const s = useCar.getState();
       const k = e.key.toLowerCase();
-      if (k === "arrowup" || k === "w") s.set({ throttle: 1, autopilot: false });
+      if (k === "?") s.set({ shortcuts: !s.shortcuts });
+      else if (s.shortcuts) return;
+      else if (k === "arrowup" || k === "w") s.set({ throttle: 1, autopilot: false });
       else if (k === "arrowdown" || k === "s") s.set({ brake: 1 });
       else if (e.repeat) return;
       else if (k === "m") s.cycleMode(e.shiftKey ? -1 : 1);

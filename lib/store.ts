@@ -75,6 +75,7 @@ type State = {
   sheet: Sheet;
   vehicleTab: VehicleTab;
   modePopupAt: number;
+  shortcuts: boolean;
   map3d: boolean;
   follow: boolean;
   zoomBias: number;
@@ -174,6 +175,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   sheet: null,
   vehicleTab: "modes",
   modePopupAt: -1e9,
+  shortcuts: false,
   map3d: true,
   follow: true,
   zoomBias: 0,
