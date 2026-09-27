@@ -44,7 +44,7 @@ function DriveHeader() {
               key={g}
               disabled={g === "P" && speed > 0}
               onClick={() => setGear(g)}
-              className={g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}
+              className={`rounded-[6px] transition active:press ${g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}`}
             >
               {g === "D" && gear === "D" ? `D${pdkGear}` : g}
             </button>
@@ -147,7 +147,7 @@ function CarStage() {
         <button
           onClick={toggleLock}
           aria-label={locked ? "Unlock" : "Lock"}
-          className="flex items-center gap-2 rounded-full bg-black/40 py-[7px] pr-3.5 pl-3 text-[12.5px] backdrop-blur-sm transition hover:bg-black/60"
+          className="flex items-center gap-2 rounded-full bg-black/40 py-[7px] pr-3.5 pl-3 text-[12.5px] backdrop-blur-sm transition hover:bg-black/60 active:press"
         >
           {locked ? (
             <Lock size={15} strokeWidth={1.9} className="text-white" />
@@ -159,7 +159,7 @@ function CarStage() {
         <button
           onClick={() => set({ drs: !drs })}
           aria-pressed={drs}
-          className="rounded-full bg-black/40 px-3.5 py-[7px] text-[12.5px] font-medium tracking-[0.06em] backdrop-blur-sm transition hover:bg-black/60"
+          className="rounded-full bg-black/40 px-3.5 py-[7px] text-[12.5px] font-medium tracking-[0.06em] backdrop-blur-sm transition hover:bg-black/60 active:press"
         >
           <span className={`transition-colors ${drs ? "text-(--ambient)" : "text-white"}`}>DRS</span>
         </button>
@@ -177,7 +177,7 @@ function CarStage() {
         <button
           onClick={() => set({ carViewReset: Date.now() })}
           aria-label="Reset view"
-          className="pointer-events-auto absolute right-3 bottom-2 grid h-8 w-8 place-items-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+          className="pointer-events-auto absolute right-3 bottom-2 grid h-8 w-8 place-items-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition hover:bg-black/60 hover:text-white active:press"
         >
           <RotateCcw size={14} strokeWidth={1.8} />
         </button>
@@ -210,7 +210,7 @@ function ModeBar() {
           className="pointer-events-none absolute top-0 left-0 rounded-[9px] bg-[#262a30] opacity-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07),0_2px_8px_rgba(0,0,0,0.4)]"
         />
         {MODE_ORDER.map((m) => (
-          <button key={m} data-slot aria-pressed={mode === m} onClick={() => setMode(m)} className="relative flex-1 rounded-[9px] py-[9px] text-[13.5px]">
+          <button key={m} data-slot aria-pressed={mode === m} onClick={() => setMode(m)} className="relative flex-1 rounded-[9px] py-[9px] text-[13.5px] transition active:press">
             <span className={`relative ${mode === m ? "text-white" : "text-white/50"}`}>{MODES[m].label}</span>
           </button>
         ))}

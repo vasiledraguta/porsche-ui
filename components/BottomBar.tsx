@@ -43,7 +43,7 @@ export function BottomBar() {
         <button
           aria-label="Fan"
           onClick={() => s.openSheet("vehicle", "climate")}
-          className="flex h-[52px] items-center gap-2 rounded-[14px] px-3.5 text-white/85 transition hover:bg-white/[0.05]"
+          className="flex h-[52px] items-center gap-2 rounded-[14px] px-3.5 text-white/85 transition hover:bg-white/[0.05] active:press"
         >
           <Fan
             size={20}
@@ -79,7 +79,7 @@ function DockBtn({
     <button
       aria-label={label}
       onClick={onClick}
-      className="relative grid h-[52px] w-[58px] place-items-center rounded-[14px] transition hover:bg-white/[0.05] active:scale-95"
+      className="relative grid h-[52px] w-[58px] place-items-center rounded-[14px] transition hover:bg-white/[0.05] active:press"
     >
       {children}
       <span
@@ -93,7 +93,7 @@ function DockBtn({
 function Temp({ value, onUp, onDown }: { value: number; onUp: () => void; onDown: () => void }) {
   return (
     <div className="flex items-center gap-1">
-      <button aria-label="Cooler" onClick={onDown} className="grid h-11 w-9 place-items-center text-white/50 transition hover:text-white">
+      <button aria-label="Cooler" onClick={onDown} className="grid h-11 w-9 place-items-center rounded-[10px] text-white/50 transition hover:text-white active:press">
         <ChevronDown size={22} strokeWidth={1.8} />
       </button>
       <div className="relative w-[64px] overflow-hidden text-center">
@@ -111,7 +111,7 @@ function Temp({ value, onUp, onDown }: { value: number; onUp: () => void; onDown
         </AnimatePresence>
         <span className="absolute top-0 right-0 text-[12px] text-white/40">°</span>
       </div>
-      <button aria-label="Warmer" onClick={onUp} className="grid h-11 w-9 place-items-center text-white/50 transition hover:text-white">
+      <button aria-label="Warmer" onClick={onUp} className="grid h-11 w-9 place-items-center rounded-[10px] text-white/50 transition hover:text-white active:press">
         <ChevronUp size={22} strokeWidth={1.8} />
       </button>
     </div>
@@ -123,7 +123,7 @@ function SeatHeat({ level, onClick }: { level: number; onClick: () => void }) {
     <button
       onClick={onClick}
       aria-label={`Seat heating ${level}`}
-      className="flex h-[52px] w-[52px] flex-col items-center justify-center gap-1 rounded-[14px] transition hover:bg-white/[0.05]"
+      className="flex h-[52px] w-[52px] flex-col items-center justify-center gap-1 rounded-[14px] transition hover:bg-white/[0.05] active:press"
     >
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={level ? "#ff7a45" : "rgba(255,255,255,.7)"} strokeWidth="1.7" strokeLinecap="round">
         <path d="M7 3c1 2-1 3 0 5M11 3c1 2-1 3 0 5M15 3c1 2-1 3 0 5" opacity={level ? 1 : 0.6} />
@@ -150,14 +150,14 @@ function Volume() {
       <button
         aria-label="Volume down"
         onClick={() => setVolume(Math.max(0, Math.ceil(volume / VOLUME_STEP) * VOLUME_STEP - VOLUME_STEP))}
-        className="grid h-11 w-9 place-items-center text-white/50 hover:text-white"
+        className="grid h-11 w-9 place-items-center rounded-[10px] text-white/50 transition hover:text-white active:press"
       >
         <ChevronLeft size={20} />
       </button>
       <button
         aria-label={volume ? "Mute" : "Unmute"}
         onClick={() => setVolume(volume ? 0 : lastVolume)}
-        className="relative grid h-11 w-11 place-items-center text-white/85"
+        className="relative grid h-11 w-11 place-items-center rounded-[10px] text-white/85 transition active:press"
       >
         {volume ? <Volume2 size={21} strokeWidth={1.7} /> : <VolumeX size={21} strokeWidth={1.7} />}
         <span className="absolute bottom-0.5 h-[2px] w-7 rounded-full bg-white/10">
@@ -167,7 +167,7 @@ function Volume() {
       <button
         aria-label="Volume up"
         onClick={() => setVolume(Math.min(100, Math.floor(volume / VOLUME_STEP) * VOLUME_STEP + VOLUME_STEP))}
-        className="grid h-11 w-9 place-items-center text-white/50 hover:text-white"
+        className="grid h-11 w-9 place-items-center rounded-[10px] text-white/50 transition hover:text-white active:press"
       >
         <ChevronRight size={20} />
       </button>

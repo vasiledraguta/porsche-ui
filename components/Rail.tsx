@@ -39,7 +39,7 @@ export function Rail() {
       <button
         onClick={() => openSheet("home")}
         aria-label="Home"
-        className="relative mt-7 grid h-[54px] w-[54px] place-items-center rounded-[14px]"
+        className="relative mt-7 grid h-[54px] w-[54px] place-items-center rounded-[14px] transition active:press"
       >
         <HomeGlyph active={sheet === "home"} />
       </button>
@@ -53,7 +53,7 @@ export function Rail() {
               data-slot
               onClick={() => (r.sheet === null ? set({ sheet: null, follow: true }) : openSheet(r.sheet))}
               aria-label={r.label}
-              className="relative grid h-[54px] w-[54px] place-items-center rounded-[14px]"
+              className="relative grid h-[54px] w-[54px] place-items-center rounded-[14px] transition active:press"
             >
               <span className="relative">
                 <Glyph id={r.id} size={24} />
@@ -67,14 +67,14 @@ export function Rail() {
         <button
           aria-label="Apple CarPlay"
           onClick={() => openSheet("carplay")}
-          className="grid h-[54px] w-[54px] place-items-center rounded-[14px]"
+          className="grid h-[54px] w-[54px] place-items-center rounded-[14px] transition active:press"
         >
           <Glyph id="carplay" size={23} />
         </button>
         <button
           aria-label="Notifications"
           onClick={() => openSheet("notifications")}
-          className="relative grid h-[54px] w-[54px] place-items-center rounded-[14px]"
+          className="relative grid h-[54px] w-[54px] place-items-center rounded-[14px] transition active:press"
         >
           <Glyph id="notifications" size={21} dim />
           {!notesRead && <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-[#2f8fff]" />}

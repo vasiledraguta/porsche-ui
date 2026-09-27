@@ -96,7 +96,7 @@ export function DemoDrive() {
       onClick={() => set({ autopilot: !autopilot })}
       aria-pressed={autopilot}
       aria-keyshortcuts="A"
-      className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-[#1a1d22]/90 px-4 py-2.5 text-[13px] shadow-[0_10px_30px_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:bg-[#22262b]/90"
+      className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-[#1a1d22]/90 px-4 py-2.5 text-[13px] shadow-[0_10px_30px_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:bg-[#22262b]/90 active:press"
     >
       <span
         className={`h-2 w-2 rounded-full ${autopilot ? "animate-[breathe_1.6s_ease-in-out_infinite] bg-[#2f8fff]" : "bg-white/30"}`}
@@ -169,7 +169,7 @@ export function MapControls({ mapRef }: { mapRef: RefObject<Map | null> }) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             onClick={() => set({ follow: true })}
-            className="flex h-11 items-center gap-2 rounded-[12px] bg-[#2f8fff] px-3.5 text-[13px] font-medium text-white shadow-lg"
+            className="flex h-11 items-center gap-2 rounded-[12px] bg-[#2f8fff] px-3.5 text-[13px] font-medium text-white shadow-lg transition-[scale,box-shadow] active:press"
           >
             <Crosshair size={16} /> Re-centre
           </motion.button>
@@ -194,7 +194,7 @@ function CtlBtn({ children, label, onClick }: { children: React.ReactNode; label
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="ml-auto grid h-11 w-11 place-items-center rounded-[12px] bg-[#1a1d22]/90 text-white/80 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:text-white"
+      className="ml-auto grid h-11 w-11 place-items-center rounded-[12px] bg-[#1a1d22]/90 text-white/80 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:text-white active:press"
     >
       {children}
     </button>
