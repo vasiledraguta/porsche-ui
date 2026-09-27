@@ -42,10 +42,13 @@ function porscheify(style: StyleSpecification): StyleSpecification {
       .filter((l) => !l.id.startsWith("boundary") && l.id !== "road_oneway" && l.id !== "road_oneway_opposite")
       .map((l) => {
         const p = paint[l.id];
-        if (!p) return l;
+        const missingIcon = l.id === "place_town" || l.id === "place_city" || l.id === "place_city_large";
+        if (!p && !missingIcon) return l;
         const merged = { ...(("paint" in l && l.paint) || {}), ...p } as Record<string, unknown>;
+        const layout = { ...(("layout" in l && l.layout) || {}) } as Record<string, unknown>;
         if (l.id === "landcover_wood") delete merged["fill-pattern"];
-        return { ...l, paint: merged } as typeof l;
+        if (missingIcon) delete layout["icon-image"];
+        return { ...l, layout, paint: merged } as typeof l;
       }),
   };
 }
@@ -137,7 +140,13 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
           });
           setReady(true);
         });
-        map.on("error", (e) => console.warn("map", e.error?.message));
+        const seenErrors = new Set<string>();
+        map.on("error", (e) => {
+          const message = e.error?.message ?? "Unknown map error";
+          if (seenErrors.has(message)) return;
+          seenErrors.add(message);
+          console.warn("map", e.error ?? message);
+        });
       })
       .catch(() => setFailed(true));
 

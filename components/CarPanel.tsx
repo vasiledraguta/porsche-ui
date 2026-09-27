@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
 import { Fuel, Lock, LockOpen, Move3d, RotateCcw } from "lucide-react";
@@ -31,7 +32,7 @@ function DriveHeader() {
   const rpm = useCar((s) => s.rpm);
   const fuel = useCar((s) => s.fuel);
   const mode = useCar((s) => s.mode);
-  const set = useCar((s) => s.set);
+  const setGear = useCar((s) => s.setGear);
   const shift = rpm > 8300;
 
   return (
@@ -42,7 +43,7 @@ function DriveHeader() {
             <button
               key={g}
               disabled={g === "P" && speed > 0}
-              onClick={() => set({ gear: g })}
+              onClick={() => setGear(g)}
               className={g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}
             >
               {g === "D" && gear === "D" ? `D${pdkGear}` : g}
@@ -111,54 +112,83 @@ function CarStage() {
   const lift = useCar((s) => s.lift);
   const drs = useCar((s) => s.drs);
   const set = useCar((s) => s.set);
+  const toggleLock = useCar((s) => s.toggleLock);
   const anyOpen = useCar((s) => s.frunkOpen || s.trunkOpen || s.doorL || s.doorR);
+  const driving = useCar((s) => s.gear !== "P");
+  const [ready, setReady] = useState(false);
+  const [shimmered, setShimmered] = useState(false);
   return (
     <div className="relative mx-2 mt-1 flex-1 overflow-hidden rounded-[18px]">
       {/* floor glow */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[radial-gradient(55%_45%_at_50%_70%,rgba(255,255,255,0.06),transparent_70%)]" />
-      <Car3D />
+      <Car3D onReady={() => setReady(true)} />
+      <AnimatePresence>
+        {!(ready && shimmered) && (
+          <motion.div
+            role="status"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
+            className="pointer-events-none absolute inset-0 grid place-items-center bg-[#0e1013]"
+          >
+            <span className="sr-only">Loading the 3D car</span>
+            <span
+              aria-hidden
+              onAnimationIteration={() => setShimmered(true)}
+              className="h-[150px] w-[117px] animate-[shimmer_2.4s_linear_infinite] bg-[linear-gradient(100deg,rgba(255,255,255,0.4)_35%,rgba(255,255,255,0.95)_50%,rgba(255,255,255,0.4)_65%)] bg-[length:200%_100%] [mask:url(/brand/porsche-crest.svg)_center/contain_no-repeat]"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="pointer-events-none absolute top-3.5 left-4 leading-tight">
         <div className="text-[13px] font-medium tracking-[0.02em] text-white/85">911 GT3 RS</div>
         <div className="text-[11px] text-white/35">992 · GT Silver Metallic</div>
       </div>
       <div className="absolute top-3 left-1/2 flex -translate-x-1/2 items-center gap-2">
         <button
-          onClick={() => set({ locked: !locked, ...(locked ? {} : { frunkOpen: false, trunkOpen: false, doorL: false, doorR: false }) })}
+          onClick={toggleLock}
           aria-label={locked ? "Unlock" : "Lock"}
           className="flex items-center gap-2 rounded-full bg-black/40 py-[7px] pr-3.5 pl-3 text-[12.5px] backdrop-blur-sm transition hover:bg-black/60"
         >
           {locked ? (
             <Lock size={15} strokeWidth={1.9} className="text-white" />
           ) : (
-            <LockOpen size={15} strokeWidth={1.9} className="text-[#2f8fff]" />
+            <LockOpen size={15} strokeWidth={1.9} className="text-(--ambient) transition-colors" />
           )}
-          <span className={locked ? "text-white" : "text-[#6db3ff]"}>{locked ? "Locked" : anyOpen ? "Open" : "Unlocked"}</span>
+          <span className={`transition-colors ${locked ? "text-white" : "text-(--ambient)"}`}>{locked ? "Locked" : anyOpen ? "Open" : "Unlocked"}</span>
         </button>
         <button
           onClick={() => set({ drs: !drs })}
           aria-pressed={drs}
           className="rounded-full bg-black/40 px-3.5 py-[7px] text-[12.5px] font-medium tracking-[0.06em] backdrop-blur-sm transition hover:bg-black/60"
         >
-          <span className={drs ? "text-[#6db3ff]" : "text-white"}>DRS</span>
+          <span className={`transition-colors ${drs ? "text-(--ambient)" : "text-white"}`}>DRS</span>
         </button>
       </div>
-      <div className="pointer-events-none absolute bottom-2 left-4 flex items-center gap-1.5 text-[11px] text-white/30">
-        <Move3d size={13} strokeWidth={1.6} /> Drag to rotate · tap a part to open
-      </div>
-      <button
-        onClick={() => set({ carViewReset: Date.now() })}
-        aria-label="Reset view"
-        className="absolute right-3 bottom-2 grid h-8 w-8 place-items-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+      <motion.div
+        initial={false}
+        animate={{ opacity: driving ? 0 : 1 }}
+        transition={{ duration: 0.4 }}
+        inert={driving}
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-12"
       >
-        <RotateCcw size={14} strokeWidth={1.8} />
-      </button>
+        <div className="absolute bottom-2 left-4 flex items-center gap-1.5 text-[11px] text-white/30">
+          <Move3d size={13} strokeWidth={1.6} /> Drag to rotate · tap a part to open
+        </div>
+        <button
+          onClick={() => set({ carViewReset: Date.now() })}
+          aria-label="Reset view"
+          className="pointer-events-auto absolute right-3 bottom-2 grid h-8 w-8 place-items-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+        >
+          <RotateCcw size={14} strokeWidth={1.8} />
+        </button>
+      </motion.div>
       <AnimatePresence>
         {lift && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="absolute top-3 right-4 rounded-full bg-[#2f8fff]/15 px-3 py-1 text-[12px] text-[#6db3ff]"
+            className="absolute top-3 right-4 rounded-full bg-(--ambient)/15 px-3 py-1 text-[12px] text-(--ambient)"
           >
             Lift active
           </motion.div>

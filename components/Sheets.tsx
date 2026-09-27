@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpFromLine,
+  Brush,
   CarFront,
   CircleGauge,
   DoorOpen,
@@ -35,7 +36,7 @@ import { AlbumArt } from "./AlbumArt";
 import { useSlider } from "./ui/useSlider";
 import { Glyph, APPS, type AppId } from "./ui/Glyph";
 import { Row, Segmented, SectionTitle, Stepper, Toggle } from "./ui/controls";
-import { AMBIENT, MODES, MODE_ORDER, TANK_L, TRACKS, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
+import { AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 
@@ -151,6 +152,7 @@ function HomeSheet() {
 
 const TABS: { id: VehicleTab; label: string; icon: LucideIcon }[] = [
   { id: "modes", label: "Driving modes", icon: CircleGauge },
+  { id: "appearance", label: "Appearance", icon: Brush },
   { id: "chassis", label: "Chassis", icon: ArrowUpFromLine },
   { id: "setup", label: "Track setup", icon: SlidersHorizontal },
   { id: "engine", label: "Engine & fuel", icon: Timer },
@@ -229,6 +231,7 @@ function VehicleSheet() {
           >
             <h2 className="mb-2 text-[22px] font-medium text-white">{TABS.find((t) => t.id === tab)?.label}</h2>
             {tab === "modes" && <ModesTab />}
+            {tab === "appearance" && <AppearanceTab />}
             {tab === "chassis" && <ChassisTab />}
             {tab === "setup" && <SetupTab />}
             {tab === "engine" && <EngineTab />}
@@ -269,6 +272,37 @@ function ModesTab() {
         </button>
       ))}
     </div>
+  );
+}
+
+export function PaintSwatches({ compact = false }: { compact?: boolean }) {
+  const paint = useCar((s) => s.paint);
+  const set = useCar((s) => s.set);
+  return (
+    <div className={compact ? "grid grid-cols-3 gap-2" : "mt-4 grid grid-cols-3 gap-3"}>
+      {PAINT_ORDER.map((id) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => set({ paint: id })}
+          aria-label={PAINTS[id].label}
+          aria-pressed={paint === id}
+          className={`flex items-center gap-2 rounded-[12px] text-left text-white transition ${compact ? "px-2 py-2 text-[11px]" : "px-4 py-4 text-[14px]"} ${paint === id ? "bg-[#2f8fff]/[0.14] ring-1 ring-[#2f8fff]" : "bg-white/[0.04] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
+        >
+          <span className="h-5 w-5 shrink-0 rounded-full ring-1 ring-white/20" style={{ backgroundColor: PAINTS[id].color }} />
+          <span>{PAINTS[id].label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function AppearanceTab() {
+  return (
+    <>
+      <p className="mt-3 text-[14px] text-white/50">Choose a body colour for the 911 GT3 RS.</p>
+      <PaintSwatches />
+    </>
   );
 }
 
@@ -558,15 +592,17 @@ function DoorsTab() {
     doorL: s.doorL,
     doorR: s.doorR,
     comfortAccess: s.comfortAccess,
+    toggleLock: s.toggleLock,
+    togglePart: s.togglePart,
     set: s.set,
   })));
   return (
     <>
-      <Row title="Central locking" sub={s.locked ? "Locked" : "Unlocked"} right={<Toggle on={s.locked} onChange={() => s.set({ locked: !s.locked, ...(!s.locked ? { frunkOpen: false, trunkOpen: false, doorL: false, doorR: false } : {}) })} />} />
-      <Row title="Front trunk" sub={s.frunkOpen ? "Open" : "Closed"} right={<Toggle on={s.frunkOpen} onChange={() => s.set({ frunkOpen: !s.frunkOpen, ...(!s.frunkOpen ? { locked: false } : {}) })} />} />
-      <Row title="Engine lid" sub={s.trunkOpen ? "Open" : "Closed"} right={<Toggle on={s.trunkOpen} onChange={() => s.set({ trunkOpen: !s.trunkOpen, ...(!s.trunkOpen ? { locked: false } : {}) })} />} />
-      <Row title="Driver door" sub={s.doorL ? "Open" : "Closed"} right={<Toggle on={s.doorL} onChange={() => s.set({ doorL: !s.doorL, ...(!s.doorL ? { locked: false } : {}) })} />} />
-      <Row title="Passenger door" sub={s.doorR ? "Open" : "Closed"} right={<Toggle on={s.doorR} onChange={() => s.set({ doorR: !s.doorR, ...(!s.doorR ? { locked: false } : {}) })} />} />
+      <Row title="Central locking" sub={s.locked ? "Locked" : "Unlocked"} right={<Toggle on={s.locked} onChange={s.toggleLock} />} />
+      <Row title="Front trunk" sub={s.frunkOpen ? "Open" : "Closed"} right={<Toggle on={s.frunkOpen} onChange={() => s.togglePart("hood")} />} />
+      <Row title="Engine lid" sub={s.trunkOpen ? "Open" : "Closed"} right={<Toggle on={s.trunkOpen} onChange={() => s.togglePart("trunk")} />} />
+      <Row title="Driver door" sub={s.doorL ? "Open" : "Closed"} right={<Toggle on={s.doorL} onChange={() => s.togglePart("doorL")} />} />
+      <Row title="Passenger door" sub={s.doorR ? "Open" : "Closed"} right={<Toggle on={s.doorR} onChange={() => s.togglePart("doorR")} />} />
       <Row title="Comfort access" sub="Unlock when you approach with the key" right={<Toggle on={s.comfortAccess} onChange={() => s.set({ comfortAccess: !s.comfortAccess })} />} />
     </>
   );
@@ -754,10 +790,17 @@ function MediaSheet() {
     track: s.track,
     progress: s.progress,
     playing: s.playing,
+    seeking: s.seeking,
     nextTrack: s.nextTrack,
     set: s.set,
   })));
   const t = TRACKS[s.track];
+  const seekAt = (e: React.PointerEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * t.length;
+  };
+
+  useEffect(() => () => useCar.getState().set({ seeking: false }), []);
   return (
     <div className="relative flex h-full overflow-hidden">
       <div
@@ -776,14 +819,43 @@ function MediaSheet() {
           <div className="text-[18px] text-white/60">{t.artist}</div>
           <div className="text-[14px] text-white/35">{t.album}</div>
           <div
-            className="group relative mt-8 h-5 cursor-pointer"
-            onClick={(e) => {
-              const r = e.currentTarget.getBoundingClientRect();
-              s.set({ progress: ((e.clientX - r.left) / r.width) * t.length });
+            role="slider"
+            tabIndex={0}
+            aria-label="Seek"
+            aria-valuemin={0}
+            aria-valuemax={t.length}
+            aria-valuenow={Math.round(s.progress)}
+            aria-valuetext={`${fmtTime(s.progress)} of ${fmtTime(t.length)}`}
+            className="group relative mt-8 h-5 cursor-pointer touch-none rounded-full outline-none focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-white/50"
+            onMouseDown={(e) => e.preventDefault()}
+            onPointerDown={(e) => {
+              e.currentTarget.setPointerCapture(e.pointerId);
+              s.set({ progress: seekAt(e), seeking: true });
+            }}
+            onPointerMove={(e) => {
+              if (s.seeking) s.set({ progress: seekAt(e) });
+            }}
+            onPointerUp={(e) => {
+              if (!s.seeking) return;
+              s.set({ progress: seekAt(e), seeking: false });
+            }}
+            onPointerCancel={() => s.set({ seeking: false })}
+            onKeyDown={(e) => {
+              const step = e.key === "ArrowRight" ? 5 : e.key === "ArrowLeft" ? -5 : 0;
+              if (!step) return;
+              e.preventDefault();
+              e.stopPropagation();
+              s.set({ progress: Math.min(t.length, Math.max(0, s.progress + step)) });
             }}
           >
             <div className="absolute inset-x-0 top-1/2 h-[4px] -translate-y-1/2 rounded-full bg-white/15" />
             <div className="absolute top-1/2 left-0 h-[4px] -translate-y-1/2 rounded-full bg-white" style={{ width: `${(s.progress / t.length) * 100}%` }} />
+            <div
+              className={`absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_2px_6px_rgba(0,0,0,0.5)] transition-opacity ${
+                s.seeking ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+              }`}
+              style={{ left: `${(s.progress / t.length) * 100}%` }}
+            />
           </div>
           <div className="flex justify-between text-[12px] text-white/45 tabular-nums">
             <span>{fmtTime(s.progress)}</span>
