@@ -302,9 +302,7 @@ function Rig() {
     // "Reset view" from the overlay: return to the 3/4 front hero angle
     if (resetAt !== last.current) {
       last.current = resetAt;
-      c.object.position.set(...HERO);
-      c.target.set(...TARGET);
-      c.update();
+      glide.current = "hero";
       spin.current = true;
     }
     if (driving !== wasDriving.current) {
