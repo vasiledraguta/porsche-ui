@@ -207,6 +207,7 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
     const map = mapRef.current;
     if (!follow || !map) return;
     const s = useCar.getState();
+    if (s.zoomBias) s.set({ zoomBias: 0 });
     const { pos, heading } = positionAt(s.routeD);
     map.easeTo({
       center: pos,
