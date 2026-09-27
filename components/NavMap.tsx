@@ -50,7 +50,7 @@ function porscheify(style: StyleSpecification): StyleSpecification {
   };
 }
 
-export function NavMap({ className = "", mapRef }: { className?: string; mapRef: RefObject<maplibregl.Map | null> }) {
+export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> }) {
   const el = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -210,7 +210,7 @@ export function NavMap({ className = "", mapRef }: { className?: string; mapRef:
   }, [follow, mapRef]);
 
   return (
-    <div className={`absolute inset-0 ${className}`}>
+    <div className="absolute inset-0">
       {/* maplibre-gl.css forces .maplibregl-map { position: relative }, so size by h/w, not inset */}
       <div ref={el} className="h-full w-full" />
       {failed && (
