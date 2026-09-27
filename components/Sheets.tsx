@@ -53,7 +53,7 @@ export function Sheets() {
     <AnimatePresence>
       {sheet && (
         <motion.div
-          key={sheet}
+          key="sheet"
           className="absolute inset-0 z-20 flex flex-col bg-[#121417]"
           initial={{ y: "100%" }}
           animate={{ y: 0, transition: { duration: 0.4, ease: slide } }}
@@ -80,16 +80,27 @@ export function Sheets() {
           >
             <X size={20} />
           </button>
-          {sheet === "home" && <HomeSheet />}
-          {sheet === "vehicle" && <VehicleSheet />}
-          {sheet === "chrono" && <ChronoSheet />}
-          {sheet === "media" && <MediaSheet />}
-          {sheet === "phone" && <PhoneSheet />}
-          {sheet === "notifications" && <NotificationsSheet />}
-          {sheet === "carplay" && <ProjectionSheet id="carplay" phone="iPhone" />}
-          {sheet === "androidauto" && <ProjectionSheet id="androidauto" phone="Android phone" />}
-          {sheet === "devices" && <DevicesSheet />}
-          {sheet === "settings" && <SettingsSheet />}
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={sheet}
+              className="absolute inset-0 flex flex-col"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18, ease }}
+            >
+              {sheet === "home" && <HomeSheet />}
+              {sheet === "vehicle" && <VehicleSheet />}
+              {sheet === "chrono" && <ChronoSheet />}
+              {sheet === "media" && <MediaSheet />}
+              {sheet === "phone" && <PhoneSheet />}
+              {sheet === "notifications" && <NotificationsSheet />}
+              {sheet === "carplay" && <ProjectionSheet id="carplay" phone="iPhone" />}
+              {sheet === "androidauto" && <ProjectionSheet id="androidauto" phone="Android phone" />}
+              {sheet === "devices" && <DevicesSheet />}
+              {sheet === "settings" && <SettingsSheet />}
+            </motion.div>
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
