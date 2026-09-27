@@ -251,7 +251,6 @@ function ChassisTab() {
       <SectionTitle>Damping (PASM)</SectionTitle>
       <div className="py-2">
         <Segmented
-          id="pasm"
           value={s.pasm}
           onChange={(v) => s.set({ pasm: v })}
           options={[
@@ -319,7 +318,6 @@ function SetupTab() {
       <SectionTitle>Stability control (ESC)</SectionTitle>
       <div className="py-2">
         <Segmented
-          id="esc"
           value={s.esc}
           onChange={(v) => s.set({ esc: v })}
           options={[
@@ -421,7 +419,6 @@ function ClimateTab() {
       <SectionTitle>Airflow (smart vents)</SectionTitle>
       <div className="py-2">
         <Segmented
-          id="vent"
           value={s.ventFocus}
           onChange={(v) => s.set({ ventFocus: v })}
           options={[
@@ -462,7 +459,6 @@ function LightsTab() {
       <SectionTitle>Headlights</SectionTitle>
       <div className="py-2">
         <Segmented
-          id="hl"
           value={s.headlights}
           onChange={(v) => s.set({ headlights: v })}
           options={[
