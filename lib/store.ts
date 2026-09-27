@@ -287,7 +287,7 @@ export const useCar = create<State & Actions>((set, get) => ({
     })),
   cycleMode: (dir) => {
     const i = MODE_ORDER.indexOf(get().mode);
-    get().setMode(MODE_ORDER[Math.min(MODE_ORDER.length - 1, Math.max(0, i + dir))]);
+    get().setMode(MODE_ORDER[(i + dir + MODE_ORDER.length) % MODE_ORDER.length]);
   },
   nextTrack: (dir) => set((s) => ({ track: (s.track + dir + TRACKS.length) % TRACKS.length, progress: 0, playing: true })),
   openSheet: (sheet, tab) =>
