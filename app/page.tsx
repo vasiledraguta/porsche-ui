@@ -1,11 +1,12 @@
 import { Display } from "@/components/Display";
-import { Ticker } from "@/components/Ticker";
+import { DemoControls, Ticker } from "@/components/Ticker";
 
 export default function Home() {
   return (
     <main>
       <Ticker />
       <Display />
+      <DemoControls />
     </main>
   );
 }
