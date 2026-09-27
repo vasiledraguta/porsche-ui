@@ -211,8 +211,8 @@ export const useCar = create<State & Actions>((set, get) => ({
   track: 0,
   playing: true,
   progress: 71,
-  volume: 38,
-  lastVolume: 38,
+  volume: 40,
+  lastVolume: 40,
   liked: [0],
 
   chronoRunning: false,
