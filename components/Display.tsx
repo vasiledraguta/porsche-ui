@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Map } from "maplibre-gl";
 import { AnimatePresence, motion } from "motion/react";
+import { Monitor, X } from "lucide-react";
 import { BottomBar } from "./BottomBar";
 import { CarPanel } from "./CarPanel";
 import { EtaBar, MapControls, Maneuver, SearchBox, SpeedLimit } from "./MapOverlays";
@@ -20,6 +21,7 @@ export function Display() {
   const wrap = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const [scale, setScale] = useState(0);
+  const [notice, setNotice] = useState(true);
   const ambient = useCar((s) => AMBIENT[s.ambient]);
   const ambientLevel = useCar((s) => s.ambientLevel);
 
@@ -89,6 +91,22 @@ export function Display() {
             }}
           />
           </motion.div>
+        </div>
+      )}
+      {notice && (
+        <div className="absolute inset-x-4 bottom-4 z-10 mx-auto hidden max-w-[420px] items-center gap-3.5 rounded-[14px] bg-[#1a1d22]/95 py-3 pr-2 pl-4 shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-md max-sm:flex portrait:flex">
+          <Monitor size={20} strokeWidth={1.7} className="shrink-0 text-white/70" />
+          <div className="min-w-0 flex-1">
+            <div className="text-[14px] font-medium text-white">Best on a desktop</div>
+            <div className="text-[12.5px] text-white/55">Open it on a larger screen, or turn your phone sideways.</div>
+          </div>
+          <button
+            onClick={() => setNotice(false)}
+            aria-label="Dismiss"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white"
+          >
+            <X size={18} />
+          </button>
         </div>
       )}
     </div>
