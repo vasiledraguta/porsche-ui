@@ -10,7 +10,7 @@ import { useSlider } from "./ui/useSlider";
 const Car3D = dynamic(() => import("./Car3D"), { ssr: false });
 import { MODES, MODE_ORDER, REDLINE, rangeFor, useCar } from "@/lib/store";
 
-/** Left vehicle column: PDK gear, fuel, the 3D 911 GT3 RS when parked or the instrument cluster when driving, drive mode, media. */
+/** Left vehicle column: PDK gear, fuel, the 3D 911 GT3 RS with a rev counter over a chase view when driving, drive mode, media. */
 export function CarPanel() {
   return (
     <section className="relative z-20 flex w-[540px] shrink-0 flex-col bg-[#0e1013]">
@@ -203,52 +203,52 @@ function CarStage() {
   const driving = useCar((s) => s.gear !== "P");
   return (
     <div className="relative mx-2 mt-1 flex-1 overflow-hidden rounded-[18px]">
+      {/* floor glow */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[radial-gradient(55%_45%_at_50%_70%,rgba(255,255,255,0.06),transparent_70%)]" />
+      <Car3D />
       <motion.div
         initial={false}
-        animate={{ opacity: driving ? 0 : 1, scale: driving ? 0.94 : 1 }}
+        animate={{ opacity: driving ? 0 : 1 }}
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
         inert={driving}
-        className="absolute inset-0"
+        className="pointer-events-none absolute inset-0"
       >
-        {/* floor glow */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[radial-gradient(55%_45%_at_50%_70%,rgba(255,255,255,0.06),transparent_70%)]" />
-        <Car3D />
-        <div className="pointer-events-none absolute top-3.5 left-4 leading-tight">
+        <div className="absolute top-3.5 left-4 leading-tight">
           <div className="text-[13px] font-medium tracking-[0.02em] text-white/85">911 GT3 RS</div>
           <div className="text-[11px] text-white/35">992 · GT Silver Metallic</div>
         </div>
-        <div className="pointer-events-none absolute bottom-2 left-4 flex items-center gap-1.5 text-[11px] text-white/30">
+        <div className="absolute bottom-2 left-4 flex items-center gap-1.5 text-[11px] text-white/30">
           <Move3d size={13} strokeWidth={1.6} /> Drag to rotate · tap a part to open
         </div>
         <button
           onClick={() => set({ carViewReset: Date.now() })}
           aria-label="Reset view"
-          className="absolute right-3 bottom-2 grid h-8 w-8 place-items-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
+          className="pointer-events-auto absolute right-3 bottom-2 grid h-8 w-8 place-items-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
         >
           <RotateCcw size={14} strokeWidth={1.8} />
         </button>
-        <AnimatePresence>
-          {lift && (
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="absolute top-3 right-4 rounded-full bg-(--ambient)/15 px-3 py-1 text-[12px] text-(--ambient)"
-            >
-              Lift active
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
+      <AnimatePresence>
+        {lift && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="absolute top-3 right-4 rounded-full bg-(--ambient)/15 px-3 py-1 text-[12px] text-(--ambient)"
+          >
+            Lift active
+          </motion.div>
+        )}
+      </AnimatePresence>
       <AnimatePresence initial={false}>
         {driving && (
           <motion.div
             key="cluster"
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-            className="absolute inset-0 grid place-items-center pt-6"
+            className="pointer-events-none absolute inset-x-0 top-14 flex justify-center"
           >
             <Cluster />
           </motion.div>

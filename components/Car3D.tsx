@@ -17,6 +17,9 @@ const MODEL = "/car/911-gt3-rs.glb";
 const HERO: [number, number, number] = [5.9, 2.2, 6.1];
 const TARGET: [number, number, number] = [0, 0.5, 0];
 
+const CHASE: [number, number, number] = [0, 3, -8.1];
+const CHASE_TARGET: [number, number, number] = [0, 1.6, 0];
+
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
 const AMBIENT_RIM = 4;
@@ -115,6 +118,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
   const lift = useCar((s) => s.lift);
   const drs = useCar((s) => s.drs);
   const paint = useCar((s) => s.paint);
+  const driving = useCar((s) => s.gear !== "P");
   const lifted = useRef<THREE.Group>(null);
   const placed = useRef<THREE.Group>(null);
   const spot = useMemo(() => new THREE.Vector3(), []);
@@ -216,7 +220,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
       if (!el) continue;
       placed.current.localToWorld(spot.copy(rig.spots[id]));
       const facing = NORMALS[id].dot(toCamera.subVectors(camera.position, spot).normalize());
-      const o = THREE.MathUtils.clamp((facing - 0.05) * 4, 0, 1);
+      const o = driving ? 0 : THREE.MathUtils.clamp((facing - 0.05) * 4, 0, 1);
       spot.project(camera);
       el.style.transform = `translate3d(${((spot.x + 1) / 2) * size.width}px, ${((1 - spot.y) / 2) * size.height}px, 0)`;
       el.style.opacity = String(o);
@@ -233,7 +237,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
           object={rig.root}
           onPointerMove={(e: ThreeEvent<PointerEvent>) => {
             e.stopPropagation();
-            const id = partOf(e) ?? null;
+            const id = driving ? null : (partOf(e) ?? null);
             if (id !== hover) {
               setHover(id);
               document.body.style.cursor = id ? "pointer" : "";
@@ -245,7 +249,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
           }}
           onClick={(e: ThreeEvent<MouseEvent>) => {
             // ignore clicks that were really a drag-to-rotate
-            if (e.delta > 4) return;
+            if (driving || e.delta > 4) return;
             const id = partOf(e);
             if (id) {
               e.stopPropagation();
@@ -287,14 +291,43 @@ function Rig() {
   const [spin, setSpin] = useState(true);
   const resetAt = useCar((s) => s.carViewReset);
   const last = useRef(resetAt);
+  const driving = useCar((s) => s.gear !== "P");
+  const wasDriving = useRef(driving);
+  const glide = useRef<"chase" | "hero" | null>(driving ? "chase" : null);
+  const view = useRef({ at: new THREE.Spherical(), goal: new THREE.Spherical(), offset: new THREE.Vector3(), target: new THREE.Vector3() });
 
-  useFrame(() => {
+  useFrame((_, dt) => {
+    const c = controls.current;
+    if (!c) return;
     // "Reset view" from the overlay: return to the 3/4 front hero angle
-    if (resetAt !== last.current && controls.current) {
+    if (resetAt !== last.current) {
       last.current = resetAt;
-      controls.current.object.position.set(...HERO);
-      controls.current.target.set(...TARGET);
-      controls.current.update();
+      c.object.position.set(...HERO);
+      c.target.set(...TARGET);
+      c.update();
+    }
+    if (driving !== wasDriving.current) {
+      wasDriving.current = driving;
+      glide.current = driving ? "chase" : "hero";
+    }
+    if (!glide.current) return;
+    const chase = glide.current === "chase";
+    const v = view.current;
+    const k = 1 - Math.exp(-3.5 * dt);
+    v.target.set(...(chase ? CHASE_TARGET : TARGET));
+    v.goal.setFromVector3(v.offset.set(...(chase ? CHASE : HERO)).sub(v.target));
+    c.target.lerp(v.target, k);
+    v.at.setFromVector3(v.offset.copy(c.object.position).sub(c.target));
+    const dTheta = Math.atan2(Math.sin(v.goal.theta - v.at.theta), Math.cos(v.goal.theta - v.at.theta));
+    const dPhi = v.goal.phi - v.at.phi;
+    const dRadius = v.goal.radius - v.at.radius;
+    v.at.theta += dTheta * k;
+    v.at.phi += dPhi * k;
+    v.at.radius += dRadius * k;
+    c.object.position.copy(c.target).add(v.offset.setFromSpherical(v.at));
+    c.update();
+    if (Math.abs(dTheta) < 0.002 && Math.abs(dPhi) < 0.002 && Math.abs(dRadius) < 0.005 && c.target.distanceTo(v.target) < 0.005) {
+      glide.current = null;
     }
   });
 
@@ -311,9 +344,13 @@ function Rig() {
       maxDistance={13}
       minPolarAngle={0.75}
       maxPolarAngle={1.5}
-      autoRotate={spin}
+      enabled={!driving}
+      autoRotate={spin && !driving}
       autoRotateSpeed={0.6}
-      onStart={() => setSpin(false)}
+      onStart={() => {
+        setSpin(false);
+        glide.current = null;
+      }}
     />
   );
 }
