@@ -20,7 +20,6 @@ const TARGET: [number, number, number] = [0, 0.5, 0];
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
 const AMBIENT_RIM = 4;
-const AMBIENT_FLOOR = 0.3;
 
 export type PartId = "hood" | "trunk" | "doorL" | "doorR";
 
@@ -281,13 +280,13 @@ function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => v
       >
         <span
           className={`text-[11px] font-medium tracking-[0.04em] uppercase transition ${
-            open ? "text-[#6db3ff]" : hot ? "text-white" : "text-white/70 group-hover:text-white"
+            open ? "text-(--ambient)" : hot ? "text-white" : "text-white/70 group-hover:text-white"
           }`}
         >
           {label}
         </span>
         <span className={`mt-1 h-7 w-px transition ${hot ? "bg-white/70" : "bg-white/35 group-hover:bg-white/70"}`} />
-        <span className={`h-1.5 w-1.5 rounded-full ${open ? "bg-[#2f8fff]" : "bg-white"}`} />
+        <span className={`h-1.5 w-1.5 rounded-full transition-colors ${open ? "bg-(--ambient)" : "bg-white"}`} />
       </button>
     </div>
   );
@@ -334,22 +333,7 @@ function AmbientTint() {
   const level = useCar((s) => s.ambientLevel / 100);
   const rimL = useRef<THREE.PointLight>(null);
   const rimR = useRef<THREE.PointLight>(null);
-  const floor = useRef<THREE.MeshBasicMaterial>(null);
   const target = useMemo(() => new THREE.Color(), []);
-  const glow = useMemo(() => {
-    const c = document.createElement("canvas");
-    c.width = c.height = 128;
-    const ctx = c.getContext("2d")!;
-    const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-    g.addColorStop(0, "rgba(255,255,255,1)");
-    g.addColorStop(0.55, "rgba(255,255,255,0.35)");
-    g.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 128, 128);
-    const t = new THREE.CanvasTexture(c);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
-  }, []);
 
   useFrame((_, dt) => {
     target.set(color);
@@ -359,20 +343,12 @@ function AmbientTint() {
       rim.color.lerp(target, k);
       rim.intensity = THREE.MathUtils.damp(rim.intensity, level * AMBIENT_RIM, 3, dt);
     }
-    if (floor.current) {
-      floor.current.color.lerp(target, k);
-      floor.current.opacity = THREE.MathUtils.damp(floor.current.opacity, level * AMBIENT_FLOOR, 3, dt);
-    }
   });
 
   return (
     <>
       <pointLight ref={rimL} position={[-3.2, 0.35, 0]} intensity={0} distance={8} decay={2} />
       <pointLight ref={rimR} position={[3.2, 0.35, 0]} intensity={0} distance={8} decay={2} />
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.0005, 0]} renderOrder={-1}>
-        <planeGeometry args={[5.5, 8]} />
-        <meshBasicMaterial ref={floor} map={glow} transparent opacity={0} depthWrite={false} toneMapped={false} />
-      </mesh>
     </>
   );
 }
