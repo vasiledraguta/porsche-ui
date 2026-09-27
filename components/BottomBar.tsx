@@ -139,6 +139,8 @@ function SeatHeat({ level, onClick }: { level: number; onClick: () => void }) {
   );
 }
 
+const VOLUME_STEP = 5;
+
 function Volume() {
   const volume = useCar((s) => s.volume);
   const lastVolume = useCar((s) => s.lastVolume);
@@ -147,7 +149,7 @@ function Volume() {
     <div className="flex items-center gap-1">
       <button
         aria-label="Volume down"
-        onClick={() => setVolume(Math.max(0, volume - 6))}
+        onClick={() => setVolume(Math.max(0, Math.ceil(volume / VOLUME_STEP) * VOLUME_STEP - VOLUME_STEP))}
         className="grid h-11 w-9 place-items-center text-white/50 hover:text-white"
       >
         <ChevronLeft size={20} />
@@ -164,7 +166,7 @@ function Volume() {
       </button>
       <button
         aria-label="Volume up"
-        onClick={() => setVolume(Math.min(100, volume + 6))}
+        onClick={() => setVolume(Math.min(100, Math.floor(volume / VOLUME_STEP) * VOLUME_STEP + VOLUME_STEP))}
         className="grid h-11 w-9 place-items-center text-white/50 hover:text-white"
       >
         <ChevronRight size={20} />

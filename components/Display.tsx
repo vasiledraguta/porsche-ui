@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Map } from "maplibre-gl";
 import { AnimatePresence, motion } from "motion/react";
-import { Keyboard, X } from "lucide-react";
+import { Keyboard, Volume2, VolumeX, X } from "lucide-react";
 import { BottomBar } from "./BottomBar";
 import { CarPanel } from "./CarPanel";
 import { DemoDrive, EtaBar, MapControls, Maneuver, SearchBox, SpeedLimit } from "./MapOverlays";
@@ -74,6 +74,7 @@ export function Display() {
                   <EtaBar />
                   <Sheets />
                   <ModePopup />
+                  <VolumePopup />
                 </main>
               </div>
               <BottomBar />
@@ -117,6 +118,40 @@ function ModePopup() {
         >
           <div className="text-[12px] tracking-[0.12em] text-white/45 uppercase">Driving mode</div>
           <div className="mt-1 text-[30px] font-medium text-white">{MODES[mode].label}</div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function VolumePopup() {
+  const at = useCar((s) => s.volumePopupAt);
+  const now = useCar((s) => s.now);
+  const volume = useCar((s) => s.volume);
+  const show = now - at < 1600;
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          key="volume"
+          initial={{ opacity: 0, y: 12, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 8 }}
+          transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
+          className="absolute bottom-[96px] left-1/2 z-40 flex w-[340px] -translate-x-1/2 items-center gap-4 rounded-[18px] bg-[#1a1d22]/95 px-6 py-4 shadow-[0_20px_60px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl"
+        >
+          {volume ? (
+            <Volume2 size={22} strokeWidth={1.7} className="shrink-0 text-white" />
+          ) : (
+            <VolumeX size={22} strokeWidth={1.7} className="shrink-0 text-white/60" />
+          )}
+          <span className="relative h-[4px] flex-1 overflow-hidden rounded-full bg-white/12">
+            <span
+              className="absolute inset-y-0 left-0 rounded-full bg-white transition-[width] duration-150"
+              style={{ width: `${volume}%` }}
+            />
+          </span>
+          <span className="w-9 text-right text-[18px] font-medium text-white tabular-nums">{volume || "Off"}</span>
         </motion.div>
       )}
     </AnimatePresence>

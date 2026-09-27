@@ -98,6 +98,7 @@ type State = {
   vehicleTab: VehicleTab;
   modePopupAt: number;
   shortcuts: boolean;
+  volumePopupAt: number;
   map3d: boolean;
   follow: boolean;
   zoomBias: number;
@@ -202,6 +203,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   vehicleTab: "modes",
   modePopupAt: -1e9,
   shortcuts: false,
+  volumePopupAt: -1e9,
   map3d: true,
   follow: true,
   zoomBias: 0,
@@ -209,8 +211,8 @@ export const useCar = create<State & Actions>((set, get) => ({
   track: 0,
   playing: true,
   progress: 71,
-  volume: 38,
-  lastVolume: 38,
+  volume: 40,
+  lastVolume: 40,
   liked: [0],
 
   chronoRunning: false,
@@ -277,7 +279,7 @@ export const useCar = create<State & Actions>((set, get) => ({
     }),
   setGear: (gear) =>
     set(gear === "D" ? { gear, locked: true, frunkOpen: false, trunkOpen: false, doorL: false, doorR: false } : { gear }),
-  setVolume: (volume) => set((s) => ({ volume, lastVolume: volume > 0 ? volume : s.lastVolume })),
+  setVolume: (volume) => set((s) => ({ volume, lastVolume: volume > 0 ? volume : s.lastVolume, volumePopupAt: s.now })),
   setMode: (mode) =>
     set((s) => ({
       mode,
