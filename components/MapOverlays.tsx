@@ -88,6 +88,30 @@ export function SearchBox() {
   );
 }
 
+export function DemoDrive() {
+  const autopilot = useCar((s) => s.autopilot);
+  const set = useCar((s) => s.set);
+  return (
+    <button
+      onClick={() => set({ autopilot: !autopilot })}
+      aria-pressed={autopilot}
+      aria-keyshortcuts="A"
+      className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-[#1a1d22]/90 py-2.5 pr-3 pl-4 text-[13px] shadow-[0_10px_30px_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:bg-[#22262b]/90"
+    >
+      <span
+        className={`h-2 w-2 rounded-full ${autopilot ? "animate-[breathe_1.6s_ease-in-out_infinite] bg-[#2f8fff]" : "bg-white/30"}`}
+      />
+      <span className="text-white/85">Demo drive</span>
+      <span aria-hidden className={`font-medium ${autopilot ? "text-[#6db3ff]" : "text-white/45"}`}>
+        {autopilot ? "On" : "Off"}
+      </span>
+      <kbd aria-hidden className="rounded-[5px] px-1.5 py-px font-sans text-[11px] text-white/45 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)]">
+        A
+      </kbd>
+    </button>
+  );
+}
+
 export function EtaBar() {
   const d = useCar((s) => s.routeD);
   const fuel = useCar((s) => s.fuel);
