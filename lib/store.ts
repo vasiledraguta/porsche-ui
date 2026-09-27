@@ -106,6 +106,7 @@ type State = {
   track: number;
   playing: boolean;
   progress: number;
+  seeking: boolean;
   volume: number;
   lastVolume: number;
   liked: number[];
@@ -211,6 +212,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   track: 0,
   playing: true,
   progress: 71,
+  seeking: false,
   volume: 40,
   lastVolume: 40,
   liked: [0],
@@ -374,8 +376,8 @@ export const useCar = create<State & Actions>((set, get) => ({
       const target = 22 + s.speed * 0.45 * TYRE_LOAD[s.mode] + (front ? brake * 30 : throttle * 24) + (i % 2 ? 1.5 : 0);
       return x + (target - x) * Math.min(1, dt * 0.05);
     });
-    const progress = s.playing ? s.progress + dt : s.progress;
-    const trackEnded = s.playing && progress >= TRACKS[s.track].length;
+    const progress = s.playing && !s.seeking ? s.progress + dt : s.progress;
+    const trackEnded = s.playing && !s.seeking && progress >= TRACKS[s.track].length;
 
     routeD += nv * dt;
     if (routeD >= ROUTE_LEN - 2 && nv < 0.5) {
