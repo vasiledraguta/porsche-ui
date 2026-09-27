@@ -530,15 +530,17 @@ function DoorsTab() {
     doorL: s.doorL,
     doorR: s.doorR,
     comfortAccess: s.comfortAccess,
+    toggleLock: s.toggleLock,
+    togglePart: s.togglePart,
     set: s.set,
   })));
   return (
     <>
-      <Row title="Central locking" sub={s.locked ? "Locked" : "Unlocked"} right={<Toggle on={s.locked} onChange={() => s.set({ locked: !s.locked, ...(!s.locked ? { frunkOpen: false, trunkOpen: false, doorL: false, doorR: false } : {}) })} />} />
-      <Row title="Front trunk" sub={s.frunkOpen ? "Open" : "Closed"} right={<Toggle on={s.frunkOpen} onChange={() => s.set({ frunkOpen: !s.frunkOpen, ...(!s.frunkOpen ? { locked: false } : {}) })} />} />
-      <Row title="Engine lid" sub={s.trunkOpen ? "Open" : "Closed"} right={<Toggle on={s.trunkOpen} onChange={() => s.set({ trunkOpen: !s.trunkOpen, ...(!s.trunkOpen ? { locked: false } : {}) })} />} />
-      <Row title="Driver door" sub={s.doorL ? "Open" : "Closed"} right={<Toggle on={s.doorL} onChange={() => s.set({ doorL: !s.doorL, ...(!s.doorL ? { locked: false } : {}) })} />} />
-      <Row title="Passenger door" sub={s.doorR ? "Open" : "Closed"} right={<Toggle on={s.doorR} onChange={() => s.set({ doorR: !s.doorR, ...(!s.doorR ? { locked: false } : {}) })} />} />
+      <Row title="Central locking" sub={s.locked ? "Locked" : "Unlocked"} right={<Toggle on={s.locked} onChange={s.toggleLock} />} />
+      <Row title="Front trunk" sub={s.frunkOpen ? "Open" : "Closed"} right={<Toggle on={s.frunkOpen} onChange={() => s.togglePart("hood")} />} />
+      <Row title="Engine lid" sub={s.trunkOpen ? "Open" : "Closed"} right={<Toggle on={s.trunkOpen} onChange={() => s.togglePart("trunk")} />} />
+      <Row title="Driver door" sub={s.doorL ? "Open" : "Closed"} right={<Toggle on={s.doorL} onChange={() => s.togglePart("doorL")} />} />
+      <Row title="Passenger door" sub={s.doorR ? "Open" : "Closed"} right={<Toggle on={s.doorR} onChange={() => s.togglePart("doorR")} />} />
       <Row title="Comfort access" sub="Unlock when you approach with the key" right={<Toggle on={s.comfortAccess} onChange={() => s.set({ comfortAccess: !s.comfortAccess })} />} />
     </>
   );
