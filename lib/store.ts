@@ -4,9 +4,29 @@ import { create } from "zustand";
 import { ROUTE_LEN, STOPS, nextStep } from "./route";
 
 export type DriveMode = "wet" | "normal" | "sport" | "track";
+export const PAINTS = {
+  silver: { label: "GT Silver Metallic", color: "#b4b8bc" },
+  white: { label: "White", color: "#f4f3ef" },
+  carrara: { label: "Carrara White Metallic", color: "#dedfdd" },
+  ice: { label: "Ice Grey Metallic", color: "#c6cccf" },
+  grey: { label: "Arctic Grey", color: "#8b9294" },
+  crayon: { label: "Crayon", color: "#b8b5ad" },
+  agate: { label: "Agate Grey Metallic", color: "#55585a" },
+  black: { label: "Black", color: "#101215" },
+  jetBlack: { label: "Jet Black Metallic", color: "#252a2e" },
+  red: { label: "Guards Red", color: "#c9202b" },
+  orange: { label: "Lava Orange", color: "#ec541a" },
+  yellow: { label: "Racing Yellow", color: "#f4ca15" },
+  green: { label: "Python Green", color: "#54b331" },
+  blue: { label: "Shark Blue", color: "#1878c6" },
+  gentian: { label: "Gentian Blue Metallic", color: "#173a6c" },
+} as const;
+export type Paint = keyof typeof PAINTS;
+export const PAINT_ORDER = Object.keys(PAINTS) as Paint[];
 export type Sheet = null | "home" | "vehicle" | "chrono" | "media" | "phone" | "notifications" | "carplay" | "androidauto" | "devices" | "settings";
 export type VehicleTab =
   | "modes"
+  | "appearance"
   | "chassis"
   | "setup"
   | "engine"
@@ -68,6 +88,7 @@ type State = {
   tripFuelL: number;
   gear: "P" | "N" | "D";
   mode: DriveMode;
+  paint: Paint;
   throttle: number;
   brake: number;
   autopilot: boolean;
@@ -167,6 +188,7 @@ export const useCar = create<State & Actions>((set, get) => ({
   tripFuelL: 0,
   gear: "D",
   mode: "normal",
+  paint: "silver",
   throttle: 0,
   brake: 0,
   autopilot: true,
