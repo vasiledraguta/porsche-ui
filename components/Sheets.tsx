@@ -5,6 +5,7 @@ import { useShallow } from "zustand/react/shallow";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpFromLine,
+  Brush,
   CarFront,
   CircleGauge,
   DoorOpen,
@@ -35,7 +36,7 @@ import { AlbumArt } from "./AlbumArt";
 import { useSlider } from "./ui/useSlider";
 import { Glyph, APPS, type AppId } from "./ui/Glyph";
 import { Row, Segmented, SectionTitle, Stepper, Toggle } from "./ui/controls";
-import { AMBIENT, MODES, MODE_ORDER, TANK_L, TRACKS, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
+import { AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 
@@ -151,6 +152,7 @@ function HomeSheet() {
 
 const TABS: { id: VehicleTab; label: string; icon: LucideIcon }[] = [
   { id: "modes", label: "Driving modes", icon: CircleGauge },
+  { id: "appearance", label: "Appearance", icon: Brush },
   { id: "chassis", label: "Chassis", icon: ArrowUpFromLine },
   { id: "setup", label: "Track setup", icon: SlidersHorizontal },
   { id: "engine", label: "Engine & fuel", icon: Timer },
@@ -197,6 +199,7 @@ function VehicleSheet() {
           >
             <h2 className="mb-2 text-[22px] font-medium text-white">{TABS.find((t) => t.id === tab)?.label}</h2>
             {tab === "modes" && <ModesTab />}
+            {tab === "appearance" && <AppearanceTab />}
             {tab === "chassis" && <ChassisTab />}
             {tab === "setup" && <SetupTab />}
             {tab === "engine" && <EngineTab />}
@@ -240,6 +243,37 @@ function ModesTab() {
   );
 }
 
+export function PaintSwatches({ compact = false }: { compact?: boolean }) {
+  const paint = useCar((s) => s.paint);
+  const set = useCar((s) => s.set);
+  return (
+    <div className={compact ? "grid grid-cols-3 gap-2" : "mt-4 grid grid-cols-3 gap-3"}>
+      {PAINT_ORDER.map((id) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => set({ paint: id })}
+          aria-label={PAINTS[id].label}
+          aria-pressed={paint === id}
+          className={`flex items-center gap-2 rounded-[12px] text-left text-white transition ${compact ? "px-2 py-2 text-[11px]" : "px-4 py-4 text-[14px]"} ${paint === id ? "bg-[#2f8fff]/[0.14] ring-1 ring-[#2f8fff]" : "bg-white/[0.04] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
+        >
+          <span className="h-5 w-5 shrink-0 rounded-full ring-1 ring-white/20" style={{ backgroundColor: PAINTS[id].color }} />
+          <span>{PAINTS[id].label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function AppearanceTab() {
+  return (
+    <>
+      <p className="mt-3 text-[14px] text-white/50">Choose a body colour for the 911 GT3 RS.</p>
+      <PaintSwatches />
+    </>
+  );
+}
+
 function ChassisTab() {
   const s = useCar(useShallow((s) => ({
     pasm: s.pasm,
@@ -251,7 +285,6 @@ function ChassisTab() {
       <SectionTitle>Damping (PASM)</SectionTitle>
       <div className="py-2">
         <Segmented
-          id="pasm"
           value={s.pasm}
           onChange={(v) => s.set({ pasm: v })}
           options={[
@@ -319,7 +352,6 @@ function SetupTab() {
       <SectionTitle>Stability control (ESC)</SectionTitle>
       <div className="py-2">
         <Segmented
-          id="esc"
           value={s.esc}
           onChange={(v) => s.set({ esc: v })}
           options={[
@@ -421,7 +453,6 @@ function ClimateTab() {
       <SectionTitle>Airflow (smart vents)</SectionTitle>
       <div className="py-2">
         <Segmented
-          id="vent"
           value={s.ventFocus}
           onChange={(v) => s.set({ ventFocus: v })}
           options={[
@@ -462,7 +493,6 @@ function LightsTab() {
       <SectionTitle>Headlights</SectionTitle>
       <div className="py-2">
         <Segmented
-          id="hl"
           value={s.headlights}
           onChange={(v) => s.set({ headlights: v })}
           options={[
