@@ -111,6 +111,7 @@ function CarStage() {
   const lift = useCar((s) => s.lift);
   const drs = useCar((s) => s.drs);
   const set = useCar((s) => s.set);
+  const toggleLock = useCar((s) => s.toggleLock);
   const anyOpen = useCar((s) => s.frunkOpen || s.trunkOpen || s.doorL || s.doorR);
   return (
     <div className="relative mx-2 mt-1 flex-1 overflow-hidden rounded-[18px]">
@@ -123,7 +124,7 @@ function CarStage() {
       </div>
       <div className="absolute top-3 left-1/2 flex -translate-x-1/2 items-center gap-2">
         <button
-          onClick={() => set({ locked: !locked, ...(locked ? {} : { frunkOpen: false, trunkOpen: false, doorL: false, doorR: false }) })}
+          onClick={toggleLock}
           aria-label={locked ? "Unlock" : "Lock"}
           className="flex items-center gap-2 rounded-full bg-black/40 py-[7px] pr-3.5 pl-3 text-[12.5px] backdrop-blur-sm transition hover:bg-black/60"
         >

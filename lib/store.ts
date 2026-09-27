@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { ROUTE_LEN, STOPS, nextStep } from "./route";
 
 export type DriveMode = "wet" | "normal" | "sport" | "track";
+export type PartId = "hood" | "trunk" | "doorL" | "doorR";
 export const PAINTS = {
   silver: { label: "GT Silver Metallic", color: "#b4b8bc" },
   white: { label: "White", color: "#f4f3ef" },
@@ -160,6 +161,8 @@ type State = {
 
 type Actions = {
   set: (p: Partial<State>) => void;
+  toggleLock: () => void;
+  togglePart: (id: PartId) => void;
   setVolume: (volume: number) => void;
   setMode: (m: DriveMode) => void;
   cycleMode: (dir: 1 | -1) => void;
@@ -258,6 +261,17 @@ export const useCar = create<State & Actions>((set, get) => ({
   now: 0,
 
   set: (p) => set(p),
+  toggleLock: () =>
+    set((s) => ({
+      locked: !s.locked,
+      ...(!s.locked ? { frunkOpen: false, trunkOpen: false, doorL: false, doorR: false } : {}),
+    })),
+  togglePart: (id) =>
+    set((s) => {
+      const key = id === "hood" ? "frunkOpen" : id === "trunk" ? "trunkOpen" : id;
+      const open = !s[key];
+      return { [key]: open, ...(open ? { locked: false } : {}) };
+    }),
   setVolume: (volume) => set((s) => ({ volume, lastVolume: volume > 0 ? volume : s.lastVolume })),
   setMode: (mode) =>
     set((s) => ({
