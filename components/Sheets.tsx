@@ -726,6 +726,12 @@ function MediaSheet() {
     set: s.set,
   })));
   const t = TRACKS[s.track];
+  const [scrub, setScrub] = useState<number | null>(null);
+  const shown = scrub ?? s.progress;
+  const seekAt = (e: React.PointerEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * t.length;
+  };
   return (
     <div className="relative flex h-full overflow-hidden">
       <div
@@ -744,18 +750,47 @@ function MediaSheet() {
           <div className="text-[18px] text-white/60">{t.artist}</div>
           <div className="text-[14px] text-white/35">{t.album}</div>
           <div
-            className="group relative mt-8 h-5 cursor-pointer"
-            onClick={(e) => {
-              const r = e.currentTarget.getBoundingClientRect();
-              s.set({ progress: ((e.clientX - r.left) / r.width) * t.length });
+            role="slider"
+            tabIndex={0}
+            aria-label="Seek"
+            aria-valuemin={0}
+            aria-valuemax={t.length}
+            aria-valuenow={Math.round(shown)}
+            aria-valuetext={`${fmtTime(shown)} of ${fmtTime(t.length)}`}
+            className="group relative mt-8 h-5 cursor-pointer touch-none rounded-full outline-none focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-white/50"
+            onPointerDown={(e) => {
+              e.currentTarget.setPointerCapture(e.pointerId);
+              setScrub(seekAt(e));
+            }}
+            onPointerMove={(e) => {
+              if (scrub !== null) setScrub(seekAt(e));
+            }}
+            onPointerUp={(e) => {
+              if (scrub === null) return;
+              s.set({ progress: seekAt(e) });
+              setScrub(null);
+            }}
+            onPointerCancel={() => setScrub(null)}
+            onKeyDown={(e) => {
+              const step = e.key === "ArrowRight" ? 5 : e.key === "ArrowLeft" ? -5 : 0;
+              if (!step) return;
+              e.preventDefault();
+              e.stopPropagation();
+              s.set({ progress: Math.min(t.length, Math.max(0, s.progress + step)) });
             }}
           >
             <div className="absolute inset-x-0 top-1/2 h-[4px] -translate-y-1/2 rounded-full bg-white/15" />
-            <div className="absolute top-1/2 left-0 h-[4px] -translate-y-1/2 rounded-full bg-white" style={{ width: `${(s.progress / t.length) * 100}%` }} />
+            <div className="absolute top-1/2 left-0 h-[4px] -translate-y-1/2 rounded-full bg-white" style={{ width: `${(shown / t.length) * 100}%` }} />
+            <div
+              className={`absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_2px_6px_rgba(0,0,0,0.5)] transition-opacity ${
+                scrub !== null ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+              }`}
+              style={{ left: `${(shown / t.length) * 100}%` }}
+            />
           </div>
           <div className="flex justify-between text-[12px] text-white/45 tabular-nums">
-            <span>{fmtTime(s.progress)}</span>
-            <span>-{fmtTime(t.length - s.progress)}</span>
+            <span>{fmtTime(shown)}</span>
+            <span>-{fmtTime(t.length - shown)}</span>
           </div>
           <div className="mt-5 flex items-center gap-8 text-white">
             <button aria-label="Previous" onClick={() => s.nextTrack(-1)} className="opacity-80 hover:opacity-100">
