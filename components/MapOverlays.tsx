@@ -20,7 +20,7 @@ import {
   CornerUpLeft,
   CornerUpRight,
 } from "lucide-react";
-import { ROUTE, ROUTE_LEN, fmtDist, nextStep } from "@/lib/route";
+import { ROUTE, ROUTE_LEN, fmtDist, isSpeeding, nextStep, speedLimitAt } from "@/lib/route";
 import { fuelPercentForDistance, rangeFor, useCar } from "@/lib/store";
 import { useClock } from "@/lib/useClock";
 
@@ -183,18 +183,15 @@ function CtlBtn({ children, label, onClick }: { children: React.ReactNode; label
 export function SpeedLimit() {
   const d = useCar((s) => s.routeD);
   const signs = useCar((s) => s.signs);
-  const speed = useCar((s) => s.speed);
+  const speeding = useCar((s) => isSpeeding(s.speed, s.routeD));
   if (!signs) return null;
-  // Romanian urban default; the airport approach drops to 30
-  const limit = d > 7900 ? 30 : 50;
-  const over = Math.round(speed) > limit;
   return (
     <div
       className={`absolute bottom-[92px] left-4 z-10 grid h-[54px] w-[54px] place-items-center rounded-full border-[5px] border-[#e5332a] bg-white shadow-lg ${
-        over ? "animate-[limit-pulse_1s_ease-out_infinite]" : ""
+        speeding ? "animate-[limit-flash_0.6s_ease-in-out_3]" : ""
       }`}
     >
-      <span className={`text-[19px] font-semibold tabular-nums ${over ? "text-[#e5332a]" : "text-black"}`}>{limit}</span>
+      <span className="text-[19px] font-semibold text-black tabular-nums">{speedLimitAt(d)}</span>
     </div>
   );
 }
