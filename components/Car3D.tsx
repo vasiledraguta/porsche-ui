@@ -14,7 +14,7 @@ import { AMBIENT, PAINTS, useCar, type Paint, type PartId } from "@/lib/store";
 const MODEL = "/car/911-gt3-rs.glb";
 
 /** 3/4 front-left hero camera (model nose points to +Z, driver side is +X). */
-const HERO: [number, number, number] = [5.9, 2.2, 6.1];
+const HERO: [number, number, number] = [6.25, 2.3, 6.45];
 const TARGET: [number, number, number] = [0, 0.5, 0];
 const RESPIN_MS = 4000;
 const SPIN_HOLD_MS = 600;
@@ -31,7 +31,7 @@ const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
 const AMBIENT_RIM = 4;
 
-const PODIUM_R = 2.85;
+const PODIUM_R = 2.55;
 const PODIUM_H = 0.08;
 const STAGE_FADE_S = 1.1;
 
