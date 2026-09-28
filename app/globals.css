@@ -129,6 +129,15 @@ button:focus-visible {
   }
 }
 
+@keyframes drift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(1.15);
+  }
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

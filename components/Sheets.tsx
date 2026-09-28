@@ -834,7 +834,7 @@ function MediaSheet() {
     <div className="relative flex h-full overflow-hidden">
       <div
         className="pointer-events-none absolute inset-0 opacity-60"
-        style={{ background: `radial-gradient(60% 70% at 25% 40%, hsl(${t.hue} 60% 28% / .55), transparent 70%)` }}
+        style={{ background: `radial-gradient(60% 70% at 25% 40%, color-mix(in oklab, ${t.mesh[1]} 40%, transparent), transparent 70%)` }}
       />
       <div className="relative flex flex-1 items-center gap-10 px-12">
         <div className="shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
@@ -915,7 +915,7 @@ function MediaSheet() {
             onClick={() => s.set({ track: i, progress: 0, playing: true })}
             className={`flex w-full items-center gap-3 rounded-[10px] px-2 py-2.5 text-left transition hover:bg-white/[0.05] active:press ${i === s.track ? "bg-white/[0.07]" : ""}`}
           >
-            <span className="h-9 w-9 shrink-0 rounded-[6px]" style={{ background: `linear-gradient(135deg, hsl(${tr.hue} 60% 50%), hsl(${(tr.hue + 50) % 360} 55% 22%))` }} />
+            <AlbumArt size={36} radius={6} track={i} />
             <span className="min-w-0">
               <span className={`block truncate text-[14px] ${i === s.track ? "text-[#ff5a5a]" : "text-white/90"}`}>{tr.title}</span>
               <span className="block truncate text-[12px] text-white/45">{tr.artist}</span>
