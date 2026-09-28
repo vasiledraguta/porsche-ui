@@ -121,7 +121,7 @@ function CarStage() {
   return (
     <div className="relative mx-2 mt-1 flex-1 overflow-hidden rounded-[18px]">
       {/* floor glow */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[radial-gradient(55%_45%_at_50%_70%,rgba(255,255,255,0.06),transparent_70%)]" />
+      <div className={`pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[radial-gradient(55%_45%_at_50%_70%,rgba(255,255,255,0.06),transparent_70%)] transition-opacity duration-1000 ${driving ? "opacity-0" : ""}`} />
       <Car3D onReady={() => setReady(true)} revealed={revealed} />
       <AnimatePresence onExitComplete={() => setRevealed(true)}>
         {!(ready && shimmered) && (
