@@ -14,7 +14,7 @@ import { AMBIENT, PAINTS, useCar, type Paint, type PartId } from "@/lib/store";
 const MODEL = "/car/911-gt3-rs.glb";
 
 /** 3/4 front-left hero camera (model nose points to +Z, driver side is +X). */
-const HERO: [number, number, number] = [5.9, 2.2, 6.1];
+const HERO: [number, number, number] = [6.25, 2.3, 6.45];
 const TARGET: [number, number, number] = [0, 0.5, 0];
 const RESPIN_MS = 4000;
 const SPIN_HOLD_MS = 600;
@@ -30,6 +30,35 @@ const CHASE_TARGET: [number, number, number] = [0, 0.7, 0];
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
 const AMBIENT_RIM = 4;
+
+const PODIUM_R = 2.55;
+const PODIUM_H = 0.08;
+const STAGE_FADE_S = 1.1;
+
+const PODIUM_FRAG = `
+uniform float uR;
+uniform float uOpacity;
+varying vec3 vW;
+void main() {
+  float r = length(vW.xz) / uR;
+  float aa = fwidth(r);
+  vec3 base = mix(vec3(0.105, 0.113, 0.127), vec3(0.07, 0.076, 0.086), smoothstep(0.2, 0.95, r));
+  float rim = 1.0 - smoothstep(0.004, 0.004 + aa * 1.5, abs(r - 0.985));
+  float glow = smoothstep(0.86, 0.985, r) * (1.0 - smoothstep(0.985, 1.0, r));
+  vec3 col = base + vec3(0.55) * rim + vec3(0.07) * glow;
+  float edge = 1.0 - smoothstep(1.0 - aa, 1.0, r);
+  gl_FragColor = vec4(col, uOpacity * edge);
+}
+`;
+
+const STAGE_VERT = `
+varying vec3 vW;
+void main() {
+  vec4 w = modelMatrix * vec4(position, 1.0);
+  vW = w.xyz;
+  gl_Position = projectionMatrix * viewMatrix * w;
+}
+`;
 
 type PartDef = {
   label: string;
@@ -473,6 +502,58 @@ function AmbientTint() {
   );
 }
 
+function Stage() {
+  const driving = useCar((s) => s.gear !== "P");
+  const invalidate = useThree((s) => s.invalidate);
+  const podium = useRef<THREE.Group>(null);
+  const progress = useRef(driving ? 1 : 0);
+  const built = useMemo(
+    () => ({
+      podium: new THREE.ShaderMaterial({
+        vertexShader: STAGE_VERT,
+        fragmentShader: PODIUM_FRAG,
+        uniforms: { uR: { value: PODIUM_R }, uOpacity: { value: 1 } },
+        transparent: true,
+        depthWrite: false,
+      }),
+      side: new THREE.MeshBasicMaterial({ color: "#07080a", transparent: true, depthWrite: false }),
+    }),
+    [],
+  );
+
+  const materials = useRef(built);
+
+  useEffect(() => () => Object.values(built).forEach((m) => m.dispose()), [built]);
+  useEffect(() => invalidate(), [driving, invalidate]);
+
+  useFrame((_, dt) => {
+    const mats = materials.current;
+    const step = Math.min(dt, 1 / 30);
+    const goal = driving ? 1 : 0;
+    progress.current = THREE.MathUtils.clamp(progress.current + Math.sign(goal - progress.current) * (step / STAGE_FADE_S), 0, 1);
+    const p = progress.current;
+    const mix = p * p * (3 - 2 * p);
+    mats.podium.uniforms.uOpacity.value = 1 - mix;
+    mats.side.opacity = 1 - mix;
+    if (podium.current) {
+      podium.current.visible = mix < 1;
+      podium.current.position.y = -mix * 0.12;
+    }
+    if (p !== goal) invalidate();
+  });
+
+  return (
+    <group ref={podium}>
+      <mesh material={built.side} position={[0, -PODIUM_H / 2 - 0.002, 0]} renderOrder={-2}>
+        <cylinderGeometry args={[PODIUM_R, PODIUM_R + 0.03, PODIUM_H, 128, 1, true]} />
+      </mesh>
+      <mesh material={built.podium} position={[0, -0.002, 0]} rotation-x={-Math.PI / 2} renderOrder={-1}>
+        <circleGeometry args={[PODIUM_R, 128]} />
+      </mesh>
+    </group>
+  );
+}
+
 /** Studio-lit, spinnable 3D car with openable lids and doors. */
 export default function Car3D({ onReady, revealed }: { onReady: () => void; revealed: boolean }) {
   const open = useParts();
@@ -494,6 +575,7 @@ export default function Car3D({ onReady, revealed }: { onReady: () => void; reve
           <Model hover={hover} setHover={setHover} calloutsRef={calloutsRef} />
           <FirstFrame onReady={onReady} />
           <AmbientTint />
+          <Stage />
           <ContactShadows position={[0, 0.001, 0]} opacity={0.65} scale={9} blur={2.4} far={2} resolution={512} color="#000" />
           {/* local studio light rig, no HDR download */}
           <Environment resolution={256} frames={1}>
