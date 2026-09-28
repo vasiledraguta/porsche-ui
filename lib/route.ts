@@ -72,51 +72,6 @@ export function nextStep(d: number) {
   return { step: s, dist: s.at - d };
 }
 
-export type RoadPath = { n: number; x: Float32Array; z: Float32Array; rx: Float32Array; rz: Float32Array };
-
-function blur(a: Float32Array, w: number) {
-  const sum = new Float64Array(a.length + 1);
-  for (let i = 0; i < a.length; i++) sum[i + 1] = sum[i] + a[i];
-  const out = new Float32Array(a.length);
-  for (let i = 0; i < a.length; i++) {
-    const lo = Math.max(0, i - w);
-    const hi = Math.min(a.length - 1, i + w);
-    out[i] = (sum[hi + 1] - sum[lo]) / (hi - lo + 1);
-  }
-  return out;
-}
-
-let road: RoadPath | null = null;
-
-export function roadPath(): RoadPath {
-  if (road) return road;
-  const [lon0, lat0] = ROUTE.coords[0];
-  const kx = 111320 * Math.cos(rad(lat0));
-  const pts = ROUTE.coords.map(([lon, lat]) => [(lon - lon0) * kx, -(lat - lat0) * 110540]);
-  const cum = [0];
-  for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
-  const n = Math.floor(ROUTE_LEN) + 1;
-  const scale = cum[cum.length - 1] / ROUTE_LEN;
-  const rx = new Float32Array(n);
-  const rz = new Float32Array(n);
-  let j = 0;
-  for (let i = 0; i < n; i++) {
-    const d = i * scale;
-    while (j < cum.length - 2 && cum[j + 1] < d) j++;
-    const t = Math.min(1, (d - cum[j]) / Math.max(1e-6, cum[j + 1] - cum[j]));
-    rx[i] = pts[j][0] + (pts[j + 1][0] - pts[j][0]) * t;
-    rz[i] = pts[j][1] + (pts[j + 1][1] - pts[j][1]) * t;
-  }
-  let x = rx;
-  let z = rz;
-  for (let p = 0; p < 3; p++) {
-    x = blur(x, 16);
-    z = blur(z, 16);
-  }
-  road = { n, x, z, rx, rz };
-  return road;
-}
-
 export function fmtDist(m: number) {
   if (m >= 1000) return `${(m / 1000).toFixed(m >= 10000 ? 0 : 1)} km`;
   if (m >= 100) return `${Math.round(m / 10) * 10} m`;

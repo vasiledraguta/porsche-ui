@@ -6,7 +6,6 @@ import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { AMBIENT, PAINTS, useCar, type Paint, type PartId } from "@/lib/store";
-import { Road } from "./Road3D";
 
 /**
  * Porsche 911 GT3 RS (992) by Black Snow on Sketchfab, CC-BY-4.0 (credit in README).
@@ -25,8 +24,8 @@ const GLIDE_MIN_S = 0.8;
 const GLIDE_MAX_S = 1.8;
 const GLIDE_S_PER_RAD = 0.45;
 
-const CHASE: [number, number, number] = [0, 3.0, -8.2];
-const CHASE_TARGET: [number, number, number] = [0, 0.6, 3.5];
+const CHASE: [number, number, number] = [0, 2.2, -7.2];
+const CHASE_TARGET: [number, number, number] = [0, 0.7, 0];
 
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
@@ -508,7 +507,6 @@ function Stage() {
   const invalidate = useThree((s) => s.invalidate);
   const podium = useRef<THREE.Group>(null);
   const progress = useRef(driving ? 1 : 0);
-  const mix = useRef(driving ? 1 : 0);
   const built = useMemo(
     () => ({
       podium: new THREE.ShaderMaterial({
@@ -534,28 +532,25 @@ function Stage() {
     const goal = driving ? 1 : 0;
     progress.current = THREE.MathUtils.clamp(progress.current + Math.sign(goal - progress.current) * (step / STAGE_FADE_S), 0, 1);
     const p = progress.current;
-    mix.current = p * p * (3 - 2 * p);
-    mats.podium.uniforms.uOpacity.value = 1 - mix.current;
-    mats.side.opacity = 1 - mix.current;
+    const mix = p * p * (3 - 2 * p);
+    mats.podium.uniforms.uOpacity.value = 1 - mix;
+    mats.side.opacity = 1 - mix;
     if (podium.current) {
-      podium.current.visible = mix.current < 1;
-      podium.current.position.y = -mix.current * 0.12;
+      podium.current.visible = mix < 1;
+      podium.current.position.y = -mix * 0.12;
     }
     if (p !== goal) invalidate();
   });
 
   return (
-    <>
-      <group ref={podium}>
-        <mesh material={built.side} position={[0, -PODIUM_H / 2 - 0.002, 0]} renderOrder={-2}>
-          <cylinderGeometry args={[PODIUM_R, PODIUM_R + 0.03, PODIUM_H, 128, 1, true]} />
-        </mesh>
-        <mesh material={built.podium} position={[0, -0.002, 0]} rotation-x={-Math.PI / 2} renderOrder={-1}>
-          <circleGeometry args={[PODIUM_R, 128]} />
-        </mesh>
-      </group>
-      <Road mix={mix} />
-    </>
+    <group ref={podium}>
+      <mesh material={built.side} position={[0, -PODIUM_H / 2 - 0.002, 0]} renderOrder={-2}>
+        <cylinderGeometry args={[PODIUM_R, PODIUM_R + 0.03, PODIUM_H, 128, 1, true]} />
+      </mesh>
+      <mesh material={built.podium} position={[0, -0.002, 0]} rotation-x={-Math.PI / 2} renderOrder={-1}>
+        <circleGeometry args={[PODIUM_R, 128]} />
+      </mesh>
+    </group>
   );
 }
 
