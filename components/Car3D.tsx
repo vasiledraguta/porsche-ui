@@ -24,9 +24,6 @@ const GLIDE_MIN_S = 0.8;
 const GLIDE_MAX_S = 1.8;
 const GLIDE_S_PER_RAD = 0.45;
 
-const CHASE: [number, number, number] = [0, 2.2, -7.2];
-const CHASE_TARGET: [number, number, number] = [0, 0.7, 0];
-
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
 const AMBIENT_RIM = 4;
@@ -343,7 +340,7 @@ function Rig({ revealed }: { revealed: boolean }) {
   const last = useRef(resetAt);
   const driving = useCar((s) => s.gear !== "P");
   const wasDriving = useRef(driving);
-  const glide = useRef<"chase" | "hero" | null>(driving ? "chase" : null);
+  const glide = useRef<"hero" | null>(null);
   const view = useRef({
     t: -1,
     dur: GLIDE_MIN_S,
@@ -384,11 +381,16 @@ function Rig({ revealed }: { revealed: boolean }) {
     }
     if (driving !== wasDriving.current) {
       wasDriving.current = driving;
-      glide.current = driving ? "chase" : "hero";
-      view.current.t = -1;
+      glide.current = null;
       clearTimeout(idle.current);
       spin.current = false;
-      resume.current = !driving;
+      resume.current = false;
+      if (!driving) {
+        c.target.set(...TARGET);
+        c.object.position.set(...HERO);
+        c.update();
+        land();
+      }
     }
     c.autoRotate = spin.current && !driving && !glide.current;
     c.autoRotateSpeed = c.autoRotate ? Math.min(SPIN_SPEED, c.autoRotateSpeed + (SPIN_SPEED / SPIN_RAMP_S) * Math.min(dt, 1 / 30)) : 0;
@@ -398,11 +400,10 @@ function Rig({ revealed }: { revealed: boolean }) {
     }
     const v = view.current;
     if (v.t < 0) {
-      const chase = glide.current === "chase";
       v.fromTarget.copy(c.target);
-      v.target.set(...(chase ? CHASE_TARGET : TARGET));
+      v.target.set(...TARGET);
       v.from.setFromVector3(v.offset.copy(c.object.position).sub(c.target));
-      v.goal.setFromVector3(v.offset.set(...(chase ? CHASE : HERO)).sub(v.target));
+      v.goal.setFromVector3(v.offset.set(...HERO).sub(v.target));
       v.goal.theta = v.from.theta + Math.atan2(Math.sin(v.goal.theta - v.from.theta), Math.cos(v.goal.theta - v.from.theta));
       v.dur = THREE.MathUtils.clamp(GLIDE_MIN_S + Math.abs(v.goal.theta - v.from.theta) * GLIDE_S_PER_RAD, GLIDE_MIN_S, GLIDE_MAX_S);
       v.t = 0;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
 import { Fuel, Lock, LockOpen, Move3d, RotateCcw } from "lucide-react";
@@ -11,51 +11,128 @@ import { useSlider } from "./ui/useSlider";
 const Car3D = dynamic(() => import("./Car3D"), { ssr: false });
 import { MODES, MODE_ORDER, REDLINE, rangeFor, useCar } from "@/lib/store";
 
+export const PANEL_W = 540;
+export const PANEL_S = 0.6;
+export const PANEL_EASE = [0.2, 0.8, 0.2, 1] as const;
+
+function useGearFocus<T extends HTMLElement>(active: boolean, onMount = false) {
+  const ref = useRef<T>(null);
+  const was = useRef(onMount ? !active : active);
+  useEffect(() => {
+    const changed = was.current !== active;
+    was.current = active;
+    if (!active || !changed) return;
+    const a = document.activeElement;
+    if (a && a !== document.body && !a.closest("[inert]") && !a.closest("[data-gear]")) return;
+    ref.current?.querySelector<HTMLElement>('[data-gear][aria-pressed="true"]')?.focus();
+  }, [active]);
+  return ref;
+}
+
 /** Left vehicle column: speed, PDK gear, rev bar, fuel, the 3D 911 GT3 RS, lock/view controls, drive mode, media. */
 export function CarPanel() {
+  const driving = useCar((s) => s.gear !== "P");
+  const ref = useGearFocus<HTMLElement>(!driving);
   return (
-    <section className="relative z-20 flex w-[540px] shrink-0 flex-col bg-[#0e1013]">
+    <motion.section
+      ref={ref}
+      initial={false}
+      animate={{ x: driving ? -PANEL_W : 0 }}
+      transition={{ duration: PANEL_S, ease: PANEL_EASE }}
+      inert={driving}
+      style={{ width: PANEL_W }}
+      className="absolute inset-y-0 left-0 z-20 flex flex-col bg-[#0e1013]"
+    >
       <DriveHeader />
       <CarStage />
       <ModeBar />
       <div className="px-5 pb-5">
         <MiniPlayer />
       </div>
-    </section>
+    </motion.section>
+  );
+}
+
+export function BesidePanel({ children }: { children: React.ReactNode }) {
+  const driving = useCar((s) => s.gear !== "P");
+  return (
+    <motion.div
+      initial={false}
+      animate={{ left: driving ? 0 : PANEL_W }}
+      transition={{ duration: PANEL_S, ease: PANEL_EASE }}
+      className="pointer-events-none absolute inset-y-0 right-0 *:pointer-events-auto"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function DrivePill() {
+  const driving = useCar((s) => s.gear !== "P");
+  return <AnimatePresence>{driving && <PillBody />}</AnimatePresence>;
+}
+
+function PillBody() {
+  const ref = useGearFocus<HTMLDivElement>(true, true);
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0, transition: { delay: PANEL_S * 0.5, duration: 0.35, ease: PANEL_EASE } }}
+      exit={{ opacity: 0, y: -8, transition: { duration: 0.18 } }}
+      className="absolute top-[122px] left-4 z-10 flex items-center gap-4 rounded-full bg-[#1a1d22]/95 py-3 pr-6 pl-5 shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md"
+    >
+      <GearSelect />
+      <span className="h-6 w-px bg-white/10" />
+      <Speed className="" size="text-[28px]" />
+    </motion.div>
+  );
+}
+
+function GearSelect() {
+  const speed = useCar((s) => s.speed);
+  const gear = useCar((s) => s.gear);
+  const pdkGear = useCar((s) => s.pdkGear);
+  const setGear = useCar((s) => s.setGear);
+  return (
+    <div className="flex gap-3 text-[15px] font-medium">
+      {(["P", "N", "D"] as const).map((g) => (
+        <button
+          key={g}
+          data-gear
+          aria-pressed={g === gear}
+          disabled={g === "P" && speed > 0}
+          onClick={() => setGear(g)}
+          className={`rounded-[6px] transition active:press ${g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}`}
+        >
+          {g === "D" && gear === "D" ? `D${pdkGear}` : g}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Speed({ className = "mt-2", size = "text-[64px]" }: { className?: string; size?: string }) {
+  const speed = useCar((s) => s.speed);
+  return (
+    <div className={`flex items-baseline gap-2 ${className}`}>
+      <span className={`${size} leading-[0.9] font-normal text-white tabular-nums`}>{Math.round(speed)}</span>
+      <span className="text-[14px] text-white/45">km/h</span>
+    </div>
   );
 }
 
 function DriveHeader() {
-  const speed = useCar((s) => s.speed);
-  const gear = useCar((s) => s.gear);
-  const pdkGear = useCar((s) => s.pdkGear);
   const rpm = useCar((s) => s.rpm);
   const fuel = useCar((s) => s.fuel);
   const mode = useCar((s) => s.mode);
-  const setGear = useCar((s) => s.setGear);
   const shift = rpm > 8300;
 
   return (
     <div className="flex items-start justify-between px-7 pt-6">
       <div>
-        <div className="flex gap-3 text-[15px] font-medium">
-          {(["P", "N", "D"] as const).map((g) => (
-            <button
-              key={g}
-              disabled={g === "P" && speed > 0}
-              onClick={() => setGear(g)}
-              className={`rounded-[6px] transition active:press ${g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}`}
-            >
-              {g === "D" && gear === "D" ? `D${pdkGear}` : g}
-            </button>
-          ))}
-        </div>
-        <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-[64px] leading-[0.9] font-normal text-white tabular-nums">
-            {Math.round(speed)}
-          </span>
-          <span className="text-[14px] text-white/45">km/h</span>
-        </div>
+        <GearSelect />
+        <Speed />
         <div className="flex items-end gap-3">
           <RevBar rpm={rpm} shift={shift} />
           {rpm === 0 && <span role="status" aria-label="Auto start/stop active" className="mb-0.5 rounded border border-[#4ca765] px-1.5 py-0.5 text-[11px] font-semibold text-[#75d28b]">A</span>}
