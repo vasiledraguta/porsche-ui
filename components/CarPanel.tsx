@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
 import { Fuel, Lock, LockOpen, Move3d, RotateCcw } from "lucide-react";
@@ -12,20 +12,69 @@ const Car3D = dynamic(() => import("./Car3D"), { ssr: false });
 import { MODES, MODE_ORDER, REDLINE, rangeFor, useCar } from "@/lib/store";
 
 /** Left vehicle column: speed, PDK gear, rev bar, fuel, the 3D 911 GT3 RS, lock/view controls, drive mode, media. */
+function useGearFocus<T extends HTMLElement>(active: boolean) {
+  const ref = useRef<T>(null);
+  const was = useRef(active);
+  useEffect(() => {
+    const changed = was.current !== active;
+    was.current = active;
+    if (!active || !changed) return;
+    const a = document.activeElement;
+    if (a && a !== document.body && !a.closest("[inert]") && !a.closest("[data-gear]")) return;
+    ref.current?.querySelector<HTMLElement>('[data-gear][aria-pressed="true"]')?.focus();
+  }, [active]);
+  return ref;
+}
+
 export function CarPanel() {
+  const driving = useCar((s) => s.gear !== "P");
+  const ref = useGearFocus<HTMLElement>(!driving);
   return (
-    <section className="relative z-20 flex w-[540px] shrink-0 flex-col bg-[#0e1013]">
-      <DriveHeader />
-      <CarStage />
-      <ModeBar />
-      <div className="px-5 pb-5">
-        <MiniPlayer />
+    <motion.section
+      ref={ref}
+      initial={false}
+      animate={{ width: driving ? 0 : 540, opacity: driving ? 0 : 1 }}
+      transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
+      inert={driving}
+      className="relative z-20 shrink-0 overflow-hidden bg-[#0e1013]"
+    >
+      <div className="absolute inset-y-0 right-0 flex w-[540px] flex-col">
+        <DriveHeader />
+        <CarStage />
+        <ModeBar />
+        <div className="px-5 pb-5">
+          <MiniPlayer />
+        </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
-function DriveHeader() {
+export function DriveCluster() {
+  const driving = useCar((s) => s.gear !== "P");
+  const ref = useGearFocus<HTMLDivElement>(driving);
+  return (
+    <AnimatePresence>
+      {driving && (
+        <motion.div
+          ref={ref}
+          initial={{ opacity: 0, x: -16 }}
+          animate={{ opacity: 1, x: 0, transition: { delay: 0.3, duration: 0.4, ease: [0.2, 0.8, 0.2, 1] } }}
+          exit={{ opacity: 0, x: -16, transition: { duration: 0.2 } }}
+          className="absolute top-[122px] left-4 z-10 w-[360px] overflow-hidden rounded-[14px] bg-[#1a1d22]/95 pb-3 shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md"
+        >
+          <DriveHeader className="px-5 pt-4" />
+          <ModeBar className="mt-4 px-3 pb-3" />
+          <div className="px-3">
+            <MiniPlayer />
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function DriveHeader({ className = "px-7 pt-6" }: { className?: string }) {
   const speed = useCar((s) => s.speed);
   const gear = useCar((s) => s.gear);
   const pdkGear = useCar((s) => s.pdkGear);
@@ -36,12 +85,14 @@ function DriveHeader() {
   const shift = rpm > 8300;
 
   return (
-    <div className="flex items-start justify-between px-7 pt-6">
+    <div className={`flex items-start justify-between ${className}`}>
       <div>
         <div className="flex gap-3 text-[15px] font-medium">
           {(["P", "N", "D"] as const).map((g) => (
             <button
               key={g}
+              data-gear
+              aria-pressed={g === gear}
               disabled={g === "P" && speed > 0}
               onClick={() => setGear(g)}
               className={`rounded-[6px] transition active:press ${g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}`}
@@ -198,12 +249,12 @@ function CarStage() {
   );
 }
 
-function ModeBar() {
+function ModeBar({ className = "px-5 pb-3" }: { className?: string }) {
   const mode = useCar((s) => s.mode);
   const setMode = useCar((s) => s.setMode);
   const { container, indicator } = useSlider(MODE_ORDER.indexOf(mode));
   return (
-    <div className="px-5 pb-3">
+    <div className={className}>
       <div ref={container} className="relative flex rounded-[12px] bg-white/[0.05] p-[3px]">
         <span
           ref={indicator}
