@@ -6,6 +6,7 @@ import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { AMBIENT, PAINTS, useCar, type Paint, type PartId } from "@/lib/store";
+import { Road } from "./Road3D";
 
 /**
  * Porsche 911 GT3 RS (992) by Black Snow on Sketchfab, CC-BY-4.0 (credit in README).
@@ -24,8 +25,8 @@ const GLIDE_MIN_S = 0.8;
 const GLIDE_MAX_S = 1.8;
 const GLIDE_S_PER_RAD = 0.45;
 
-const CHASE: [number, number, number] = [0, 2.2, -7.2];
-const CHASE_TARGET: [number, number, number] = [0, 0.7, 0];
+const CHASE: [number, number, number] = [0, 3.0, -8.2];
+const CHASE_TARGET: [number, number, number] = [0, 0.6, 3.5];
 
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
@@ -34,8 +35,6 @@ const AMBIENT_RIM = 4;
 const PODIUM_R = 2.85;
 const PODIUM_H = 0.08;
 const STAGE_FADE_S = 1.1;
-const DASH_PERIOD = 9;
-const ROAD_FLOW = 0.6;
 
 const PODIUM_FRAG = `
 uniform float uR;
@@ -50,27 +49,6 @@ void main() {
   vec3 col = base + vec3(0.55) * rim + vec3(0.07) * glow;
   float edge = 1.0 - smoothstep(1.0 - aa, 1.0, r);
   gl_FragColor = vec4(col, uOpacity * edge);
-}
-`;
-
-const ROAD_FRAG = `
-uniform float uOffset;
-uniform float uOpacity;
-uniform float uPeriod;
-varying vec3 vW;
-float line(float x, float c, float w) {
-  float aa = fwidth(x);
-  return 1.0 - smoothstep(w - aa, w + aa, abs(x - c));
-}
-void main() {
-  float x = abs(vW.x);
-  float t = (vW.z + uOffset) / uPeriod;
-  float taa = fwidth(t);
-  float dash = 1.0 - smoothstep(0.17 - taa, 0.17 + taa, abs(fract(t) - 0.5));
-  float lanes = line(x, 1.75, 0.06) * dash + line(x, 5.25, 0.08);
-  vec3 col = mix(vec3(0.085, 0.092, 0.105), vec3(0.72, 0.74, 0.76), lanes * 0.85);
-  float fade = (1.0 - smoothstep(4.6, 7.0, x)) * smoothstep(-9.0, -4.0, vW.z) * (1.0 - smoothstep(10.0, 30.0, vW.z));
-  gl_FragColor = vec4(col, uOpacity * fade);
 }
 `;
 
@@ -527,11 +505,10 @@ function AmbientTint() {
 
 function Stage() {
   const driving = useCar((s) => s.gear !== "P");
-  const rolling = useCar((s) => s.speed > 0);
   const invalidate = useThree((s) => s.invalidate);
   const podium = useRef<THREE.Group>(null);
-  const road = useRef<THREE.Mesh>(null);
   const progress = useRef(driving ? 1 : 0);
+  const mix = useRef(driving ? 1 : 0);
   const built = useMemo(
     () => ({
       podium: new THREE.ShaderMaterial({
@@ -542,13 +519,6 @@ function Stage() {
         depthWrite: false,
       }),
       side: new THREE.MeshBasicMaterial({ color: "#07080a", transparent: true, depthWrite: false }),
-      road: new THREE.ShaderMaterial({
-        vertexShader: STAGE_VERT,
-        fragmentShader: ROAD_FRAG,
-        uniforms: { uOffset: { value: 0 }, uOpacity: { value: 0 }, uPeriod: { value: DASH_PERIOD } },
-        transparent: true,
-        depthWrite: false,
-      }),
     }),
     [],
   );
@@ -556,7 +526,7 @@ function Stage() {
   const materials = useRef(built);
 
   useEffect(() => () => Object.values(built).forEach((m) => m.dispose()), [built]);
-  useEffect(() => invalidate(), [driving, rolling, invalidate]);
+  useEffect(() => invalidate(), [driving, invalidate]);
 
   useFrame((_, dt) => {
     const mats = materials.current;
@@ -564,21 +534,14 @@ function Stage() {
     const goal = driving ? 1 : 0;
     progress.current = THREE.MathUtils.clamp(progress.current + Math.sign(goal - progress.current) * (step / STAGE_FADE_S), 0, 1);
     const p = progress.current;
-    const mix = p * p * (3 - 2 * p);
-    mats.podium.uniforms.uOpacity.value = 1 - mix;
-    mats.side.opacity = 1 - mix;
-    mats.road.uniforms.uOpacity.value = mix;
+    mix.current = p * p * (3 - 2 * p);
+    mats.podium.uniforms.uOpacity.value = 1 - mix.current;
+    mats.side.opacity = 1 - mix.current;
     if (podium.current) {
-      podium.current.visible = mix < 1;
-      podium.current.position.y = -mix * 0.12;
+      podium.current.visible = mix.current < 1;
+      podium.current.position.y = -mix.current * 0.12;
     }
-    const speed = useCar.getState().speed;
-    if (road.current) road.current.visible = mix > 0;
-    if (mix > 0 && speed > 0) {
-      const offset = mats.road.uniforms.uOffset;
-      offset.value = (offset.value + (speed / 3.6) * ROAD_FLOW * step) % DASH_PERIOD;
-    }
-    if (p !== goal || (mix > 0 && speed > 0)) invalidate();
+    if (p !== goal) invalidate();
   });
 
   return (
@@ -591,9 +554,7 @@ function Stage() {
           <circleGeometry args={[PODIUM_R, 128]} />
         </mesh>
       </group>
-      <mesh ref={road} material={built.road} position={[0, -0.002, 10]} rotation-x={-Math.PI / 2} renderOrder={-1}>
-        <planeGeometry args={[14, 60]} />
-      </mesh>
+      <Road mix={mix} />
     </>
   );
 }
