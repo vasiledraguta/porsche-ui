@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { createJSONStorage, persist, type PersistOptions, type StateStorage } from "zustand/middleware";
 import { ROUTE_LEN, STOPS, nextStep } from "./route";
 
 export type DriveMode = "wet" | "normal" | "sport" | "track";
@@ -162,6 +163,48 @@ type State = {
   now: number;
 };
 
+type Appearance = Pick<State, "paint" | "ambient" | "ambientLevel" | "map3d" | "headlights">;
+
+const HEADLIGHTS: State["headlights"][] = ["auto", "low", "high", "off"];
+
+let hydrated = false;
+let lastSaved: string | null = null;
+
+const appearanceStorage: StateStorage = {
+  getItem: (name) => {
+    try {
+      lastSaved = localStorage.getItem(name);
+      return lastSaved;
+    } catch {
+      return null;
+    }
+  },
+  setItem: (name, value) => {
+    if (!hydrated || value === lastSaved) return;
+    lastSaved = value;
+    try {
+      localStorage.setItem(name, value);
+    } catch {}
+  },
+  removeItem: (name) => {
+    try {
+      localStorage.removeItem(name);
+    } catch {}
+  },
+};
+
+const validAppearance = (saved: unknown): Partial<Appearance> => {
+  if (!saved || typeof saved !== "object") return {};
+  const v = saved as Record<string, unknown>;
+  const out: Partial<Appearance> = {};
+  if (typeof v.paint === "string" && Object.hasOwn(PAINTS, v.paint)) out.paint = v.paint as Paint;
+  if (Number.isInteger(v.ambient) && (v.ambient as number) >= 0 && (v.ambient as number) < AMBIENT.length) out.ambient = v.ambient as number;
+  if (typeof v.ambientLevel === "number" && v.ambientLevel >= 0 && v.ambientLevel <= 100) out.ambientLevel = v.ambientLevel;
+  if (typeof v.map3d === "boolean") out.map3d = v.map3d;
+  if (HEADLIGHTS.includes(v.headlights as State["headlights"])) out.headlights = v.headlights as State["headlights"];
+  return out;
+};
+
 type Actions = {
   set: (p: Partial<State>) => void;
   toggleLock: () => void;
@@ -177,7 +220,26 @@ type Actions = {
   tick: (dt: number, t: number) => void;
 };
 
-export const useCar = create<State & Actions>((set, get) => ({
+const appearanceOptions: PersistOptions<State & Actions, Partial<Appearance>> = {
+  name: "pcm:appearance",
+  version: 1,
+  storage: createJSONStorage(() => appearanceStorage),
+  partialize: (s) => ({
+    paint: s.paint,
+    ambient: s.ambient,
+    ambientLevel: s.ambientLevel,
+    map3d: s.map3d,
+    headlights: s.headlights,
+  }),
+  migrate: () => ({}),
+  merge: (saved, current) => ({ ...current, ...validAppearance(saved) }),
+  skipHydration: true,
+  onRehydrateStorage: () => () => {
+    hydrated = true;
+  },
+};
+
+export const useCar = create<State & Actions>()(persist((set, get) => ({
   speed: 0,
   powerKw: 0,
   rpm: IDLE_RPM,
@@ -409,7 +471,7 @@ export const useCar = create<State & Actions>((set, get) => ({
       progress: trackEnded ? progress - TRACKS[s.track].length : progress,
     });
   },
-}));
+}), appearanceOptions));
 
 /** Remaining range in km from fuel level (%) at the mode's typical consumption. */
 export const rangeFor = (fuelPct: number, mode: DriveMode) => Math.round(((fuelPct / 100) * TANK_L * 100) / CONS[mode]);

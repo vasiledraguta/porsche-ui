@@ -25,6 +25,10 @@ export function Display() {
   const ambient = useCar((s) => AMBIENT[s.ambient]);
   const ambientLevel = useCar((s) => s.ambientLevel);
 
+  useEffect(() => {
+    useCar.persist.rehydrate();
+  }, []);
+
   useLayoutEffect(() => {
     const el = wrap.current;
     if (!el) return;
