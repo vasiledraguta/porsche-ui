@@ -5,7 +5,7 @@ import type { Map } from "maplibre-gl";
 import { AnimatePresence, motion } from "motion/react";
 import { Keyboard, Monitor, Volume2, VolumeX, X } from "lucide-react";
 import { BottomBar } from "./BottomBar";
-import { CarPanel, DriveCluster } from "./CarPanel";
+import { CarPanel, DriveBarLead, DrivePill, LayoutSwitch } from "./CarPanel";
 import { DemoDrive, EtaBar, MapControls, Maneuver, SearchBox, SpeedLimit } from "./MapOverlays";
 import { NavMap } from "./NavMap";
 import { Rail } from "./Rail";
@@ -72,12 +72,13 @@ export function Display() {
                 <main className="relative min-w-0 flex-1 overflow-hidden">
                   <NavMap mapRef={mapRef} />
                   <Maneuver />
-                  <DriveCluster />
+                  <DrivePill />
                   <DemoDrive />
+                  <LayoutSwitch />
                   <SearchBox />
                   <SpeedLimit />
                   <MapControls mapRef={mapRef} />
-                  <EtaBar />
+                  <EtaBar lead={<DriveBarLead />} />
                   <Sheets />
                   <ModePopup />
                   <VolumePopup />

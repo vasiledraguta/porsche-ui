@@ -56,6 +56,9 @@ const GEAR_TOP = [0, 71, 108, 145, 182, 222, 261, 296];
 export const REDLINE = 9000;
 export const IDLE_RPM = 950;
 export const TANK_L = 64;
+export const DRIVE_LAYOUTS = ["strip", "bar", "pill"] as const;
+export type DriveLayout = (typeof DRIVE_LAYOUTS)[number];
+
 /** L/100 km by mode, anchored on the 13.4 L WLTP figure. */
 const CONS: Record<DriveMode, number> = { wet: 12.8, normal: 13.4, sport: 15.2, track: 19 };
 const TYRE_LOAD: Record<DriveMode, number> = { wet: 0.8, normal: 1, sport: 1.15, track: 1.35 };
@@ -99,6 +102,7 @@ type State = {
   vehicleTab: VehicleTab;
   modePopupAt: number;
   shortcuts: boolean;
+  driveLayout: DriveLayout;
   volumePopupAt: number;
   map3d: boolean;
   follow: boolean;
@@ -266,6 +270,7 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
   vehicleTab: "modes",
   modePopupAt: -1e9,
   shortcuts: false,
+  driveLayout: "strip",
   volumePopupAt: -1e9,
   map3d: true,
   follow: true,
