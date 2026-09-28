@@ -109,7 +109,7 @@ export function DemoDrive() {
   );
 }
 
-export function EtaBar({ lead }: { lead?: React.ReactNode }) {
+export function EtaBar() {
   const d = useCar((s) => s.routeD);
   const fuel = useCar((s) => s.fuel);
   const mode = useCar((s) => s.mode);
@@ -120,7 +120,6 @@ export function EtaBar({ lead }: { lead?: React.ReactNode }) {
   const arriveFuel = Math.max(0, Math.round(fuel - fuelPercentForDistance(left / 1000, mode)));
   return (
     <div className="absolute right-4 bottom-4 left-4 z-10 flex items-center gap-6 rounded-[14px] bg-[#1a1d22]/95 px-5 py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
-      {lead}
       <div className="flex items-baseline gap-2">
         <span className="text-[24px] leading-none font-medium text-white tabular-nums">
           {eta ? `${String(eta.getHours()).padStart(2, "0")}:${String(eta.getMinutes()).padStart(2, "0")}` : "--:--"}

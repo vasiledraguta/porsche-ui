@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import * as maplibregl from "maplibre-gl";
 import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { cubicBezier } from "motion";
+import { PANEL_EASE, PANEL_S, PANEL_W } from "./CarPanel";
 import { ROUTE, positionAt } from "@/lib/route";
 import { useCar } from "@/lib/store";
 
@@ -53,9 +55,13 @@ function porscheify(style: StyleSpecification): StyleSpecification {
   };
 }
 
+const panelEase = cubicBezier(...PANEL_EASE);
+const panelPad = () => (useCar.getState().gear === "P" ? PANEL_W : 0);
+
 export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> }) {
   const el = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
+  const padLeft = useRef(0);
   const [failed, setFailed] = useState(false);
   const puck = useRef<maplibregl.Marker | null>(null);
 
@@ -86,6 +92,8 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
           cancelPendingTileRequestsWhileZooming: false,
         });
         mapRef.current = map;
+        padLeft.current = panelPad();
+        map.setPadding({ top: 180, bottom: 0, left: padLeft.current, right: 0 });
         // Hand the camera to the user the moment they touch the map. This has to happen on
         // press, not on dragstart: the follow loop's jumpTo() stops in-progress gestures, so a
         // drag would otherwise be cancelled before it ever reached dragstart.
@@ -161,10 +169,18 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
   useEffect(() => {
     if (!ready) return;
     let last = 0;
+    const pad = { from: padLeft.current, to: padLeft.current, at: -Infinity };
     const unsub = useCar.subscribe((s) => {
       const map = mapRef.current;
       if (!map) return;
-      if (s.now - last < 33) return;
+      const target = s.gear === "P" ? PANEL_W : 0;
+      if (target !== pad.to) {
+        Object.assign(pad, { from: padLeft.current, to: target, at: s.now });
+        if (!s.follow) map.easeTo({ padding: { top: 180, bottom: 0, left: target, right: 0 }, duration: PANEL_S * 1000, easing: panelEase });
+      }
+      const k = Math.min(1, (s.now - pad.at) / (PANEL_S * 1000));
+      padLeft.current = pad.from + (pad.to - pad.from) * panelEase(k);
+      if (k >= 1 && s.now - last < 33) return;
       last = s.now;
       const { pos, heading } = positionAt(s.routeD);
       if (s.follow && !map.isMoving()) {
@@ -174,7 +190,7 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
           bearing: map.getBearing() + shortest(map.getBearing(), heading) * 0.12,
           zoom: map.getZoom() + (zoom - map.getZoom()) * 0.08,
           pitch: map.getPitch() + ((s.map3d ? 58 : 0) - map.getPitch()) * 0.15,
-          padding: { top: 180, bottom: 0, left: 0, right: 0 },
+          padding: { top: 180, bottom: 0, left: padLeft.current, right: 0 },
         });
       }
       // rotationAlignment "map" already compensates for the camera bearing, so pass the true heading
@@ -214,7 +230,7 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
       bearing: heading,
       zoom: 16.4,
       pitch: s.map3d ? 58 : 0,
-      padding: { top: 180, bottom: 0, left: 0, right: 0 },
+      padding: { top: 180, bottom: 0, left: padLeft.current, right: 0 },
       duration: 700,
     });
   }, [follow, mapRef]);

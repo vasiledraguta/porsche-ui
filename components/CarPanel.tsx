@@ -9,11 +9,11 @@ import { useSlider } from "./ui/useSlider";
 
 // WebGL only runs client-side.
 const Car3D = dynamic(() => import("./Car3D"), { ssr: false });
-import { DRIVE_LAYOUTS, MODES, MODE_ORDER, REDLINE, rangeFor, useCar, type DriveLayout } from "@/lib/store";
+import { MODES, MODE_ORDER, REDLINE, rangeFor, useCar } from "@/lib/store";
 
-const STRIP_W = 176;
-const EASE = [0.2, 0.8, 0.2, 1] as const;
-const LAYOUT_LABEL: Record<DriveLayout, string> = { strip: "Strip", bar: "Bar", pill: "Pill" };
+export const PANEL_W = 540;
+export const PANEL_S = 0.6;
+export const PANEL_EASE = [0.2, 0.8, 0.2, 1] as const;
 
 function useGearFocus<T extends HTMLElement>(active: boolean, onMount = false) {
   const ref = useRef<T>(null);
@@ -32,61 +32,44 @@ function useGearFocus<T extends HTMLElement>(active: boolean, onMount = false) {
 /** Left vehicle column: speed, PDK gear, rev bar, fuel, the 3D 911 GT3 RS, lock/view controls, drive mode, media. */
 export function CarPanel() {
   const driving = useCar((s) => s.gear !== "P");
-  const strip = useCar((s) => s.driveLayout === "strip");
   const ref = useGearFocus<HTMLElement>(!driving);
   return (
     <motion.section
       ref={ref}
       initial={false}
-      animate={{ width: driving ? (strip ? STRIP_W : 0) : 540 }}
-      transition={{ duration: 0.55, ease: EASE }}
-      className="relative z-20 shrink-0 overflow-hidden bg-[#0e1013]"
+      animate={{ x: driving ? -PANEL_W : 0 }}
+      transition={{ duration: PANEL_S, ease: PANEL_EASE }}
+      inert={driving}
+      style={{ width: PANEL_W }}
+      className="absolute inset-y-0 left-0 z-20 flex flex-col bg-[#0e1013]"
     >
-      <motion.div
-        initial={false}
-        animate={{ opacity: driving ? 0 : 1 }}
-        transition={{ duration: 0.35 }}
-        inert={driving}
-        className="absolute inset-y-0 right-0 flex w-[540px] flex-col"
-      >
-        <DriveHeader />
-        <CarStage />
-        <ModeBar />
-        <div className="px-5 pb-5">
-          <MiniPlayer />
-        </div>
-      </motion.div>
-      <AnimatePresence>{driving && strip && <DriveStrip />}</AnimatePresence>
+      <DriveHeader />
+      <CarStage />
+      <ModeBar />
+      <div className="px-5 pb-5">
+        <MiniPlayer />
+      </div>
     </motion.section>
   );
 }
 
-function DriveStrip() {
-  const ref = useGearFocus<HTMLDivElement>(true, true);
-  const rpm = useCar((s) => s.rpm);
+export function BesidePanel({ children }: { children: React.ReactNode }) {
+  const driving = useCar((s) => s.gear !== "P");
   return (
     <motion.div
-      ref={ref}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { delay: 0.25, duration: 0.35 } }}
-      exit={{ opacity: 0, transition: { duration: 0.15 } }}
-      style={{ width: STRIP_W }}
-      className="absolute inset-y-0 left-0 flex flex-col px-5 pt-6 pb-5"
+      initial={false}
+      animate={{ left: driving ? 0 : PANEL_W }}
+      transition={{ duration: PANEL_S, ease: PANEL_EASE }}
+      className="pointer-events-none absolute inset-y-0 right-0 *:pointer-events-auto"
     >
-      <GearSelect />
-      <Speed className="mt-3" size="text-[52px]" />
-      <div className="mt-6 min-h-0 flex-1">
-        <RevBar rpm={rpm} shift={rpm > 8300} vertical />
-      </div>
-      <FuelReadout className="mt-5" justify="justify-start" />
-      <ModeBar vertical className="mt-5" />
+      {children}
     </motion.div>
   );
 }
 
 export function DrivePill() {
-  const show = useCar((s) => s.gear !== "P" && s.driveLayout === "pill");
-  return <AnimatePresence>{show && <PillBody />}</AnimatePresence>;
+  const driving = useCar((s) => s.gear !== "P");
+  return <AnimatePresence>{driving && <PillBody />}</AnimatePresence>;
 }
 
 function PillBody() {
@@ -94,75 +77,15 @@ function PillBody() {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, x: -16 }}
-      animate={{ opacity: 1, x: 0, transition: { delay: 0.3, duration: 0.4, ease: EASE } }}
-      exit={{ opacity: 0, x: -16, transition: { duration: 0.2 } }}
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0, transition: { delay: PANEL_S * 0.5, duration: 0.35, ease: PANEL_EASE } }}
+      exit={{ opacity: 0, y: -8, transition: { duration: 0.18 } }}
       className="absolute top-[122px] left-4 z-10 flex items-center gap-4 rounded-full bg-[#1a1d22]/95 py-3 pr-6 pl-5 shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md"
     >
       <GearSelect />
       <span className="h-6 w-px bg-white/10" />
       <Speed className="" size="text-[28px]" />
     </motion.div>
-  );
-}
-
-export function DriveBarLead() {
-  const show = useCar((s) => s.gear !== "P" && s.driveLayout === "bar");
-  return <AnimatePresence>{show && <BarLeadBody />}</AnimatePresence>;
-}
-
-function BarLeadBody() {
-  const ref = useGearFocus<HTMLDivElement>(true, true);
-  const rpm = useCar((s) => s.rpm);
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, width: 0 }}
-      animate={{ opacity: 1, width: "auto", transition: { delay: 0.2, duration: 0.45, ease: EASE } }}
-      exit={{ opacity: 0, width: 0, transition: { duration: 0.25, ease: EASE } }}
-      className="-mr-6 shrink-0 overflow-hidden"
-    >
-      <div className="flex w-max items-center gap-6 pr-6">
-        <GearSelect />
-        <span className="h-5 w-px bg-white/10" />
-        <Speed className="" size="text-[26px]" />
-        <RevBar rpm={rpm} shift={rpm > 8300} className="w-[150px]" />
-        <span className="h-5 w-px bg-white/10" />
-        <ModeBar compact className="" />
-        <span className="h-5 w-px bg-white/10" />
-      </div>
-    </motion.div>
-  );
-}
-
-export function LayoutSwitch() {
-  const driving = useCar((s) => s.gear !== "P");
-  const layout = useCar((s) => s.driveLayout);
-  const set = useCar((s) => s.set);
-  return (
-    <AnimatePresence>
-      {driving && (
-        <motion.div
-          role="group"
-          aria-label="Driving layout"
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          className="absolute top-[68px] left-1/2 z-10 flex -translate-x-1/2 gap-1 rounded-full bg-[#1a1d22]/90 p-1 text-[12.5px] shadow-[0_10px_30px_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md"
-        >
-          {DRIVE_LAYOUTS.map((l) => (
-            <button
-              key={l}
-              aria-pressed={layout === l}
-              onClick={() => set({ driveLayout: l })}
-              className={`rounded-full px-3.5 py-1.5 transition active:press ${layout === l ? "bg-white/[0.12] text-white" : "text-white/50 hover:text-white/80"}`}
-            >
-              {LAYOUT_LABEL[l]}
-            </button>
-          ))}
-        </motion.div>
-      )}
-    </AnimatePresence>
   );
 }
 
@@ -199,22 +122,10 @@ function Speed({ className = "mt-2", size = "text-[64px]" }: { className?: strin
   );
 }
 
-function FuelReadout({ className = "text-right", justify = "justify-end" }: { className?: string; justify?: string }) {
-  const fuel = useCar((s) => s.fuel);
-  const mode = useCar((s) => s.mode);
-  return (
-    <div className={className}>
-      <div className={`flex items-center gap-2 ${justify}`}>
-        <span className="text-[15px] font-medium text-white tabular-nums">{Math.round(fuel)}%</span>
-        <FuelGauge pct={fuel} />
-      </div>
-      <div className="mt-1 text-[13px] text-white/45 tabular-nums">{rangeFor(fuel, mode)} km</div>
-    </div>
-  );
-}
-
 function DriveHeader() {
   const rpm = useCar((s) => s.rpm);
+  const fuel = useCar((s) => s.fuel);
+  const mode = useCar((s) => s.mode);
   const shift = rpm > 8300;
 
   return (
@@ -227,38 +138,31 @@ function DriveHeader() {
           {rpm === 0 && <span role="status" aria-label="Auto start/stop active" className="mb-0.5 rounded border border-[#4ca765] px-1.5 py-0.5 text-[11px] font-semibold text-[#75d28b]">A</span>}
         </div>
       </div>
-      <FuelReadout />
+      <div className="text-right">
+        <div className="flex items-center justify-end gap-2">
+          <span className="text-[15px] font-medium text-white tabular-nums">{Math.round(fuel)}%</span>
+          <FuelGauge pct={fuel} />
+        </div>
+        <div className="mt-1 text-[13px] text-white/45 tabular-nums">{rangeFor(fuel, mode)} km</div>
+      </div>
     </div>
   );
 }
 
 /** Rev counter strip, 0–9,000 rpm. The last 1,000 rpm is the red zone; it flashes at the shift point. */
-function RevBar({ rpm, shift, vertical = false, className = "mt-3 w-[190px]" }: { rpm: number; shift: boolean; vertical?: boolean; className?: string }) {
+function RevBar({ rpm, shift }: { rpm: number; shift: boolean }) {
   const pct = Math.min(1, rpm / REDLINE);
-  const fill = shift ? "#ff3b30" : pct > 0.78 ? "#ffb020" : "#fff";
-  const label = <span className={shift ? "text-[#ff6b61]" : "text-white/60"}>{(Math.round(rpm / 50) * 50).toLocaleString("en")} rpm</span>;
-  if (vertical) {
-    return (
-      <div className="flex h-full gap-3">
-        <div className="relative w-[4px] rounded-full bg-white/10">
-          <span className="absolute inset-x-0 top-0 h-[11.1%] rounded-t-full bg-[#ff3b30]/35" />
-          <span className="absolute inset-x-0 bottom-0 rounded-full" style={{ height: `${pct * 100}%`, background: fill }} />
-        </div>
-        <div className="flex flex-col justify-between text-[11px] text-white/35 tabular-nums">
-          <span>9</span>
-          {label}
-        </div>
-      </div>
-    );
-  }
   return (
-    <div className={className}>
+    <div className="mt-3 w-[190px]">
       <div className="relative h-[4px] rounded-full bg-white/10">
         <span className="absolute inset-y-0 right-0 w-[11.1%] rounded-r-full bg-[#ff3b30]/35" />
-        <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct * 100}%`, background: fill }} />
+        <span
+          className="absolute inset-y-0 left-0 rounded-full"
+          style={{ width: `${pct * 100}%`, background: shift ? "#ff3b30" : pct > 0.78 ? "#ffb020" : "#fff" }}
+        />
       </div>
       <div className="mt-1.5 flex justify-between text-[11px] text-white/35 tabular-nums">
-        {label}
+        <span className={shift ? "text-[#ff6b61]" : "text-white/60"}>{(Math.round(rpm / 50) * 50).toLocaleString("en")} rpm</span>
         <span>9</span>
       </div>
     </div>
@@ -371,20 +275,19 @@ function CarStage() {
   );
 }
 
-function ModeBar({ className = "px-5 pb-3", vertical = false, compact = false }: { className?: string; vertical?: boolean; compact?: boolean }) {
+function ModeBar() {
   const mode = useCar((s) => s.mode);
   const setMode = useCar((s) => s.setMode);
   const { container, indicator } = useSlider(MODE_ORDER.indexOf(mode));
-  const size = vertical ? "px-3 py-[9px] text-left text-[13.5px]" : compact ? "px-3 py-[6px] text-[13px]" : "flex-1 py-[9px] text-[13.5px]";
   return (
-    <div className={className}>
-      <div ref={container} className={`relative flex rounded-[12px] bg-white/[0.05] p-[3px] ${vertical ? "flex-col" : ""}`}>
+    <div className="px-5 pb-3">
+      <div ref={container} className="relative flex rounded-[12px] bg-white/[0.05] p-[3px]">
         <span
           ref={indicator}
           className="pointer-events-none absolute top-0 left-0 rounded-[9px] bg-[#262a30] opacity-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07),0_2px_8px_rgba(0,0,0,0.4)]"
         />
         {MODE_ORDER.map((m) => (
-          <button key={m} data-slot aria-pressed={mode === m} onClick={() => setMode(m)} className={`relative rounded-[9px] transition active:press ${size}`}>
+          <button key={m} data-slot aria-pressed={mode === m} onClick={() => setMode(m)} className="relative flex-1 rounded-[9px] py-[9px] text-[13.5px] transition active:press">
             <span className={`relative ${mode === m ? "text-white" : "text-white/50"}`}>{MODES[m].label}</span>
           </button>
         ))}

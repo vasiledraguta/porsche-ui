@@ -24,8 +24,8 @@ const GLIDE_MIN_S = 0.8;
 const GLIDE_MAX_S = 1.8;
 const GLIDE_S_PER_RAD = 0.45;
 
-const CHASE: [number, number, number] = [0, 2.2, -7.2];
-const CHASE_TARGET: [number, number, number] = [0, 0.7, 0];
+const SPIN_IN_S = 1.4;
+const SPIN_IN_S_PER_RAD = 0.14;
 
 const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
@@ -314,7 +314,7 @@ function Rig({ revealed }: { revealed: boolean }) {
   const last = useRef(resetAt);
   const driving = useCar((s) => s.gear !== "P");
   const wasDriving = useRef(driving);
-  const glide = useRef<"chase" | "hero" | null>(driving ? "chase" : null);
+  const glide = useRef<"hero" | "spin" | null>(null);
   const view = useRef({
     t: -1,
     dur: GLIDE_MIN_S,
@@ -355,7 +355,7 @@ function Rig({ revealed }: { revealed: boolean }) {
     }
     if (driving !== wasDriving.current) {
       wasDriving.current = driving;
-      glide.current = driving ? "chase" : "hero";
+      glide.current = driving ? null : "spin";
       view.current.t = -1;
       clearTimeout(idle.current);
       spin.current = false;
@@ -369,17 +369,21 @@ function Rig({ revealed }: { revealed: boolean }) {
     }
     const v = view.current;
     if (v.t < 0) {
-      const chase = glide.current === "chase";
+      const spinIn = glide.current === "spin";
       v.fromTarget.copy(c.target);
-      v.target.set(...(chase ? CHASE_TARGET : TARGET));
+      v.target.set(...TARGET);
       v.from.setFromVector3(v.offset.copy(c.object.position).sub(c.target));
-      v.goal.setFromVector3(v.offset.set(...(chase ? CHASE : HERO)).sub(v.target));
-      v.goal.theta = v.from.theta + Math.atan2(Math.sin(v.goal.theta - v.from.theta), Math.cos(v.goal.theta - v.from.theta));
-      v.dur = THREE.MathUtils.clamp(GLIDE_MIN_S + Math.abs(v.goal.theta - v.from.theta) * GLIDE_S_PER_RAD, GLIDE_MIN_S, GLIDE_MAX_S);
+      v.goal.setFromVector3(v.offset.set(...HERO).sub(v.target));
+      let turn = Math.atan2(Math.sin(v.goal.theta - v.from.theta), Math.cos(v.goal.theta - v.from.theta));
+      if (spinIn && turn > -Math.PI) turn -= 2 * Math.PI;
+      v.goal.theta = v.from.theta + turn;
+      v.dur = spinIn
+        ? SPIN_IN_S + Math.abs(turn) * SPIN_IN_S_PER_RAD
+        : THREE.MathUtils.clamp(GLIDE_MIN_S + Math.abs(turn) * GLIDE_S_PER_RAD, GLIDE_MIN_S, GLIDE_MAX_S);
       v.t = 0;
     }
     v.t = Math.min(1, v.t + Math.min(dt, 1 / 30) / v.dur);
-    const e = v.t < 0.5 ? 4 * v.t ** 3 : 1 - (-2 * v.t + 2) ** 3 / 2;
+    const e = glide.current === "spin" ? 1 - (1 - v.t) ** 3 : v.t < 0.5 ? 4 * v.t ** 3 : 1 - (-2 * v.t + 2) ** 3 / 2;
     c.target.lerpVectors(v.fromTarget, v.target, e);
     v.at.set(
       THREE.MathUtils.lerp(v.from.radius, v.goal.radius, e),
