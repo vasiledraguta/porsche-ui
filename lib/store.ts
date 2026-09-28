@@ -63,11 +63,11 @@ export const TYRES = ["Front left", "Front right", "Rear left", "Rear right"] as
 const TYRE_COLD_BAR = [2.2, 2.2, 2.4, 2.4];
 
 export const TRACKS = [
-  { title: "Nightcall", artist: "Kavinsky", album: "OutRun", length: 258, hue: 262 },
-  { title: "Midnight City", artist: "M83", album: "Hurry Up, We're Dreaming", length: 243, hue: 214 },
-  { title: "Instant Crush", artist: "Daft Punk", album: "Random Access Memories", length: 337, hue: 36 },
-  { title: "Resonance", artist: "HOME", album: "Odyssey", length: 212, hue: 190 },
-  { title: "Tenebre Rosso Sangue", artist: "Ultimo", album: "Peter Pan", length: 212, hue: 352 },
+  { title: "Nightcall", artist: "Kavinsky", album: "OutRun", length: 258, mesh: ["#1b0b3a", "#ff3d8b", "#7c3aed", "#ff9e4a", "#2dd4f0"] },
+  { title: "Midnight City", artist: "M83", album: "Hurry Up, We're Dreaming", length: 243, mesh: ["#0a1a4a", "#3d7bff", "#b14dff", "#ff5fa8", "#4be1ff"] },
+  { title: "Instant Crush", artist: "Daft Punk", album: "Random Access Memories", length: 337, mesh: ["#3a0d2e", "#ff6a3d", "#ffcf4a", "#ff3f7f", "#8f5bff"] },
+  { title: "Resonance", artist: "HOME", album: "Odyssey", length: 212, mesh: ["#062b3a", "#23d5c4", "#4f8dff", "#b6f35a", "#f58bff"] },
+  { title: "Tenebre Rosso Sangue", artist: "Ultimo", album: "Peter Pan", length: 212, mesh: ["#2a0510", "#ff2d55", "#ff8a4c", "#c2187f", "#ffd1a1"] },
 ];
 
 export const AMBIENT = ["#e8eef5", "#3ea0ff", "#2fd3c0", "#ffb35c", "#ff4f64", "#a57bff"];
