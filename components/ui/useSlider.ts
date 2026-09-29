@@ -1,5 +1,6 @@
 "use client";
 
+import { animate } from "motion";
 import { useLayoutEffect, useRef } from "react";
 
 /**
@@ -17,20 +18,17 @@ export function useSlider<C extends HTMLElement = HTMLDivElement>(active: number
     const box = container.current;
     const ind = indicator.current;
     if (!box || !ind) return;
-    const place = (animate: boolean) => {
+    const place = (spring: boolean) => {
       const el = box.querySelectorAll<HTMLElement>("[data-slot]")[active];
       if (!el) {
-        ind.style.opacity = "0";
+        animate(ind, { opacity: 0 }, { duration: 0 });
         return;
       }
-      ind.style.transition =
-        animate && placed.current
-          ? "transform 320ms cubic-bezier(.2,.8,.2,1), width 320ms cubic-bezier(.2,.8,.2,1), height 320ms cubic-bezier(.2,.8,.2,1), opacity 150ms"
-          : "none";
-      ind.style.transform = `translate(${el.offsetLeft}px, ${el.offsetTop}px)`;
-      ind.style.width = `${el.offsetWidth}px`;
-      ind.style.height = `${el.offsetHeight}px`;
-      ind.style.opacity = "1";
+      animate(
+        ind,
+        { x: el.offsetLeft, y: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight, opacity: 1 },
+        spring && placed.current ? { type: "spring", stiffness: 400, damping: 33, opacity: { duration: 0.15 } } : { duration: 0 },
+      );
       placed.current = true;
     };
     place(true);
