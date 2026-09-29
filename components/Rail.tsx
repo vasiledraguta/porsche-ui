@@ -52,7 +52,7 @@ export function Rail() {
               data-slot
               onClick={() => (r.sheet === null ? set({ sheet: null, follow: true }) : openSheet(r.sheet))}
               aria-label={r.label}
-              className="relative grid h-[54px] w-[54px] place-items-center rounded-[14px] transition active:press"
+              className="relative grid h-[54px] w-[54px] place-items-center rounded-[14px] transition"
             >
               <span className="relative">
                 <Glyph id={r.id} size={24} />

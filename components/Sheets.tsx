@@ -285,7 +285,7 @@ function ModesTab() {
           className={`rounded-[14px] p-5 text-left transition ${
             mode === m
               ? "cursor-default bg-[#2f8fff]/[0.14] shadow-[inset_0_0_0_1.5px_#2f8fff]"
-              : "bg-white/[0.04] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:bg-white/[0.06] active:press"
+              : "bg-white/[0.04] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:bg-white/[0.06]"
           }`}
         >
           <div className="flex items-center justify-between">
@@ -312,7 +312,7 @@ export function PaintSwatches({ compact = false }: { compact?: boolean }) {
           onClick={() => set({ paint: id })}
           aria-label={PAINTS[id].label}
           aria-pressed={paint === id}
-          className={`flex items-center gap-2 rounded-[12px] text-left text-white transition active:press ${compact ? "px-2 py-2 text-[11px]" : "px-4 py-4 text-[14px]"} ${paint === id ? "bg-[#2f8fff]/[0.14] ring-1 ring-[#2f8fff]" : "bg-white/[0.04] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
+          className={`flex items-center gap-2 rounded-[12px] text-left text-white transition ${compact ? "px-2 py-2 text-[11px]" : "px-4 py-4 text-[14px]"} ${paint === id ? "bg-[#2f8fff]/[0.14] ring-1 ring-[#2f8fff]" : "bg-white/[0.04] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
         >
           <span className="h-5 w-5 shrink-0 rounded-full ring-1 ring-white/20" style={{ backgroundColor: PAINTS[id].color }} />
           <span>{PAINTS[id].label}</span>
@@ -528,7 +528,7 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
   return (
     <button
       onClick={onClick}
-      className={`flex h-[78px] flex-col items-center justify-center gap-2 rounded-[14px] transition active:press ${
+      className={`flex h-[78px] flex-col items-center justify-center gap-2 rounded-[14px] transition ${
         on ? "bg-[#2f8fff]/[0.16] text-[#6db3ff] shadow-[inset_0_0_0_1.5px_#2f8fff]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
       }`}
     >
@@ -567,7 +567,7 @@ function LightsTab() {
             key={c}
             aria-label={`Ambient ${i}`}
             onClick={() => s.set({ ambient: i })}
-            className="h-10 w-10 rounded-full transition active:press"
+            className="h-10 w-10 rounded-full transition"
             style={{
               background: c,
               boxShadow: s.ambient === i ? `0 0 0 3px #121417, 0 0 0 5px ${c}, 0 0 20px ${c}` : "inset 0 0 0 1px rgba(0,0,0,.3)",
@@ -907,7 +907,7 @@ function MediaSheet() {
           <button
             key={tr.title}
             onClick={() => s.set({ track: i, progress: 0, playing: true })}
-            className={`flex w-full items-center gap-3 rounded-[10px] px-2 py-2.5 text-left transition hover:bg-white/[0.05] active:press ${i === s.track ? "bg-white/[0.07]" : ""}`}
+            className={`flex w-full items-center gap-3 rounded-[10px] px-2 py-2.5 text-left transition hover:bg-white/[0.05] ${i === s.track ? "bg-white/[0.07]" : ""}`}
           >
             <AlbumArt size={36} radius={6} track={i} />
             <span className="min-w-0">
@@ -957,7 +957,7 @@ function PhoneSheet() {
             key={l}
             data-slot
             onClick={() => setTab(l)}
-            className="relative flex w-full rounded-[10px] px-3 py-[11px] text-left text-[14.5px] transition active:press"
+            className="relative flex w-full rounded-[10px] px-3 py-[11px] text-left text-[14.5px] transition"
           >
             <span className={`relative ${tab === l ? "text-white" : "text-white/70"}`}>{l}</span>
           </button>

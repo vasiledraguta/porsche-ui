@@ -6,7 +6,7 @@ import { useSlider } from "./useSlider";
 
 export function Toggle({ on, onChange, label }: { on: boolean; onChange: () => void; label?: string }) {
   return (
-    <button
+    <motion.button
       role="switch"
       aria-checked={on}
       aria-label={label}
@@ -14,15 +14,22 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: () => v
         e.stopPropagation();
         onChange();
       }}
+      initial={false}
+      animate={on ? "on" : "off"}
+      whileTap="press"
       className="relative inline-flex h-[30px] w-[52px] shrink-0 items-center rounded-full transition-colors duration-300"
       style={{ background: on ? "var(--blue)" : "rgba(255,255,255,0.14)" }}
     >
       <motion.span
         className="absolute h-[24px] w-[24px] rounded-full bg-white shadow-[0_2px_6px_rgba(0,0,0,0.45)]"
-        animate={{ x: on ? 25 : 3 }}
+        variants={{
+          on: { x: 25, width: 24 },
+          off: { x: 3, width: 24 },
+          press: { x: on ? 19 : 3, width: 30 },
+        }}
         transition={{ type: "spring", stiffness: 520, damping: 36 }}
       />
-    </button>
+    </motion.button>
   );
 }
 
@@ -48,7 +55,7 @@ export function Segmented<T extends string>({
           data-slot
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
-          className="relative flex-1 rounded-[8px] px-3 py-2 text-[14px] transition active:press"
+          className="relative flex-1 rounded-[8px] px-3 py-2 text-[14px] transition"
         >
           <span className={`relative ${value === o.value ? "text-white" : "text-white/55"}`}>{o.label}</span>
         </button>
