@@ -14,7 +14,6 @@ const STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
 // MapLibre v6 ships an ESM worker; bundlers can't resolve it, so it's served from /public.
 maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
-/** Re-tint OpenFreeMap's dark style toward the PCM's cool slate night map. */
 function porscheify(style: StyleSpecification): StyleSpecification {
   const paint: Record<string, Record<string, unknown>> = {
     background: { "background-color": "#14171b" },
@@ -165,7 +164,6 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
     };
   }, [mapRef]);
 
-  // follow camera
   useEffect(() => {
     if (!ready) return;
     let last = 0;
@@ -210,11 +208,9 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
     };
   }, [ready, mapRef]);
 
-  // recenter
   const follow = useCar((s) => s.follow);
   const map3d = useCar((s) => s.map3d);
 
-  // in free-look mode the 2D/3D and zoom buttons act on the camera directly
   useEffect(() => {
     const map = mapRef.current;
     if (map && !useCar.getState().follow) map.easeTo({ pitch: map3d ? 58 : 0, duration: 500 });

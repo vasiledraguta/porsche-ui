@@ -39,10 +39,6 @@ export type VehicleTab =
   | "trip"
   | "trackscreen";
 
-/**
- * 911 GT3 RS (992) drive modes. 4.0 L naturally aspirated flat-six, 386 kW / 525 PS at 8,500 rpm,
- * 9,000 rpm limiter, 7-speed PDK. `minRpm` is where PDK upshifts when cruising.
- */
 export const MODES: Record<DriveMode, { label: string; desc: string; spec: string; maxKw: number; response: number; minRpm: number }> = {
   wet: { label: "Wet", desc: "Softer throttle and early PSM intervention for standing water.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.6, minRpm: 1700 },
   normal: { label: "Normal", desc: "Road setup. Early upshifts, calmer exhaust.", spec: "PSM on · PASM Normal", maxKw: 386, response: 0.85, minRpm: 2000 },
@@ -51,12 +47,10 @@ export const MODES: Record<DriveMode, { label: string; desc: string; spec: strin
 };
 export const MODE_ORDER: DriveMode[] = ["wet", "normal", "sport", "track"];
 
-/** PDK road speed at the 9,000 rpm limiter, per gear (km/h). */
 const GEAR_TOP = [0, 71, 108, 145, 182, 222, 261, 296];
 export const REDLINE = 9000;
 export const IDLE_RPM = 950;
 export const TANK_L = 64;
-/** L/100 km by mode, anchored on the 13.4 L WLTP figure. */
 const CONS: Record<DriveMode, number> = { wet: 12.8, normal: 13.4, sport: 15.2, track: 19 };
 const TYRE_LOAD: Record<DriveMode, number> = { wet: 0.8, normal: 1, sport: 1.15, track: 1.35 };
 export const TYRES = ["Front left", "Front right", "Rear left", "Rear right"] as const;
@@ -374,7 +368,6 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
     let { holdUntil, stopIdx, routeD } = s;
 
     if (s.autopilot && s.gear === "D" && s.throttle === 0 && s.brake === 0) {
-      // Cruise the route at believable city speeds: slow for turns, stop at lights.
       const { step, dist } = nextStep(routeD);
       let target = 50;
       if (step && dist < 90) target = step.type === "rotary" || step.type === "roundabout" ? 22 : step.mod?.includes("slight") ? 40 : 24;
@@ -395,7 +388,6 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
       else brake = Math.min(0.8, -err / 25);
     }
 
-    // 1,450 kg, big wing (high drag), traction-limited launch around 3.2 s to 100 km/h
     const v = s.speed / 3.6;
     const mass = 1450;
     const maxForce = 12600 * m.response;
@@ -409,7 +401,6 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
     if (nv < 0.2 && throttle === 0) nv = 0;
     const kmh = nv * 3.6;
 
-    // PDK: highest gear that keeps revs above the mode's shift floor (higher under load)
     let gearN = 1;
     if (s.gear === "D") {
       const floor = m.minRpm + throttle * 2600;
@@ -419,7 +410,6 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
           break;
         }
       }
-      // one gear at a time on the way up
       gearN = Math.min(gearN, s.pdkGear + 1);
     }
     const wheelRpm = s.gear === "D" ? (kmh / GEAR_TOP[gearN]) * REDLINE : 0;
@@ -429,7 +419,6 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
     const rpm = engineStopped ? 0 : s.rpm === 0 ? IDLE_RPM : s.rpm + (targetRpm - s.rpm) * Math.min(1, dt * (targetRpm > s.rpm ? 9 : 6));
 
     const powerKw = nv > 0.3 ? Math.max(0, driveForce * nv) / 1000 : 0;
-    // ~0.33 L per kWh at the crank, plus idle burn
     const litres = engineStopped ? 0 : (powerKw * 0.33 * dt) / 3600 + ((0.8 + rpm / 9000) * dt) / 3600;
     const fuel = Math.min(100, Math.max(6, s.fuel - (litres / TANK_L) * 100));
     const warm = (x: number, target: number) => x + (target - x) * Math.min(1, dt * 0.02);
@@ -443,7 +432,6 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
 
     routeD += nv * dt;
     if (routeD >= ROUTE_LEN - 2 && nv < 0.5) {
-      // arrived: start the trip again
       routeD = 0;
       stopIdx = 0;
       holdUntil = 0;
@@ -473,7 +461,6 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
   },
 }), appearanceOptions));
 
-/** Remaining range in km from fuel level (%) at the mode's typical consumption. */
 export const rangeFor = (fuelPct: number, mode: DriveMode) => Math.round(((fuelPct / 100) * TANK_L * 100) / CONS[mode]);
 
 export const fuelPercentForDistance = (distanceKm: number, mode: DriveMode) => (distanceKm * CONS[mode]) / TANK_L;

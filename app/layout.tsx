@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Archivo } from "next/font/google";
 import "./globals.css";
 
-// Archivo is a close free stand-in for Porsche Next's squared grotesk.
 const archivo = Archivo({
   variable: "--font-archivo",
   subsets: ["latin"],

@@ -12,11 +12,9 @@ import { Rail } from "./Rail";
 import { Sheets } from "./Sheets";
 import { AMBIENT, MODES, useCar } from "@/lib/store";
 
-// Native design resolution of the display (wide PCM-style panel).
 const W = 1920;
 const H = 900;
 
-/** One continuous screen, scaled to fit the browser like teslaui.com. */
 export function Display() {
   const wrap = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
@@ -42,7 +40,6 @@ export function Display() {
 
   return (
     <div ref={wrap} className="relative grid h-dvh w-full place-items-center overflow-hidden bg-[#050506]">
-      {/* ambient light spill from the dash strip */}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%] transition-[background] duration-700"
         style={{
@@ -60,7 +57,6 @@ export function Display() {
             transition={{ duration: 0.9, ease: [0.2, 0.8, 0.2, 1] }}
             className="relative h-full w-full rounded-[34px] bg-[#0a0a0b] p-[14px] shadow-[0_0_0_1px_rgba(255,255,255,0.07),0_50px_120px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)]"
           >
-          {/* screen */}
           <div
             className="relative flex h-full w-full overflow-hidden rounded-[22px] bg-black"
             style={{ width: W, height: H, ["--ambient" as string]: ambient }}
@@ -87,10 +83,8 @@ export function Display() {
               </div>
               <BottomBar />
             </div>
-            {/* glass */}
             <div className="pointer-events-none absolute inset-0 z-50 rounded-[22px] bg-[linear-gradient(115deg,rgba(255,255,255,0.035)_0%,transparent_30%)]" />
           </div>
-          {/* ambient light strip under the display */}
           <div
             className="absolute -bottom-[3px] left-[8%] h-[2px] w-[84%] rounded-full transition-[background,box-shadow] duration-700"
             style={{
@@ -123,7 +117,6 @@ export function Display() {
   );
 }
 
-/** Drive-mode pop-up, like turning the steering-wheel mode switch. */
 function ModePopup() {
   const at = useCar((s) => s.modePopupAt);
   const now = useCar((s) => s.now);

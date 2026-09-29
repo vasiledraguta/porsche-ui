@@ -41,7 +41,6 @@ import { AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRES,
 const ease = [0.2, 0.8, 0.2, 1] as const;
 const slide = [0.16, 1, 0.3, 1] as const;
 
-/** Sheets slide over the map, like Tesla's controls panel and the PCM's app pages. */
 export function Sheets() {
   const sheet = useCar((s) => s.sheet);
   const set = useCar((s) => s.set);
@@ -106,8 +105,6 @@ export function Sheets() {
     </AnimatePresence>
   );
 }
-
-/* ---------------- Home: the PCM app grid ---------------- */
 
 const HOME_ORDER: AppId[] = [
   "nav",
@@ -176,8 +173,6 @@ function HomeSheet() {
     </div>
   );
 }
-
-/* ---------------- Vehicle: settings list + detail ---------------- */
 
 const TABS: { id: VehicleTab; label: string; icon: LucideIcon }[] = [
   { id: "modes", label: "Driving modes", icon: CircleGauge },
@@ -812,8 +807,6 @@ function ChronoDial({ ms }: { ms: number }) {
   );
 }
 
-/* ---------------- Media ---------------- */
-
 function MediaSheet() {
   const s = useCar(useShallow((s) => ({
     track: s.track,
@@ -926,8 +919,6 @@ function MediaSheet() {
     </div>
   );
 }
-
-/* ---------------- Phone ---------------- */
 
 const CONTACTS = [
   { n: "Alex Carter", sub: "Mobile", kind: "Mobile", fav: true, c: "#ff8a5c" },
@@ -1066,8 +1057,6 @@ function Keypad({ onCall }: { onCall: (to: string) => void }) {
     </div>
   );
 }
-
-/* ---------------- Other apps ---------------- */
 
 function AppPage({ id, children }: { id: AppId; children: React.ReactNode }) {
   return (

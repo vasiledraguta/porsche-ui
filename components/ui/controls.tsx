@@ -26,7 +26,6 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: () => v
   );
 }
 
-/** Porsche-style segmented control: flat, tight, blue highlight. */
 export function Segmented<T extends string>({
   value,
   options,

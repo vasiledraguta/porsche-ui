@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useCar } from "@/lib/store";
 
-/** Runs the vehicle sim and wires keyboard shortcuts. */
 export function Ticker() {
   useEffect(() => {
     let raf = 0;

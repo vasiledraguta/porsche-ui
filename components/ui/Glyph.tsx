@@ -17,7 +17,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-/** PCM-style coloured glyphs: the real system colour-codes its core apps. */
 export const APPS = {
   nav: { label: "Navigation", icon: Navigation2, color: "#39a6ff", fill: true },
   media: { label: "Media", icon: Music2, color: "#ff4a4a", fill: false },
