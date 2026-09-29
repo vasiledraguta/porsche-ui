@@ -174,6 +174,13 @@ const appearanceStorage: StateStorage = {
   getItem: (name) => {
     try {
       lastSaved = localStorage.getItem(name);
+      if (lastSaved === null) {
+        lastSaved = localStorage.getItem("pcm:appearance");
+        if (lastSaved !== null) {
+          localStorage.setItem(name, lastSaved);
+          localStorage.removeItem("pcm:appearance");
+        }
+      }
       return lastSaved;
     } catch {
       return null;
@@ -221,7 +228,7 @@ type Actions = {
 };
 
 const appearanceOptions: PersistOptions<State & Actions, Partial<Appearance>> = {
-  name: "pcm:appearance",
+  name: "porsche-ui:appearance",
   version: 1,
   storage: createJSONStorage(() => appearanceStorage),
   partialize: (s) => ({

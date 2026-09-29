@@ -25,8 +25,8 @@ Tasks are GitHub issues: `gh issue list`, `gh issue view <n>`. Each issue is one
 
   ```bash
   git fetch origin
-  git worktree add ../pcm-<slug> -b <type>/<slug> origin/main
-  cd ../pcm-<slug> && bun install
+  git worktree add ../porsche-ui-<slug> -b <type>/<slug> origin/main
+  cd ../porsche-ui-<slug> && bun install
   ```
 
 - Change only what the task needs. No drive-by refactors, no reformatting of untouched code, no fixes for other issues. Mention anything else you find in the PR description.
@@ -35,7 +35,7 @@ Tasks are GitHub issues: `gh issue list`, `gh issue view <n>`. Each issue is one
 - Before committing, `bun run lint` and `bunx tsc --noEmit` must pass. If either fails, stop, report the errors and commit nothing.
 - Write commit messages with the `writing-commit-messages` skill (installed globally for Claude and Codex): `<type>(<scope>): <subject>`, imperative, 50 characters or less. Use the branch prefix as the type. Add a body only when the why isn't obvious.
 - Don't push or open the PR until asked. The PR title is the issue title. The description starts with `Closes #<n>`, then says what changed and how to check it in the app.
-- After the PR merges: `git worktree remove ../pcm-<slug>` and `git branch -d <type>/<slug>`.
+- After the PR merges: `git worktree remove ../porsche-ui-<slug>` and `git branch -d <type>/<slug>`.
 
 ## Git safety and attribution
 

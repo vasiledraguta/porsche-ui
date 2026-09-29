@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "porsche-pcm-ui",
+      "name": "porsche-ui",
       "dependencies": {
         "@react-three/drei": "^10.7.8",
         "@react-three/fiber": "^9.8.0",
