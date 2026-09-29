@@ -374,6 +374,11 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
     let brake = s.brake;
     let { holdUntil, stopIdx, routeD } = s;
 
+    while (STOPS[stopIdx] !== undefined && STOPS[stopIdx] - routeD <= -5) {
+      stopIdx++;
+      holdUntil = 0;
+    }
+
     if (s.autopilot && s.gear === "D" && s.throttle === 0 && s.brake === 0) {
       const { step, dist } = nextStep(routeD);
       let target = 50;
