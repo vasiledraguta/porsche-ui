@@ -44,7 +44,7 @@ export function Maneuver() {
   const key = step ? `${step.at}` : "arrive";
 
   return (
-    <div className="absolute top-4 left-4 z-10 w-[330px] overflow-hidden rounded-[14px] bg-[#1a1d22]/95 shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
+    <div className="absolute top-4 left-4 z-10 w-[20.625rem] overflow-hidden rounded-[0.875rem] bg-[#1a1d22]/95 shadow-[0_0.625rem_1.875rem_rgba(0,0,0,0.45),inset_0_0_0_0.0625rem_rgba(255,255,255,0.06)] backdrop-blur-md">
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.div
           key={key}
@@ -54,14 +54,14 @@ export function Maneuver() {
           transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
           className="flex items-center gap-4 p-4"
         >
-          <div className="grid h-[58px] w-[58px] shrink-0 place-items-center rounded-[12px] bg-[#2f8fff]">
-            <Icon size={32} strokeWidth={2.4} className="text-white" />
+          <div className="grid h-[3.625rem] w-[3.625rem] shrink-0 place-items-center rounded-[0.75rem] bg-[#2f8fff]">
+            <Icon size="2rem" strokeWidth={2.4} className="text-white" />
           </div>
           <div className="min-w-0">
-            <div className="text-[28px] leading-none font-medium tracking-tight text-white tabular-nums">
+            <div className="text-[1.75rem] leading-none font-medium tracking-tight text-white tabular-nums">
               {fmtDist(dist)}
             </div>
-            <div className="mt-1.5 truncate text-[15px] text-white/70">{name}</div>
+            <div className="mt-1.5 truncate text-[0.9375rem] text-white/70">{name}</div>
           </div>
         </motion.div>
       </AnimatePresence>
@@ -71,17 +71,17 @@ export function Maneuver() {
 
 export function SearchBox() {
   return (
-    <div className="absolute top-4 right-4 z-10 w-[300px] overflow-hidden rounded-[14px] bg-[#1a1d22]/90 shadow-[0_10px_30px_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
+    <div className="absolute top-4 right-4 z-10 w-[18.75rem] overflow-hidden rounded-[0.875rem] bg-[#1a1d22]/90 shadow-[0_0.625rem_1.875rem_rgba(0,0,0,0.4),inset_0_0_0_0.0625rem_rgba(255,255,255,0.06)] backdrop-blur-md">
       <div className="flex cursor-default items-center gap-3 px-4 py-3.5 text-white/30 select-none">
-        <Search size={18} strokeWidth={1.8} />
-        <span className="text-[15px]">Search destination</span>
+        <Search size="1.125rem" strokeWidth={1.8} />
+        <span className="text-[0.9375rem]">Search destination</span>
       </div>
-      <div className="grid grid-cols-2 border-t border-white/[0.06] text-[14px] text-white/30">
+      <div className="grid grid-cols-2 border-t border-white/[0.06] text-[0.875rem] text-white/30">
         <button disabled className="flex cursor-default items-center justify-center gap-2 py-2.5">
-          <House size={15} strokeWidth={1.8} /> Home
+          <House size="0.9375rem" strokeWidth={1.8} /> Home
         </button>
         <button disabled className="flex cursor-default items-center justify-center gap-2 border-l border-white/[0.06] py-2.5">
-          <Briefcase size={15} strokeWidth={1.8} /> Work
+          <Briefcase size="0.9375rem" strokeWidth={1.8} /> Work
         </button>
       </div>
     </div>
@@ -96,7 +96,7 @@ export function DemoDrive() {
       onClick={() => set({ autopilot: !autopilot })}
       aria-pressed={autopilot}
       aria-keyshortcuts="A"
-      className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-[#1a1d22]/90 px-4 py-2.5 text-[13px] shadow-[0_10px_30px_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:bg-[#22262b]/90 active:press"
+      className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-[#1a1d22]/90 px-4 py-2.5 text-[0.8125rem] shadow-[0_0.625rem_1.875rem_rgba(0,0,0,0.4),inset_0_0_0_0.0625rem_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:bg-[#22262b]/90 active:press"
     >
       <span
         className={`h-2 w-2 rounded-full ${autopilot ? "animate-[breathe_1.6s_ease-in-out_infinite] bg-[#2f8fff]" : "bg-white/30"}`}
@@ -119,35 +119,35 @@ export function EtaBar() {
   const eta = now ? new Date(now.getTime() + mins * 60000) : null;
   const arriveFuel = Math.max(0, Math.round(fuel - fuelPercentForDistance(left / 1000, mode)));
   return (
-    <div className="absolute right-4 bottom-4 left-4 z-10 flex items-center gap-6 rounded-[14px] bg-[#1a1d22]/95 px-5 py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
+    <div className="absolute right-4 bottom-4 left-4 z-10 flex items-center gap-6 rounded-[0.875rem] bg-[#1a1d22]/95 px-5 py-3.5 shadow-[0_0.625rem_1.875rem_rgba(0,0,0,0.45),inset_0_0_0_0.0625rem_rgba(255,255,255,0.06)] backdrop-blur-md">
       <div className="flex items-baseline gap-2">
-        <span className="text-[24px] leading-none font-medium text-white tabular-nums">
+        <span className="text-[1.5rem] leading-none font-medium text-white tabular-nums">
           {eta ? `${String(eta.getHours()).padStart(2, "0")}:${String(eta.getMinutes()).padStart(2, "0")}` : "--:--"}
         </span>
-        <span className="text-[13px] text-white/45">arrival</span>
+        <span className="text-[0.8125rem] text-white/45">arrival</span>
       </div>
       <Sep />
       <Stat v={`${mins} min`} />
       <Sep />
       <Stat v={fmtDist(left)} />
       <Sep />
-      <div className="flex items-center gap-1.5 text-[15px] text-white/80 tabular-nums">
-        <Fuel size={15} className="text-white/60" strokeWidth={1.8} />
+      <div className="flex items-center gap-1.5 text-[0.9375rem] text-white/80 tabular-nums">
+        <Fuel size="0.9375rem" className="text-white/60" strokeWidth={1.8} />
         {arriveFuel}% <span className="text-white/40">· {rangeFor(arriveFuel, mode)} km</span>
       </div>
       <div className="ml-auto min-w-0 text-right">
-        <div className="truncate text-[14px] text-white">{ROUTE.to}</div>
-        <div className="truncate text-[12px] text-white/45">{ROUTE.toSub}</div>
+        <div className="truncate text-[0.875rem] text-white">{ROUTE.to}</div>
+        <div className="truncate text-[0.75rem] text-white/45">{ROUTE.toSub}</div>
       </div>
     </div>
   );
 }
 
 function Stat({ v }: { v: string }) {
-  return <span className="text-[15px] text-white/80 tabular-nums">{v}</span>;
+  return <span className="text-[0.9375rem] text-white/80 tabular-nums">{v}</span>;
 }
 function Sep() {
-  return <span className="h-5 w-px bg-white/10" />;
+  return <span className="h-5 w-[0.0625rem] bg-white/10" />;
 }
 
 export function MapControls({ mapRef }: { mapRef: RefObject<Map | null> }) {
@@ -160,7 +160,7 @@ export function MapControls({ mapRef }: { mapRef: RefObject<Map | null> }) {
     else if (mapRef.current) mapRef.current.easeTo({ zoom: mapRef.current.getZoom() + dir, duration: 300 });
   };
   return (
-    <div className="absolute right-4 bottom-[92px] z-10 flex flex-col gap-2">
+    <div className="absolute right-4 bottom-[5.75rem] z-10 flex flex-col gap-2">
       <AnimatePresence>
         {!follow && (
           <motion.button
@@ -168,20 +168,20 @@ export function MapControls({ mapRef }: { mapRef: RefObject<Map | null> }) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             onClick={() => set({ follow: true })}
-            className="flex h-11 items-center gap-2 rounded-[12px] bg-[#2f8fff] px-3.5 text-[13px] font-medium text-white shadow-lg transition-[scale,box-shadow] active:press"
+            className="flex h-11 items-center gap-2 rounded-[0.75rem] bg-[#2f8fff] px-3.5 text-[0.8125rem] font-medium text-white shadow-lg transition-[scale,box-shadow] active:press"
           >
-            <Crosshair size={16} /> Re-centre
+            <Crosshair size="1rem" /> Re-centre
           </motion.button>
         )}
       </AnimatePresence>
       <CtlBtn label={map3d ? "2D" : "3D"} onClick={() => set({ map3d: !map3d })}>
-        <Box size={17} strokeWidth={1.7} />
+        <Box size="1.0625rem" strokeWidth={1.7} />
       </CtlBtn>
       <CtlBtn label="Zoom in" onClick={() => zoom(1)}>
-        <Plus size={17} strokeWidth={1.8} />
+        <Plus size="1.0625rem" strokeWidth={1.8} />
       </CtlBtn>
       <CtlBtn label="Zoom out" onClick={() => zoom(-1)}>
-        <Minus size={17} strokeWidth={1.8} />
+        <Minus size="1.0625rem" strokeWidth={1.8} />
       </CtlBtn>
     </div>
   );
@@ -193,7 +193,7 @@ function CtlBtn({ children, label, onClick }: { children: React.ReactNode; label
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="ml-auto grid h-11 w-11 place-items-center rounded-[12px] bg-[#1a1d22]/90 text-white/80 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:text-white active:press"
+      className="ml-auto grid h-11 w-11 place-items-center rounded-[0.75rem] bg-[#1a1d22]/90 text-white/80 shadow-[inset_0_0_0_0.0625rem_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:text-white active:press"
     >
       {children}
     </button>
@@ -207,11 +207,11 @@ export function SpeedLimit() {
   if (!signs) return null;
   return (
     <div
-      className={`absolute bottom-[92px] left-4 z-10 grid h-[54px] w-[54px] place-items-center rounded-full border-[5px] border-[#e5332a] bg-white shadow-lg ${
+      className={`absolute bottom-[5.75rem] left-4 z-10 grid h-[3.375rem] w-[3.375rem] place-items-center rounded-full border-[0.3125rem] border-[#e5332a] bg-white shadow-lg ${
         speeding ? "animate-[limit-flash_0.6s_ease-in-out_3]" : ""
       }`}
     >
-      <span className="text-[19px] font-semibold text-black tabular-nums">{speedLimitAt(d)}</span>
+      <span className="text-[1.1875rem] font-semibold text-black tabular-nums">{speedLimitAt(d)}</span>
     </div>
   );
 }

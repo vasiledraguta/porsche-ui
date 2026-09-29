@@ -77,7 +77,7 @@ export function Sheets() {
             aria-label="Close"
             className="absolute top-4 right-4 z-10 grid h-10 w-10 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white active:press"
           >
-            <X size={20} />
+            <X size="1.25rem" />
           </button>
           <AnimatePresence initial={false}>
             <motion.div
@@ -136,18 +136,18 @@ function HomeSheet() {
   return (
     <div className="flex h-full flex-col px-10 pt-7">
       <div className="flex items-center justify-between pr-14">
-        <label className="flex w-[360px] items-center gap-3 rounded-[12px] bg-white/[0.06] px-4 py-3 text-white/45 focus-within:bg-white/[0.09]">
-          <Search size={18} />
+        <label className="flex w-[22.5rem] items-center gap-3 rounded-[0.75rem] bg-white/[0.06] px-4 py-3 text-white/45 focus-within:bg-white/[0.09]">
+          <Search size="1.125rem" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search"
             aria-label="Search apps"
-            className="min-w-0 flex-1 bg-transparent text-[15px] text-white outline-none placeholder:text-white/45"
+            className="min-w-0 flex-1 bg-transparent text-[0.9375rem] text-white outline-none placeholder:text-white/45"
           />
         </label>
-        <div className="text-[15px] text-white/80">Driver</div>
+        <div className="text-[0.9375rem] text-white/80">Driver</div>
       </div>
       <div className="mt-8 grid grid-cols-6 gap-x-4 gap-y-7">
         {apps.map((id, i) => (
@@ -159,16 +159,16 @@ function HomeSheet() {
             transition={{ duration: 0.3, delay: i * 0.02, ease }}
             className="group flex flex-col items-center gap-2.5"
           >
-            <span className="grid h-[86px] w-[86px] place-items-center rounded-[18px] bg-gradient-to-b from-[#2a2e34] to-[#1d2025] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_16px_rgba(0,0,0,0.35)] transition group-hover:from-[#32363d] group-active:press">
+            <span className="grid h-[5.375rem] w-[5.375rem] place-items-center rounded-[1.125rem] bg-gradient-to-b from-[#2a2e34] to-[#1d2025] shadow-[inset_0_0.0625rem_0_rgba(255,255,255,0.08),0_0.375rem_1rem_rgba(0,0,0,0.35)] transition group-hover:from-[#32363d] group-active:press">
               <Glyph id={id} size={36} />
             </span>
-            <span className="text-[14px] text-white/85">{APPS[id].label}</span>
+            <span className="text-[0.875rem] text-white/85">{APPS[id].label}</span>
           </motion.button>
         ))}
       </div>
-      {apps.length === 0 && <div className="mt-2 text-[15px] text-white/45">No apps match “{query.trim()}”</div>}
+      {apps.length === 0 && <div className="mt-2 text-[0.9375rem] text-white/45">No apps match “{query.trim()}”</div>}
       <div className="mt-auto mb-6 flex justify-center">
-        <span className="h-[3px] w-5 rounded-full bg-[#2f8fff]" />
+        <span className="h-[0.1875rem] w-5 rounded-full bg-[#2f8fff]" />
       </div>
     </div>
   );
@@ -194,10 +194,10 @@ function VehicleSheet() {
   const { container, indicator } = useSlider<HTMLElement>(TABS.findIndex((t) => t.id === tab));
   return (
     <div className="flex h-full">
-      <nav ref={container} className="relative w-[270px] shrink-0 border-r border-white/[0.06] px-3 pt-6">
-        <span ref={indicator} className="pointer-events-none absolute top-0 left-0 rounded-[10px] bg-white/[0.08] opacity-0" />
-        <div className="mb-3 flex items-center gap-2 px-3 text-[18px] font-medium text-white">
-          <CarFront size={20} strokeWidth={1.7} /> Vehicle
+      <nav ref={container} className="relative w-[16.875rem] shrink-0 border-r border-white/[0.06] px-3 pt-6">
+        <span ref={indicator} className="pointer-events-none absolute top-0 left-0 rounded-[0.625rem] bg-white/[0.08] opacity-0" />
+        <div className="mb-3 flex items-center gap-2 px-3 text-[1.125rem] font-medium text-white">
+          <CarFront size="1.25rem" strokeWidth={1.7} /> Vehicle
         </div>
         <div
           role="tablist"
@@ -232,9 +232,9 @@ function VehicleSheet() {
               aria-controls="vehicle-panel"
               tabIndex={tab === t.id ? 0 : -1}
               onClick={() => set({ vehicleTab: t.id })}
-              className="relative flex w-full items-center gap-3 rounded-[10px] px-3 py-[11px] text-left text-[14.5px]"
+              className="relative flex w-full items-center gap-3 rounded-[0.625rem] px-3 py-[0.6875rem] text-left text-[0.90625rem]"
             >
-              <t.icon size={18} strokeWidth={1.6} className={`relative ${tab === t.id ? "text-white" : "text-white/55"}`} />
+              <t.icon size="1.125rem" strokeWidth={1.6} className={`relative ${tab === t.id ? "text-white" : "text-white/55"}`} />
               <span className={`relative ${tab === t.id ? "text-white" : "text-white/70"}`}>{t.label}</span>
             </button>
           ))}
@@ -251,9 +251,9 @@ function VehicleSheet() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2, ease }}
-            className="max-w-[640px]"
+            className="max-w-[40rem]"
           >
-            <h2 className="mb-2 text-[22px] font-medium text-white">{TABS.find((t) => t.id === tab)?.label}</h2>
+            <h2 className="mb-2 text-[1.375rem] font-medium text-white">{TABS.find((t) => t.id === tab)?.label}</h2>
             {tab === "modes" && <ModesTab />}
             {tab === "appearance" && <AppearanceTab />}
             {tab === "chassis" && <ChassisTab />}
@@ -282,18 +282,18 @@ function ModesTab() {
           key={m}
           aria-pressed={mode === m}
           onClick={() => mode !== m && setMode(m)}
-          className={`rounded-[14px] p-5 text-left transition ${
+          className={`rounded-[0.875rem] p-5 text-left transition ${
             mode === m
-              ? "cursor-default bg-[#2f8fff]/[0.14] shadow-[inset_0_0_0_1.5px_#2f8fff]"
-              : "bg-white/[0.04] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:bg-white/[0.06]"
+              ? "cursor-default bg-[#2f8fff]/[0.14] shadow-[inset_0_0_0_0.09375rem_#2f8fff]"
+              : "bg-white/[0.04] shadow-[inset_0_0_0_0.0625rem_rgba(255,255,255,0.06)] hover:bg-white/[0.06]"
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[17px] text-white">{MODES[m].label}</span>
-            <Gauge size={18} className={mode === m ? "text-[#2f8fff]" : "text-white/35"} />
+            <span className="text-[1.0625rem] text-white">{MODES[m].label}</span>
+            <Gauge size="1.125rem" className={mode === m ? "text-[#2f8fff]" : "text-white/35"} />
           </div>
-          <div className="mt-2 text-[13px] leading-snug text-white/50">{MODES[m].desc}</div>
-          <div className="mt-3 text-[12px] text-white/40">{MODES[m].spec}</div>
+          <div className="mt-2 text-[0.8125rem] leading-snug text-white/50">{MODES[m].desc}</div>
+          <div className="mt-3 text-[0.75rem] text-white/40">{MODES[m].spec}</div>
         </button>
       ))}
     </div>
@@ -312,7 +312,7 @@ export function PaintSwatches({ compact = false }: { compact?: boolean }) {
           onClick={() => set({ paint: id })}
           aria-label={PAINTS[id].label}
           aria-pressed={paint === id}
-          className={`flex items-center gap-2 rounded-[12px] text-left text-white transition ${compact ? "px-2 py-2 text-[11px]" : "px-4 py-4 text-[14px]"} ${paint === id ? "bg-[#2f8fff]/[0.14] ring-1 ring-[#2f8fff]" : "bg-white/[0.04] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
+          className={`flex items-center gap-2 rounded-[0.75rem] text-left text-white transition ${compact ? "px-2 py-2 text-[0.6875rem]" : "px-4 py-4 text-[0.875rem]"} ${paint === id ? "bg-[#2f8fff]/[0.14] ring-1 ring-[#2f8fff]" : "bg-white/[0.04] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
         >
           <span className="h-5 w-5 shrink-0 rounded-full ring-1 ring-white/20" style={{ backgroundColor: PAINTS[id].color }} />
           <span>{PAINTS[id].label}</span>
@@ -325,7 +325,7 @@ export function PaintSwatches({ compact = false }: { compact?: boolean }) {
 function AppearanceTab() {
   return (
     <>
-      <p className="mt-3 text-[14px] text-white/50">Choose a body colour for the 911 GT3 RS.</p>
+      <p className="mt-3 text-[0.875rem] text-white/50">Choose a body colour for the 911 GT3 RS.</p>
       <PaintSwatches />
     </>
   );
@@ -454,7 +454,7 @@ function EngineTab() {
           style={{ width: `${s.fuel}%`, background: s.fuel < 12 ? "#ffb020" : "#f2f4f7" }}
         />
       </div>
-      <div className="text-[12px] text-white/40 tabular-nums">
+      <div className="text-[0.75rem] text-white/40 tabular-nums">
         {((s.fuel / 100) * TANK_L).toFixed(0)} of {TANK_L} L · Super Plus 98 RON
       </div>
       <Row
@@ -528,12 +528,12 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
   return (
     <button
       onClick={onClick}
-      className={`flex h-[78px] flex-col items-center justify-center gap-2 rounded-[14px] transition ${
-        on ? "bg-[#2f8fff]/[0.16] text-[#6db3ff] shadow-[inset_0_0_0_1.5px_#2f8fff]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
+      className={`flex h-[4.875rem] flex-col items-center justify-center gap-2 rounded-[0.875rem] transition ${
+        on ? "bg-[#2f8fff]/[0.16] text-[#6db3ff] shadow-[inset_0_0_0_0.09375rem_#2f8fff]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
       }`}
     >
-      <Icon size={22} strokeWidth={1.6} />
-      <span className="text-[12px] font-medium tracking-wide">{label}</span>
+      <Icon size="1.375rem" strokeWidth={1.6} />
+      <span className="text-[0.75rem] font-medium tracking-wide">{label}</span>
     </button>
   );
 }
@@ -570,7 +570,7 @@ function LightsTab() {
             className="h-10 w-10 rounded-full transition"
             style={{
               background: c,
-              boxShadow: s.ambient === i ? `0 0 0 3px #121417, 0 0 0 5px ${c}, 0 0 20px ${c}` : "inset 0 0 0 1px rgba(0,0,0,.3)",
+              boxShadow: s.ambient === i ? `0 0 0 0.1875rem #121417, 0 0 0 0.3125rem ${c}, 0 0 1.25rem ${c}` : "inset 0 0 0 0.0625rem rgba(0,0,0,.3)",
             }}
           />
         ))}
@@ -663,13 +663,13 @@ function TrackScreenTab() {
   return (
     <>
       <SectionTitle>Tyres · pressure and temperature</SectionTitle>
-      <div className="mt-2 grid grid-cols-[1fr_72px_1fr] grid-rows-2 gap-3">
+      <div className="mt-2 grid grid-cols-[1fr_4.5rem_1fr] grid-rows-2 gap-3">
         {TYRES.map((label, i) => (
           <div key={label} className={i % 2 ? "col-start-3" : "col-start-1"}>
             <Tile label={label} value={`${tyreBar(i, s.tyreTemp[i]).toFixed(2)} bar`} sub={<TyreTemp temp={s.tyreTemp[i]} />} />
           </div>
         ))}
-        <div className="col-start-2 row-span-2 row-start-1 rounded-[26px] shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.1)]" />
+        <div className="col-start-2 row-span-2 row-start-1 rounded-[1.625rem] shadow-[inset_0_0_0_0.09375rem_rgba(255,255,255,0.1)]" />
       </div>
       <SectionTitle>Engine oil</SectionTitle>
       <div className="mt-2 grid grid-cols-2 gap-3">
@@ -692,10 +692,10 @@ function TyreTemp({ temp }: { temp: number }) {
 
 function Tile({ label, value, sub }: { label: string; value: string; sub?: React.ReactNode }) {
   return (
-    <div className="rounded-[14px] bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
-      <div className="text-[12px] text-white/45">{label}</div>
-      <div className="mt-1.5 text-[22px] font-light text-white tabular-nums">{value}</div>
-      {sub && <div className="mt-1 text-[13px] text-white/60">{sub}</div>}
+    <div className="rounded-[0.875rem] bg-white/[0.04] p-4 shadow-[inset_0_0_0_0.0625rem_rgba(255,255,255,0.05)]">
+      <div className="text-[0.75rem] text-white/45">{label}</div>
+      <div className="mt-1.5 text-[1.375rem] font-light text-white tabular-nums">{value}</div>
+      {sub && <div className="mt-1 text-[0.8125rem] text-white/60">{sub}</div>}
     </div>
   );
 }
@@ -717,13 +717,13 @@ function ChronoSheet() {
   return (
     <div className="flex h-full">
       <div className="flex flex-1 flex-col items-center justify-center gap-7">
-        <div className="flex items-center gap-2 text-[13px] text-white/50">
+        <div className="flex items-center gap-2 text-[0.8125rem] text-white/50">
           <Glyph id="chrono" size={15} /> Sport Chrono · Stopwatch
         </div>
         <ChronoDial ms={elapsed} />
         <div className="text-center">
-          <div className="text-[44px] leading-none font-light text-white tabular-nums">{fmtLap(elapsed)}</div>
-          <div className="mt-2 text-[14px] text-white/45 tabular-nums">
+          <div className="text-[2.75rem] leading-none font-light text-white tabular-nums">{fmtLap(elapsed)}</div>
+          <div className="mt-2 text-[0.875rem] text-white/45 tabular-nums">
             Lap {laps.length + 1} · {fmtLap(current)}
           </div>
         </div>
@@ -731,13 +731,13 @@ function ChronoSheet() {
           <button
             onClick={lapChrono}
             disabled={!running && elapsed === 0}
-            className="h-[52px] w-[120px] rounded-full bg-white/[0.08] text-[15px] text-white transition hover:bg-white/[0.12] active:press disabled:opacity-30"
+            className="h-[3.25rem] w-[7.5rem] rounded-full bg-white/[0.08] text-[0.9375rem] text-white transition hover:bg-white/[0.12] active:press disabled:opacity-30"
           >
             {running || elapsed === 0 ? "Lap" : "Reset"}
           </button>
           <button
             onClick={toggleChrono}
-            className={`h-[52px] w-[120px] rounded-full text-[15px] font-medium transition active:press ${
+            className={`h-[3.25rem] w-[7.5rem] rounded-full text-[0.9375rem] font-medium transition active:press ${
               running ? "bg-[#ff4a4a]/20 text-[#ff7a70] hover:bg-[#ff4a4a]/30" : "bg-[#3fd46b]/20 text-[#5fe086] hover:bg-[#3fd46b]/30"
             }`}
           >
@@ -745,22 +745,22 @@ function ChronoSheet() {
           </button>
         </div>
       </div>
-      <div className="w-[340px] shrink-0 overflow-y-auto border-l border-white/[0.06] bg-black/20 px-5 pt-16 pb-6 [scrollbar-width:none]">
-        <div className="mb-2 text-[12px] font-medium tracking-[0.08em] text-white/40 uppercase">Laps</div>
-        {laps.length === 0 && <div className="text-[14px] text-white/40">Press Lap to record a lap time</div>}
+      <div className="w-[21.25rem] shrink-0 overflow-y-auto border-l border-white/[0.06] bg-black/20 px-5 pt-16 pb-6 [scrollbar-width:none]">
+        <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/40 uppercase">Laps</div>
+        {laps.length === 0 && <div className="text-[0.875rem] text-white/40">Press Lap to record a lap time</div>}
         {laps
           .map((t, i) => ({ t, n: i + 1 }))
           .reverse()
           .map(({ t, n }) => (
             <div key={n} className="flex items-center justify-between border-b border-white/[0.07] py-3 tabular-nums">
-              <span className="text-[14px] text-white/55">Lap {n}</span>
+              <span className="text-[0.875rem] text-white/55">Lap {n}</span>
               <span className="flex items-baseline gap-3">
                 {laps.length > 1 && (
-                  <span className={`text-[12.5px] ${t === best ? "text-[#3fd46b]" : "text-white/40"}`}>
+                  <span className={`text-[0.78125rem] ${t === best ? "text-[#3fd46b]" : "text-white/40"}`}>
                     {t === best ? "Best" : `+${((t - best) / 1000).toFixed(2)}`}
                   </span>
                 )}
-                <span className={`text-[17px] ${t === best && laps.length > 1 ? "text-[#3fd46b]" : "text-white"}`}>{fmtLap(t)}</span>
+                <span className={`text-[1.0625rem] ${t === best && laps.length > 1 ? "text-[#3fd46b]" : "text-white"}`}>{fmtLap(t)}</span>
               </span>
             </div>
           ))}
@@ -773,7 +773,7 @@ function ChronoDial({ ms }: { ms: number }) {
   const sec = ((ms / 1000) % 60) * 6;
   const min = ((ms / 60000) % 30) * 12;
   return (
-    <svg width="300" height="300" viewBox="-150 -150 300 300" role="img" aria-label="Stopwatch dial">
+    <svg width="18.75rem" height="18.75rem" viewBox="-150 -150 300 300" role="img" aria-label="Stopwatch dial">
       <circle r="146" fill="#0b0c0e" stroke="rgba(255,255,255,0.14)" strokeWidth="3" />
       {Array.from({ length: 60 }, (_, i) => (
         <line
@@ -831,16 +831,16 @@ function MediaSheet() {
         style={{ background: `radial-gradient(60% 70% at 25% 40%, color-mix(in oklab, ${t.mesh[1]} 40%, transparent), transparent 70%)` }}
       />
       <div className="relative flex flex-1 items-center gap-10 px-12">
-        <div className="shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
+        <div className="shadow-[0_1.875rem_3.75rem_rgba(0,0,0,0.5)]">
           <AlbumArt size={280} radius={16} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-[13px] text-white/50">
+          <div className="flex items-center gap-2 text-[0.8125rem] text-white/50">
             <Glyph id="media" size={15} /> Porsche Radio · Dolby Atmos
           </div>
-          <div className="mt-3 text-[34px] leading-tight font-medium text-white">{t.title}</div>
-          <div className="text-[18px] text-white/60">{t.artist}</div>
-          <div className="text-[14px] text-white/35">{t.album}</div>
+          <div className="mt-3 text-[2.125rem] leading-tight font-medium text-white">{t.title}</div>
+          <div className="text-[1.125rem] text-white/60">{t.artist}</div>
+          <div className="text-[0.875rem] text-white/35">{t.album}</div>
           <div
             role="slider"
             tabIndex={0}
@@ -871,48 +871,48 @@ function MediaSheet() {
               s.set({ progress: Math.min(t.length, Math.max(0, s.progress + step)) });
             }}
           >
-            <div className="absolute inset-x-0 top-1/2 h-[4px] -translate-y-1/2 rounded-full bg-white/15" />
-            <div className="absolute top-1/2 left-0 h-[4px] -translate-y-1/2 rounded-full bg-white" style={{ width: `${(s.progress / t.length) * 100}%` }} />
+            <div className="absolute inset-x-0 top-1/2 h-[0.25rem] -translate-y-1/2 rounded-full bg-white/15" />
+            <div className="absolute top-1/2 left-0 h-[0.25rem] -translate-y-1/2 rounded-full bg-white" style={{ width: `${(s.progress / t.length) * 100}%` }} />
             <div
-              className={`absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_2px_6px_rgba(0,0,0,0.5)] transition-opacity ${
+              className={`absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0.125rem_0.375rem_rgba(0,0,0,0.5)] transition-opacity ${
                 s.seeking ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
               }`}
               style={{ left: `${(s.progress / t.length) * 100}%` }}
             />
           </div>
-          <div className="flex justify-between text-[12px] text-white/45 tabular-nums">
+          <div className="flex justify-between text-[0.75rem] text-white/45 tabular-nums">
             <span>{fmtTime(s.progress)}</span>
             <span>-{fmtTime(t.length - s.progress)}</span>
           </div>
           <div className="mt-5 flex items-center gap-8 text-white">
             <button aria-label="Previous" onClick={() => s.nextTrack(-1)} className="rounded-full opacity-80 transition hover:opacity-100 active:press">
-              <SkipBack size={30} fill="currentColor" strokeWidth={1} />
+              <SkipBack size="1.875rem" fill="currentColor" strokeWidth={1} />
             </button>
             <button
               aria-label="Play/pause"
               onClick={() => s.set({ playing: !s.playing })}
-              className="grid h-[68px] w-[68px] place-items-center rounded-full bg-white text-black transition active:press"
+              className="grid h-[4.25rem] w-[4.25rem] place-items-center rounded-full bg-white text-black transition active:press"
             >
-              {s.playing ? <Pause size={28} fill="currentColor" strokeWidth={0} /> : <Play size={28} fill="currentColor" strokeWidth={0} className="translate-x-0.5" />}
+              {s.playing ? <Pause size="1.75rem" fill="currentColor" strokeWidth={0} /> : <Play size="1.75rem" fill="currentColor" strokeWidth={0} className="translate-x-0.5" />}
             </button>
             <button aria-label="Next" onClick={() => s.nextTrack(1)} className="rounded-full opacity-80 transition hover:opacity-100 active:press">
-              <SkipForward size={30} fill="currentColor" strokeWidth={1} />
+              <SkipForward size="1.875rem" fill="currentColor" strokeWidth={1} />
             </button>
           </div>
         </div>
       </div>
-      <div className="relative w-[300px] shrink-0 border-l border-white/[0.06] bg-black/20 px-5 pt-16">
-        <div className="mb-2 text-[12px] font-medium tracking-[0.08em] text-white/40 uppercase">Up next</div>
+      <div className="relative w-[18.75rem] shrink-0 border-l border-white/[0.06] bg-black/20 px-5 pt-16">
+        <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/40 uppercase">Up next</div>
         {TRACKS.map((tr, i) => (
           <button
             key={tr.title}
             onClick={() => s.set({ track: i, progress: 0, playing: true })}
-            className={`flex w-full items-center gap-3 rounded-[10px] px-2 py-2.5 text-left transition hover:bg-white/[0.05] ${i === s.track ? "bg-white/[0.07]" : ""}`}
+            className={`flex w-full items-center gap-3 rounded-[0.625rem] px-2 py-2.5 text-left transition hover:bg-white/[0.05] ${i === s.track ? "bg-white/[0.07]" : ""}`}
           >
             <AlbumArt size={36} radius={6} track={i} />
             <span className="min-w-0">
-              <span className={`block truncate text-[14px] ${i === s.track ? "text-[#ff5a5a]" : "text-white/90"}`}>{tr.title}</span>
-              <span className="block truncate text-[12px] text-white/45">{tr.artist}</span>
+              <span className={`block truncate text-[0.875rem] ${i === s.track ? "text-[#ff5a5a]" : "text-white/90"}`}>{tr.title}</span>
+              <span className="block truncate text-[0.75rem] text-white/45">{tr.artist}</span>
             </span>
           </button>
         ))}
@@ -947,9 +947,9 @@ function PhoneSheet() {
     tab === "Favourites" ? CONTACTS.filter((c) => c.fav) : tab === "Contacts" ? [...CONTACTS].sort((a, b) => a.n.localeCompare(b.n)) : CONTACTS;
   return (
     <div className="flex h-full">
-      <nav ref={container} className="relative w-[270px] shrink-0 border-r border-white/[0.06] px-3 pt-6">
-        <span ref={indicator} className="pointer-events-none absolute top-0 left-0 rounded-[10px] bg-white/[0.08] opacity-0" />
-        <div className="mb-3 flex items-center gap-2 px-3 text-[18px] font-medium text-white">
+      <nav ref={container} className="relative w-[16.875rem] shrink-0 border-r border-white/[0.06] px-3 pt-6">
+        <span ref={indicator} className="pointer-events-none absolute top-0 left-0 rounded-[0.625rem] bg-white/[0.08] opacity-0" />
+        <div className="mb-3 flex items-center gap-2 px-3 text-[1.125rem] font-medium text-white">
           <Glyph id="phone" size={20} /> Phone
         </div>
         {PHONE_TABS.map((l) => (
@@ -957,19 +957,19 @@ function PhoneSheet() {
             key={l}
             data-slot
             onClick={() => setTab(l)}
-            className="relative flex w-full rounded-[10px] px-3 py-[11px] text-left text-[14.5px] transition"
+            className="relative flex w-full rounded-[0.625rem] px-3 py-[0.6875rem] text-left text-[0.90625rem] transition"
           >
             <span className={`relative ${tab === l ? "text-white" : "text-white/70"}`}>{l}</span>
           </button>
         ))}
       </nav>
       <div className="min-w-0 flex-1 overflow-y-auto px-9 pt-7 pb-8 [scrollbar-width:none]">
-        <h2 className="mb-3 text-[22px] font-medium text-white">{tab}</h2>
+        <h2 className="mb-3 text-[1.375rem] font-medium text-white">{tab}</h2>
         {call && <CallBanner to={call.to} at={call.at} onEnd={() => setCall(null)} />}
         {tab === "Keypad" ? (
           <Keypad onCall={dial} />
         ) : tab === "Messages" ? (
-          MESSAGES.map((m) => <Row key={m.n} title={m.n} sub={m.text} right={<span className="shrink-0 text-[12.5px] text-white/40">{m.time}</span>} />)
+          MESSAGES.map((m) => <Row key={m.n} title={m.n} sub={m.text} right={<span className="shrink-0 text-[0.78125rem] text-white/40">{m.time}</span>} />)
         ) : (
           list.map((c) => (
             <Row
@@ -982,7 +982,7 @@ function PhoneSheet() {
                   className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#3fd46b]/15 text-[#3fd46b] transition hover:bg-[#3fd46b]/25 active:press"
                   aria-label={`Call ${c.n}`}
                 >
-                  <Phone size={17} fill="currentColor" strokeWidth={0} />
+                  <Phone size="1.0625rem" fill="currentColor" strokeWidth={0} />
                 </button>
               }
             />
@@ -997,18 +997,18 @@ function CallBanner({ to, at, onEnd }: { to: string; at: number; onEnd: () => vo
   const now = useCar((s) => s.now);
   const t = (now - at) / 1000;
   return (
-    <div className="mb-3 flex items-center gap-4 rounded-[14px] bg-[#3fd46b]/[0.1] px-5 py-4 shadow-[inset_0_0_0_1px_rgba(63,212,107,0.3)]">
-      <Phone size={18} fill="currentColor" strokeWidth={0} className="shrink-0 text-[#3fd46b]" />
+    <div className="mb-3 flex items-center gap-4 rounded-[0.875rem] bg-[#3fd46b]/[0.1] px-5 py-4 shadow-[inset_0_0_0_0.0625rem_rgba(63,212,107,0.3)]">
+      <Phone size="1.125rem" fill="currentColor" strokeWidth={0} className="shrink-0 text-[#3fd46b]" />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[16px] text-white">{to}</div>
-        <div className="text-[13px] text-white/55 tabular-nums">{t < 3 ? "Calling…" : fmtTime(t - 3)}</div>
+        <div className="truncate text-[1rem] text-white">{to}</div>
+        <div className="text-[0.8125rem] text-white/55 tabular-nums">{t < 3 ? "Calling…" : fmtTime(t - 3)}</div>
       </div>
       <button
         aria-label="End call"
         onClick={onEnd}
         className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#ff4a4a] text-white transition hover:bg-[#ff5f5f] active:press"
       >
-        <PhoneOff size={18} />
+        <PhoneOff size="1.125rem" />
       </button>
     </div>
   );
@@ -1019,12 +1019,12 @@ const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
 function Keypad({ onCall }: { onCall: (to: string) => void }) {
   const [digits, setDigits] = useState("");
   return (
-    <div className="w-[300px]">
+    <div className="w-[18.75rem]">
       <div className="flex h-14 items-center justify-between gap-2 border-b border-white/[0.07]">
         {digits ? (
-          <span className="min-w-0 truncate text-[28px] font-light text-white tabular-nums">{digits}</span>
+          <span className="min-w-0 truncate text-[1.75rem] font-light text-white tabular-nums">{digits}</span>
         ) : (
-          <span className="text-[15px] text-white/35">Enter a number</span>
+          <span className="text-[0.9375rem] text-white/35">Enter a number</span>
         )}
         {digits && (
           <button
@@ -1032,7 +1032,7 @@ function Keypad({ onCall }: { onCall: (to: string) => void }) {
             onClick={() => setDigits((d) => d.slice(0, -1))}
             className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white/60 transition hover:text-white active:press"
           >
-            <Delete size={20} strokeWidth={1.7} />
+            <Delete size="1.25rem" strokeWidth={1.7} />
           </button>
         )}
       </div>
@@ -1041,7 +1041,7 @@ function Keypad({ onCall }: { onCall: (to: string) => void }) {
           <button
             key={k}
             onClick={() => setDigits((d) => (d + k).slice(0, 15))}
-            className="h-14 rounded-[14px] bg-white/[0.05] text-[22px] text-white transition hover:bg-white/[0.08] active:press"
+            className="h-14 rounded-[0.875rem] bg-white/[0.05] text-[1.375rem] text-white transition hover:bg-white/[0.08] active:press"
           >
             {k}
           </button>
@@ -1053,7 +1053,7 @@ function Keypad({ onCall }: { onCall: (to: string) => void }) {
         onClick={() => onCall(digits)}
         className="mx-auto mt-5 grid h-14 w-14 place-items-center rounded-full bg-[#3fd46b] text-black transition active:press disabled:opacity-30"
       >
-        <Phone size={20} fill="currentColor" strokeWidth={0} />
+        <Phone size="1.25rem" fill="currentColor" strokeWidth={0} />
       </button>
     </div>
   );
@@ -1062,8 +1062,8 @@ function Keypad({ onCall }: { onCall: (to: string) => void }) {
 function AppPage({ id, children }: { id: AppId; children: React.ReactNode }) {
   return (
     <div className="h-full overflow-y-auto px-10 pt-7 pb-8 [scrollbar-width:none]">
-      <div className="max-w-[640px]">
-        <h2 className="mb-3 flex items-center gap-2 text-[22px] font-medium text-white">
+      <div className="max-w-[40rem]">
+        <h2 className="mb-3 flex items-center gap-2 text-[1.375rem] font-medium text-white">
           <Glyph id={id} size={20} /> {APPS[id].label}
         </h2>
         {children}
@@ -1074,9 +1074,9 @@ function AppPage({ id, children }: { id: AppId; children: React.ReactNode }) {
 
 function RowMeta({ children }: { children?: React.ReactNode }) {
   return (
-    <span className="flex shrink-0 items-center gap-2 text-[12.5px] text-white/40">
+    <span className="flex shrink-0 items-center gap-2 text-[0.78125rem] text-white/40">
       {children}
-      <ChevronRight size={16} />
+      <ChevronRight size="1rem" />
     </span>
   );
 }
@@ -1101,16 +1101,16 @@ function ProjectionSheet({ id, phone }: { id: "carplay" | "androidauto"; phone: 
   const openSheet = useCar((s) => s.openSheet);
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 px-10 text-center">
-      <span className="grid h-[96px] w-[96px] place-items-center rounded-[22px] bg-gradient-to-b from-[#2a2e34] to-[#1d2025] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_16px_rgba(0,0,0,0.35)]">
+      <span className="grid h-[6rem] w-[6rem] place-items-center rounded-[1.375rem] bg-gradient-to-b from-[#2a2e34] to-[#1d2025] shadow-[inset_0_0.0625rem_0_rgba(255,255,255,0.08),0_0.375rem_1rem_rgba(0,0,0,0.35)]">
         <Glyph id={id} size={44} />
       </span>
-      <h2 className="text-[26px] font-medium text-white">{APPS[id].label}</h2>
-      <p className="max-w-[420px] text-[15px] leading-relaxed text-white/55">
+      <h2 className="text-[1.625rem] font-medium text-white">{APPS[id].label}</h2>
+      <p className="max-w-[26.25rem] text-[0.9375rem] leading-relaxed text-white/55">
         No {phone} connected. Plug it into the USB-C port in the centre console, or pair it wirelessly from Devices.
       </p>
       <button
         onClick={() => openSheet("devices")}
-        className="mt-2 rounded-[12px] bg-white/[0.08] px-5 py-3 text-[15px] text-white transition hover:bg-white/[0.12] active:press"
+        className="mt-2 rounded-[0.75rem] bg-white/[0.08] px-5 py-3 text-[0.9375rem] text-white transition hover:bg-white/[0.12] active:press"
       >
         Open Devices
       </button>
