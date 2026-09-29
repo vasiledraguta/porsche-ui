@@ -5,6 +5,12 @@
   --color-fg: #eceef1;
 }
 
+@property --glow {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
 :root {
   --accent: #2f8fff;
   color-scheme: dark;
