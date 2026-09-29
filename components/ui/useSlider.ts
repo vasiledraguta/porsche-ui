@@ -13,6 +13,7 @@ export function useSlider<C extends HTMLElement = HTMLDivElement>(active: number
   const container = useRef<C>(null);
   const indicator = useRef<HTMLSpanElement>(null);
   const placed = useRef(false);
+  const size = useRef("");
 
   useLayoutEffect(() => {
     const box = container.current;
@@ -33,7 +34,12 @@ export function useSlider<C extends HTMLElement = HTMLDivElement>(active: number
     };
     place(true);
     // re-place if the group itself re-flows (fonts loading, sheet opening), never animate that
-    const ro = new ResizeObserver(() => place(false));
+    const ro = new ResizeObserver(() => {
+      const next = `${box.offsetWidth}x${box.offsetHeight}`;
+      if (next === size.current) return;
+      size.current = next;
+      place(false);
+    });
     ro.observe(box);
     return () => ro.disconnect();
   }, [active]);
