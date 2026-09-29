@@ -1,6 +1,6 @@
 # Porsche UI
 
-An unofficial web concept of the Porsche PCM with a 3D 911 GT3 RS.
+Porsche UI is a web concept of the Porsche PCM with a 3D 911 GT3 RS.
 
 ```bash
 bun install
