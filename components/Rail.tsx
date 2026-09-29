@@ -12,7 +12,6 @@ const RAIL: { id: AppId; sheet: Sheet; label: string }[] = [
   { id: "vehicle", sheet: "vehicle", label: "Vehicle" },
 ];
 
-/** The PCM's permanent left status + shortcut rail. */
 export function Rail() {
   const now = useClock();
   const sheet = useCar((s) => s.sheet);
@@ -84,7 +83,6 @@ export function Rail() {
   );
 }
 
-/** The PCM home icon: a little house with a blue floor line. */
 function HomeGlyph({ active }: { active: boolean }) {
   return (
     <svg width="28" height="28" viewBox="0 0 28 28">

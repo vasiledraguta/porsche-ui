@@ -7,13 +7,8 @@ import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { AMBIENT, PAINTS, useCar, type Paint, type PartId } from "@/lib/store";
 
-/**
- * Porsche 911 GT3 RS (992) by Black Snow on Sketchfab, CC-BY-4.0 (credit in README).
- * Optimised with gltf-transform (meshopt + WebP): 19.5 MB → 3.1 MB.
- */
 const MODEL = "/car/911-gt3-rs.glb";
 
-/** 3/4 front-left hero camera (model nose points to +Z, driver side is +X). */
 const HERO: [number, number, number] = [6.25, 2.3, 6.45];
 const TARGET: [number, number, number] = [0, 0.5, 0];
 const RESPIN_MS = 4000;
@@ -59,18 +54,15 @@ void main() {
 
 type PartDef = {
   label: string;
-  /** node names that move together; the first one defines the hinge */
   nodes: string[];
   hinge: (b: THREE.Box3) => THREE.Vector3;
   axis: "x" | "y";
   open: number;
-  /** where the callout sits on the panel, and the direction it faces */
   spot: (b: THREE.Box3) => THREE.Vector3;
   normal: [number, number, number];
 };
 
 const PARTS: Record<PartId, PartDef> = {
-  // front luggage lid: hinged at the windscreen end, nose lifts up
   hood: {
     label: "Front trunk",
     nodes: ["TwiXeR_992_gt3rs_carbon_hood"],
@@ -80,7 +72,6 @@ const PARTS: Record<PartId, PartDef> = {
     spot: (b) => new THREE.Vector3(0, b.max.y + 0.05, THREE.MathUtils.lerp(b.min.z, b.max.z, 0.62)),
     normal: [0, 0.8, 1],
   },
-  // rear engine lid: the swan-neck wing is mounted on it, so it lifts with the lid
   trunk: {
     label: "Engine lid",
     nodes: ["TwiXeR_992_gt3rs_tailgate", "TwiXeR_992_gt3rs_carbon_Wing"],
@@ -90,7 +81,6 @@ const PARTS: Record<PartId, PartDef> = {
     spot: (b) => new THREE.Vector3(0, b.max.y + 0.42, b.min.z - 0.1),
     normal: [0, 0.6, -1],
   },
-  // doors carry their window, trim, inner panel and mirror; hinged at the front edge
   doorL: {
     label: "Driver door",
     nodes: [
@@ -125,7 +115,6 @@ const PARTS: Record<PartId, PartDef> = {
   },
 };
 
-/** Game-rip badge meshes that don't belong on a road car. */
 const HIDE = [/CSR2_Badge/i];
 
 const FLAP = "TwiXeR_992_gt3rs_carbon_Wing_TwiXeR_992_carbon_roof001_0";
@@ -157,7 +146,6 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
   const spot = useMemo(() => new THREE.Vector3(), []);
   const toCamera = useMemo(() => new THREE.Vector3(), []);
 
-  // Build once: repaint, hide decals, and re-parent each openable part under a hinge pivot.
   const rig = useMemo(() => {
     const root = scene.clone(true);
     root.updateMatrixWorld(true);
@@ -176,7 +164,6 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
       if (HIDE.some((r) => r.test(m.name))) m.visible = false;
       const mat = m.material as THREE.MeshStandardMaterial;
       if (mat?.name === PAINT_MATERIAL) m.material = paint;
-      // darker privacy-style tint on the side and rear glass reads more like a real car in the studio
       if (mat?.name?.startsWith("TwiXeR_992_glass.004")) {
         mat.color.set("#0a0c0f");
         mat.opacity = 0.62;
@@ -219,8 +206,6 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
     return { root, pivots, flap, spots, paint, offset: new THREE.Vector3(-center.x, -box.min.y, -center.z) };
   }, [scene]);
 
-  // three.js objects are mutated every frame; keep them in a ref, outside React's immutable values
-  // (the glTF scene is cached by useGLTF, so rig is built exactly once)
   const pivots = useRef(rig.pivots);
   const flap = useRef(rig.flap);
   const paintFade = useRef<{ target: Paint; from: THREE.Color; to: THREE.Color; elapsed: number } | null>(null);
@@ -294,7 +279,6 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
             document.body.style.cursor = "";
           }}
           onClick={(e: ThreeEvent<MouseEvent>) => {
-            // ignore clicks that were really a drag-to-rotate
             if (driving || e.delta > 4) return;
             const id = partOf(e);
             if (id) {
@@ -308,7 +292,6 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
   );
 }
 
-/** Leader-line callout pinned to the body; fades out when that side faces away from the camera. */
 function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => void; id: PartId; open: boolean; hot: boolean }) {
   const { label } = PARTS[id];
   return (
@@ -370,7 +353,6 @@ function Rig({ revealed }: { revealed: boolean }) {
   useFrame((_, dt) => {
     const c = controls.current;
     if (!c) return;
-    // "Reset view" from the overlay: return to the 3/4 front hero angle
     if (resetAt !== last.current) {
       last.current = resetAt;
       glide.current = "hero";
@@ -555,7 +537,6 @@ function Stage() {
   );
 }
 
-/** Studio-lit, spinnable 3D car with openable lids and doors. */
 export default function Car3D({ onReady, revealed }: { onReady: () => void; revealed: boolean }) {
   const open = useParts();
   const [hover, setHover] = useState<PartId | null>(null);
@@ -578,7 +559,6 @@ export default function Car3D({ onReady, revealed }: { onReady: () => void; reve
           <AmbientTint />
           <Stage />
           <ContactShadows position={[0, 0.001, 0]} opacity={0.65} scale={9} blur={2.4} far={2} resolution={512} color="#000" />
-          {/* local studio light rig, no HDR download */}
           <Environment resolution={256} frames={1}>
             <Lightformer intensity={2.2} position={[0, 6, 0]} rotation-x={Math.PI / 2} scale={[10, 4, 1]} />
             <Lightformer intensity={1.4} position={[-6, 2, 0]} rotation-y={Math.PI / 2} scale={[8, 2, 1]} />

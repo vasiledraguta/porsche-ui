@@ -34,7 +34,6 @@ const CUM: number[] = [0];
 for (let i = 1; i < ROUTE.coords.length; i++) CUM.push(CUM[i - 1] + hav(ROUTE.coords[i - 1], ROUTE.coords[i]));
 export const ROUTE_LEN = CUM[CUM.length - 1];
 
-/** Segment index and interpolated point at `d` metres along the route. */
 function pointAt(d: number): { pos: [number, number]; index: number } {
   const dd = Math.max(0, Math.min(ROUTE_LEN - 0.01, d));
   let lo = 0;
@@ -50,7 +49,6 @@ function pointAt(d: number): { pos: [number, number]; index: number } {
   return { pos: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t], index: lo };
 }
 
-/** Half-length of the chord used for heading: the arrow only starts turning this close to a corner. */
 const TURN_M = 5;
 
 /**
@@ -65,7 +63,6 @@ export function positionAt(d: number): { pos: [number, number]; heading: number;
   return { pos: here.pos, heading: bearing(from, ahead), index: here.index };
 }
 
-/** Next manoeuvre ahead of `d`. */
 export function nextStep(d: number) {
   const s = ROUTE.steps.find((st) => st.at > d + 3 && st.type !== "exit rotary" && st.type !== "exit roundabout");
   if (!s) return { step: null as Step | null, dist: ROUTE_LEN - d };
@@ -78,10 +75,8 @@ export function fmtDist(m: number) {
   return `${Math.max(0, Math.round(m / 5) * 5)} m`;
 }
 
-/** Traffic lights on the Cluj route (metres along it): Calea Dorobanților, Teodor Mihali, Aurel Vlaicu, Traian Vuia. */
 export const STOPS = [1150, 2370, 3620, 5480, 7080];
 
-// Romanian urban default; the airport approach drops to 30
 export const speedLimitAt = (d: number) => (d > 7900 ? 30 : 50);
 
 const SPEEDING_MARGIN = 3;

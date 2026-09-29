@@ -3,16 +3,10 @@
 import { useLayoutEffect, useRef } from "react";
 
 /**
- * Sliding "active" highlight that is safe inside the CSS-scaled display.
- *
  * Motion's `layoutId` measures screen-space rects (already multiplied by the display's
  * fit-to-window scale) but animates in local space, so the highlight lands off target and
  * re-jumps on every re-render. offsetLeft/Top/Width/Height are layout values that ignore
  * transforms, so positioning from them is exact at any scale.
- *
- * Usage: put `ref={container}` on a `relative` wrapper, render
- * `<span ref={indicator} className="absolute top-0 left-0 ..." />` as its first child, and
- * mark each option with `data-slot`. Pass the active option's index (or -1 for none).
  */
 export function useSlider<C extends HTMLElement = HTMLDivElement>(active: number) {
   const container = useRef<C>(null);
@@ -29,7 +23,6 @@ export function useSlider<C extends HTMLElement = HTMLDivElement>(active: number
         ind.style.opacity = "0";
         return;
       }
-      // first placement and re-layouts snap; switching options glides
       ind.style.transition =
         animate && placed.current
           ? "transform 320ms cubic-bezier(.2,.8,.2,1), width 320ms cubic-bezier(.2,.8,.2,1), height 320ms cubic-bezier(.2,.8,.2,1), opacity 150ms"

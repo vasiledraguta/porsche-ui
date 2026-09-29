@@ -7,7 +7,6 @@ import { Fuel, Lock, LockOpen, Move3d, RotateCcw } from "lucide-react";
 import { MiniPlayer } from "./MiniPlayer";
 import { useSlider } from "./ui/useSlider";
 
-// WebGL only runs client-side.
 const Car3D = dynamic(() => import("./Car3D"), { ssr: false });
 import { MODES, MODE_ORDER, REDLINE, rangeFor, useCar } from "@/lib/store";
 
@@ -29,7 +28,6 @@ function useGearFocus<T extends HTMLElement>(active: boolean, onMount = false) {
   return ref;
 }
 
-/** Left vehicle column: speed, PDK gear, rev bar, fuel, the 3D 911 GT3 RS, lock/view controls, drive mode, media. */
 export function CarPanel() {
   const driving = useCar((s) => s.gear !== "P");
   const ref = useGearFocus<HTMLElement>(!driving);
@@ -149,7 +147,6 @@ function DriveHeader() {
   );
 }
 
-/** Rev counter strip, 0–9,000 rpm. The last 1,000 rpm is the red zone; it flashes at the shift point. */
 function RevBar({ rpm, shift }: { rpm: number; shift: boolean }) {
   const pct = Math.min(1, rpm / REDLINE);
   return (
@@ -183,7 +180,6 @@ function FuelGauge({ pct }: { pct: number }) {
   );
 }
 
-/** Spinnable 3D car with openable lids/doors, lock and view controls overlaid. */
 function CarStage() {
   const locked = useCar((s) => s.locked);
   const lift = useCar((s) => s.lift);
@@ -197,7 +193,6 @@ function CarStage() {
   const [revealed, setRevealed] = useState(false);
   return (
     <div className="relative mx-2 mt-1 flex-1 overflow-hidden rounded-[18px]">
-      {/* floor glow */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[radial-gradient(55%_45%_at_50%_70%,rgba(255,255,255,0.06),transparent_70%)]" />
       <Car3D onReady={() => setReady(true)} revealed={revealed} />
       <AnimatePresence onExitComplete={() => setRevealed(true)}>
