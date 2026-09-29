@@ -195,8 +195,8 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
       puck.current?.setLngLat(pos).setRotation(heading);
     });
     const p = document.createElement("div");
-    p.innerHTML = `<div style="width:2.125rem;height:2.125rem;display:grid;place-items:center">
-      <svg width="2.125rem" height="2.125rem" viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="#2f8fff" fill-opacity=".18"/>
+    p.innerHTML = `<div style="width:2.15rem;height:2.15rem;display:grid;place-items:center">
+      <svg width="2.15rem" height="2.15rem" viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="#2f8fff" fill-opacity=".18"/>
       <path d="M17 5 L26 27 L17 22 L8 27 Z" fill="#fff" stroke="#0b1a2a" stroke-width="1.2" stroke-linejoin="round"/></svg></div>`;
     puck.current = new maplibregl.Marker({ element: p, pitchAlignment: "map", rotationAlignment: "map" })
       .setLngLat(ROUTE.coords[0])
@@ -236,7 +236,7 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
       {/* maplibre-gl.css forces .maplibregl-map { position: relative }, so size by h/w, not inset */}
       <div ref={el} className="h-full w-full" />
       {failed && (
-        <div className="absolute inset-0 grid place-items-center bg-[#14171b] text-[0.8125rem] text-white/40">
+        <div className="absolute inset-0 grid place-items-center bg-[#14171b] text-[0.8rem] text-white/40">
           Map unavailable offline
         </div>
       )}

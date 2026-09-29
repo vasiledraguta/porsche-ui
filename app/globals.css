@@ -35,7 +35,7 @@ input[type="range"].slim {
 }
 input[type="range"].slim::-webkit-slider-runnable-track {
   height: 0.25rem;
-  border-radius: 6.1875rem;
+  border-radius: 6.2rem;
   background: linear-gradient(
     90deg,
     var(--fill, #2f8fff) 0%,
@@ -45,30 +45,30 @@ input[type="range"].slim::-webkit-slider-runnable-track {
 }
 input[type="range"].slim::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 1.125rem;
-  height: 1.125rem;
-  margin-top: -0.4375rem;
-  border-radius: 6.1875rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: -0.45rem;
+  border-radius: 6.2rem;
   background: #f3f4f6;
   box-shadow:
-    0 0.125rem 0.5rem rgba(0, 0, 0, 0.6),
+    0 0.15rem 0.5rem rgba(0, 0, 0, 0.6),
     0 0 0 0.25rem rgba(255, 255, 255, 0.06);
 }
 input[type="range"].slim::-moz-range-track {
   height: 0.25rem;
-  border-radius: 6.1875rem;
+  border-radius: 6.2rem;
   background: rgba(255, 255, 255, 0.1);
 }
 input[type="range"].slim::-moz-range-progress {
   height: 0.25rem;
-  border-radius: 6.1875rem;
+  border-radius: 6.2rem;
   background: var(--fill, #2f8fff);
 }
 input[type="range"].slim::-moz-range-thumb {
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1.15rem;
+  height: 1.15rem;
   border: 0;
-  border-radius: 6.1875rem;
+  border-radius: 6.2rem;
   background: #f3f4f6;
 }
 
@@ -78,15 +78,15 @@ button {
 @utility press {
   scale: 0.96;
   box-shadow:
-    inset 0 0 0 62.4375rem rgb(255 255 255 / 0.08),
+    inset 0 0 0 100rem rgb(255 255 255 / 0.08),
     var(--tw-ring-shadow, 0 0 #0000),
     var(--tw-shadow, 0 0 #0000);
   transition-duration: 120ms;
 }
 
 button:focus-visible {
-  outline: 0.0625rem solid rgba(255, 255, 255, 0.5);
-  outline-offset: 0.125rem;
+  outline: 0.05rem solid rgba(255, 255, 255, 0.5);
+  outline-offset: 0.15rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

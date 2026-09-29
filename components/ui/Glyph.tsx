@@ -40,11 +40,11 @@ export function Glyph({ id, size = 22, dim = false }: { id: AppId; size?: number
   const Icon = a.icon;
   return (
     <Icon
-      size={`${size / 16}rem`}
+      size={`${Math.round((size / 16) * 20) / 20}rem`}
       strokeWidth={1.7}
       color={a.color}
       fill={a.fill ? a.color : "none"}
-      style={{ opacity: dim ? 0.55 : 1, filter: `drop-shadow(0 0 0.625rem ${a.color}33)` }}
+      style={{ opacity: dim ? 0.55 : 1, filter: `drop-shadow(0 0 0.65rem ${a.color}33)` }}
     />
   );
 }

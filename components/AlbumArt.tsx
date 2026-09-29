@@ -20,6 +20,8 @@ export function AlbumArt({ size, radius = 10, track }: { size: number; radius?: 
   const index = track ?? current;
   const [base, ...colors] = TRACKS[index].mesh;
   const live = track === undefined && playing;
+  const remSize = Math.round((size / 16) * 20) / 20;
+  const remRadius = Math.round((radius / 16) * 20) / 20;
   return (
     <motion.div
       key={index}
@@ -27,7 +29,7 @@ export function AlbumArt({ size, radius = 10, track }: { size: number; radius?: 
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
       className="relative shrink-0 overflow-hidden"
-      style={{ width: `${size / 16}rem`, height: `${size / 16}rem`, borderRadius: `${radius / 16}rem`, background: base }}
+      style={{ width: `${remSize}rem`, height: `${remSize}rem`, borderRadius: `${remRadius}rem`, background: base }}
     >
       {colors.map((c, i) => {
         const b = BLOBS[i];
@@ -51,7 +53,7 @@ export function AlbumArt({ size, radius = 10, track }: { size: number; radius?: 
         );
       })}
       <div className="absolute inset-0 opacity-[0.16] mix-blend-overlay" style={{ backgroundImage: GRAIN }} />
-      <div className="absolute inset-0 rounded-[inherit] shadow-[inset_0_0_0_0.0625rem_rgba(255,255,255,0.08)]" />
+      <div className="absolute inset-0 rounded-[inherit] shadow-[inset_0_0_0_0.05rem_rgba(255,255,255,0.08)]" />
     </motion.div>
   );
 }

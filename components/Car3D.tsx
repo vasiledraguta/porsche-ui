@@ -299,16 +299,16 @@ function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => v
       <button
         onClick={() => useCar.getState().togglePart(id)}
         aria-label={`${open ? "Close" : "Open"} ${label}`}
-        className="group absolute bottom-0 left-0 flex -translate-x-1/2 translate-y-[0.1875rem] flex-col items-center whitespace-nowrap transition [text-shadow:0_0.0625rem_0.1875rem_rgba(0,0,0,0.8)] active:scale-[0.96]"
+        className="group absolute bottom-0 left-0 flex -translate-x-1/2 translate-y-[0.2rem] flex-col items-center whitespace-nowrap transition [text-shadow:0_0.05rem_0.2rem_rgba(0,0,0,0.8)] active:scale-[0.96]"
       >
         <span
-          className={`text-[0.6875rem] font-medium tracking-[0.04em] uppercase transition ${
+          className={`text-[0.7rem] font-medium tracking-[0.04em] uppercase transition ${
             open ? "text-(--ambient)" : hot ? "text-white" : "text-white/70 group-hover:text-white"
           }`}
         >
           {label}
         </span>
-        <span className={`mt-1 h-7 w-[0.0625rem] transition ${hot ? "bg-white/70" : "bg-white/35 group-hover:bg-white/70"}`} />
+        <span className={`mt-1 h-7 w-[0.05rem] transition ${hot ? "bg-white/70" : "bg-white/35 group-hover:bg-white/70"}`} />
         <span className={`h-1.5 w-1.5 rounded-full transition-colors ${open ? "bg-(--ambient)" : "bg-white"}`} />
       </button>
     </div>
