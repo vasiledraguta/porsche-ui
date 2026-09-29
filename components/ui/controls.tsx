@@ -48,7 +48,7 @@ export function Segmented<T extends string>({
           data-slot
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
-          className="relative flex-1 rounded-[8px] px-3 py-2 text-[14px] transition active:press"
+          className="relative flex-1 rounded-[8px] px-3 py-2 text-[14px] transition"
         >
           <span className={`relative ${value === o.value ? "text-white" : "text-white/55"}`}>{o.label}</span>
         </button>

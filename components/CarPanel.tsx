@@ -101,7 +101,7 @@ function GearSelect() {
           aria-pressed={g === gear}
           disabled={g === "P" && speed > 0}
           onClick={() => setGear(g)}
-          className={`rounded-[6px] transition active:press ${g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}`}
+          className={`rounded-[6px] transition ${g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}`}
         >
           {g === "D" && gear === "D" ? `D${pdkGear}` : g}
         </button>
@@ -287,7 +287,7 @@ function ModeBar() {
             data-slot
             aria-pressed={mode === m}
             onClick={() => mode !== m && setMode(m)}
-            className={`relative flex-1 rounded-[9px] py-[9px] text-[13.5px] transition ${mode === m ? "cursor-default" : "active:press"}`}
+            className={`relative flex-1 rounded-[9px] py-[9px] text-[13.5px] transition ${mode === m ? "cursor-default" : ""}`}
           >
             <span className={`relative ${mode === m ? "text-white" : "text-white/50"}`}>{MODES[m].label}</span>
           </button>
