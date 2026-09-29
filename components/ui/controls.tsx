@@ -18,7 +18,7 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: () => v
       animate={on ? "on" : "off"}
       whileTap="press"
       className="relative inline-flex h-[1.9rem] w-[3.25rem] shrink-0 items-center rounded-full transition-colors duration-300"
-      style={{ background: on ? "var(--blue)" : "rgba(255,255,255,0.14)" }}
+      style={{ background: on ? "var(--accent)" : "rgba(255,255,255,0.14)" }}
     >
       <motion.span
         className="absolute h-[1.5rem] w-[1.5rem] rounded-full bg-white shadow-[0_0.15rem_0.4rem_rgba(0,0,0,0.45)]"
@@ -47,7 +47,7 @@ export function Segmented<T extends string>({
     <div ref={container} className="relative flex rounded-[0.65rem] bg-white/[0.06] p-[0.2rem]">
       <span
         ref={indicator}
-        className="pointer-events-none absolute top-0 left-0 rounded-[0.5rem] bg-[#2b2f35] opacity-0 shadow-[inset_0_0_0_0.05rem_rgba(255,255,255,0.08),0_0.15rem_0.4rem_rgba(0,0,0,0.3)]"
+        className="pointer-events-none absolute top-0 left-0 rounded-[0.5rem] bg-[color-mix(in_oklab,var(--accent)_22%,#2b2f35)] opacity-0 shadow-[inset_0_0_0_0.05rem_var(--accent),0_0.15rem_0.4rem_rgba(0,0,0,0.3)]"
       />
       {options.map((o) => (
         <button
