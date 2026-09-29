@@ -78,7 +78,7 @@ function PillBody() {
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0, transition: { delay: PANEL_S * 0.5, duration: 0.35, ease: PANEL_EASE } }}
       exit={{ opacity: 0, y: -8, transition: { duration: 0.18 } }}
-      className="absolute top-[7.5rem] left-4 z-10 flex items-center gap-4 rounded-full bg-[#1a1d22]/95 py-3 pr-6 pl-5 shadow-[0_0.75rem_2rem_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md"
+      className="absolute top-30 left-4 z-10 flex items-center gap-4 rounded-full bg-[#1a1d22]/95 py-3 pr-6 pl-5 shadow-[0_0.75rem_2rem_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md"
     >
       <GearSelect />
       <span className="h-6 w-px bg-white/10" />
@@ -101,7 +101,7 @@ function GearSelect() {
           aria-pressed={g === gear}
           disabled={g === "P" && speed > 0}
           onClick={() => setGear(g)}
-          className={`rounded-[0.5rem] transition ${g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}`}
+          className={`rounded-lg transition ${g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}`}
         >
           {g === "D" && gear === "D" ? `D${pdkGear}` : g}
         </button>
@@ -150,8 +150,8 @@ function DriveHeader() {
 function RevBar({ rpm, shift }: { rpm: number; shift: boolean }) {
   const pct = Math.min(1, rpm / REDLINE);
   return (
-    <div className="mt-3 w-[12rem]">
-      <div className="relative h-[0.25rem] rounded-full bg-white/10">
+    <div className="mt-3 w-48">
+      <div className="relative h-1 rounded-full bg-white/10">
         <span className="absolute inset-y-0 right-0 w-[11.1%] rounded-r-full bg-[#ff3b30]/35" />
         <span
           className="absolute inset-y-0 left-0 rounded-full"
@@ -170,7 +170,7 @@ function FuelGauge({ pct }: { pct: number }) {
   return (
     <span className="flex items-center gap-1.5">
       <Fuel size="1rem" strokeWidth={1.8} className={pct < 12 ? "text-[#ffb020]" : "text-white/55"} />
-      <span className="relative h-[0.25rem] w-[2rem] overflow-hidden rounded-full bg-white/12">
+      <span className="relative h-1 w-8 overflow-hidden rounded-full bg-white/12">
         <span
           className="absolute inset-y-0 left-0 rounded-full"
           style={{ width: `${pct}%`, background: pct < 12 ? "#ffb020" : "#f2f4f7" }}
@@ -207,7 +207,7 @@ function CarStage() {
             <span
               aria-hidden
               onAnimationIteration={() => setShimmered(true)}
-              className="h-[9.5rem] w-[7.5rem] animate-[shimmer_2.4s_linear_infinite] bg-[linear-gradient(100deg,rgba(255,255,255,0.4)_35%,rgba(255,255,255,0.95)_50%,rgba(255,255,255,0.4)_65%)] bg-[length:200%_100%] [mask:url(/brand/porsche-crest.svg)_center/contain_no-repeat]"
+              className="h-38 w-30 animate-[shimmer_2.4s_linear_infinite] bg-[linear-gradient(100deg,rgba(255,255,255,0.4)_35%,rgba(255,255,255,0.95)_50%,rgba(255,255,255,0.4)_65%)] bg-[length:200%_100%] [mask:url(/brand/porsche-crest.svg)_center/contain_no-repeat]"
             />
           </motion.div>
         )}
@@ -219,7 +219,7 @@ function CarStage() {
         <button
           onClick={toggleLock}
           aria-label={locked ? "Unlock" : "Lock"}
-          className="flex items-center gap-2 rounded-full bg-black/40 py-[0.5rem] pr-3.5 pl-3 text-[0.75rem] backdrop-blur-sm transition hover:bg-black/60 active:press"
+          className="flex items-center gap-2 rounded-full bg-black/40 py-2 pr-3.5 pl-3 text-[0.75rem] backdrop-blur-sm transition hover:bg-black/60 active:press"
         >
           {locked ? (
             <Lock size="1rem" strokeWidth={1.9} className="text-white" />
@@ -231,7 +231,7 @@ function CarStage() {
         <button
           onClick={() => set({ drs: !drs })}
           aria-pressed={drs}
-          className="rounded-full bg-black/40 px-3.5 py-[0.5rem] text-[0.75rem] font-medium tracking-[0.06em] backdrop-blur-sm transition hover:bg-black/60 active:press"
+          className="rounded-full bg-black/40 px-3.5 py-2 text-[0.75rem] font-medium tracking-[0.06em] backdrop-blur-sm transition hover:bg-black/60 active:press"
         >
           <span className={`transition-colors ${drs ? "text-(--ambient)" : "text-white"}`}>DRS</span>
         </button>
@@ -276,10 +276,10 @@ function ModeBar() {
   const { container, indicator } = useSlider(MODE_ORDER.indexOf(mode));
   return (
     <div className="px-5 pb-3">
-      <div ref={container} className="relative flex rounded-[0.75rem] bg-white/[0.05] p-[0.25rem]">
+      <div ref={container} className="relative flex rounded-xl bg-white/[0.06] p-1">
         <span
           ref={indicator}
-          className="pointer-events-none absolute top-0 left-0 rounded-[0.5rem] bg-[#262a30] opacity-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07),0_0.125rem_0.5rem_rgba(0,0,0,0.4)]"
+          className="pointer-events-none absolute top-0 left-0 rounded-lg bg-[#262a30] opacity-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07),0_0.125rem_0.5rem_rgba(0,0,0,0.3)]"
         />
         {MODE_ORDER.map((m) => (
           <button
@@ -287,7 +287,7 @@ function ModeBar() {
             data-slot
             aria-pressed={mode === m}
             onClick={() => mode !== m && setMode(m)}
-            className={`relative flex-1 rounded-[0.5rem] py-[0.5rem] text-[0.75rem] transition ${mode === m ? "cursor-default" : ""}`}
+            className={`relative flex-1 rounded-lg py-2 text-[0.75rem] transition ${mode === m ? "cursor-default" : ""}`}
           >
             <span className={`relative ${mode === m ? "text-white" : "text-white/50"}`}>{MODES[m].label}</span>
           </button>

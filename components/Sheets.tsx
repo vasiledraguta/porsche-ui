@@ -136,7 +136,7 @@ function HomeSheet() {
   return (
     <div className="flex h-full flex-col px-10 pt-7">
       <div className="flex items-center justify-between pr-14">
-        <label className="flex w-[23rem] items-center gap-3 rounded-[0.75rem] bg-white/[0.06] px-4 py-3 text-white/45 focus-within:bg-white/[0.09]">
+        <label className="flex w-92 items-center gap-3 rounded-xl bg-white/[0.06] px-4 py-3 text-white/45 focus-within:bg-white/[0.09]">
           <Search size="1.25rem" />
           <input
             type="text"
@@ -159,7 +159,7 @@ function HomeSheet() {
             transition={{ duration: 0.3, delay: i * 0.02, ease }}
             className="group flex flex-col items-center gap-2.5"
           >
-            <span className="grid h-[5.5rem] w-[5.5rem] place-items-center rounded-[1.25rem] bg-gradient-to-b from-[#2a2e34] to-[#1d2025] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0.5rem_1rem_rgba(0,0,0,0.35)] transition group-hover:from-[#32363d] group-active:press">
+            <span className="grid h-22 w-22 place-items-center rounded-[1.25rem] bg-gradient-to-b from-[#2a2e34] to-[#1d2025] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0.5rem_1rem_rgba(0,0,0,0.35)] transition group-hover:from-[#32363d] group-active:press">
               <Glyph id={id} size={2.25} />
             </span>
             <span className="text-[1rem] text-white/85">{APPS[id].label}</span>
@@ -168,7 +168,7 @@ function HomeSheet() {
       </div>
       {apps.length === 0 && <div className="mt-2 text-[1rem] text-white/45">No apps match “{query.trim()}”</div>}
       <div className="mt-auto mb-6 flex justify-center">
-        <span className="h-[0.25rem] w-5 rounded-full bg-[#2f8fff]" />
+        <span className="h-1 w-5 rounded-full bg-[#2f8fff]" />
       </div>
     </div>
   );
@@ -194,8 +194,8 @@ function VehicleSheet() {
   const { container, indicator } = useSlider<HTMLElement>(TABS.findIndex((t) => t.id === tab));
   return (
     <div className="flex h-full">
-      <nav ref={container} className="relative w-[17rem] shrink-0 border-r border-white/[0.06] px-3 pt-6">
-        <span ref={indicator} className="pointer-events-none absolute top-0 left-0 rounded-[0.75rem] bg-white/[0.08] opacity-0" />
+      <nav ref={container} className="relative w-68 shrink-0 border-r border-white/[0.06] px-3 pt-6">
+        <span ref={indicator} className="pointer-events-none absolute top-0 left-0 rounded-xl bg-white/[0.08] opacity-0" />
         <div className="mb-3 flex items-center gap-2 px-3 text-[1.25rem] font-medium text-white">
           <CarFront size="1.25rem" strokeWidth={1.7} /> Vehicle
         </div>
@@ -232,7 +232,7 @@ function VehicleSheet() {
               aria-controls="vehicle-panel"
               tabIndex={tab === t.id ? 0 : -1}
               onClick={() => set({ vehicleTab: t.id })}
-              className="relative flex w-full items-center gap-3 rounded-[0.75rem] px-3 py-[0.75rem] text-left text-[1rem]"
+              className="relative flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[1rem]"
             >
               <t.icon size="1.25rem" strokeWidth={1.6} className={`relative ${tab === t.id ? "text-(--accent)" : "text-white/55"}`} />
               <span className={`relative ${tab === t.id ? "text-white" : "text-white/70"}`}>{t.label}</span>
@@ -251,7 +251,7 @@ function VehicleSheet() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2, ease }}
-            className="max-w-[40rem]"
+            className="max-w-160"
           >
             <h2 className="mb-2 text-[1.5rem] font-medium text-white">{TABS.find((t) => t.id === tab)?.label}</h2>
             {tab === "modes" && <ModesTab />}
@@ -282,10 +282,10 @@ function ModesTab() {
           key={m}
           aria-pressed={mode === m}
           onClick={() => mode !== m && setMode(m)}
-          className={`rounded-[1rem] p-5 text-left transition ${
+          className={`rounded-2xl p-5 text-left transition ${
             mode === m
               ? "cursor-default bg-(--accent)/[0.14] shadow-[inset_0_0_0_0.125rem_var(--accent)]"
-              : "bg-white/[0.04] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:bg-white/[0.06]"
+              : "bg-white/[0.05] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:bg-white/[0.08]"
           }`}
         >
           <div className="flex items-center justify-between">
@@ -312,7 +312,7 @@ export function PaintSwatches({ compact = false }: { compact?: boolean }) {
           onClick={() => set({ paint: id })}
           aria-label={PAINTS[id].label}
           aria-pressed={paint === id}
-          className={`flex items-center gap-2 rounded-[0.75rem] text-left text-white transition ${compact ? "px-2 py-2 text-[0.75rem]" : "px-4 py-4 text-[1rem]"} ${paint === id ? "bg-(--accent)/[0.14] ring-1 ring-(--accent)" : "bg-white/[0.04] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
+          className={`flex items-center gap-2 text-left text-white transition ${compact ? "rounded-xl px-2 py-2 text-[0.75rem]" : "rounded-2xl px-4 py-4 text-[1rem]"} ${paint === id ? "bg-(--accent)/[0.14] ring-2 ring-(--accent)" : "bg-white/[0.05] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
         >
           <span className="h-5 w-5 shrink-0 rounded-full ring-1 ring-white/20" style={{ backgroundColor: PAINTS[id].color }} />
           <span>{PAINTS[id].label}</span>
@@ -570,8 +570,8 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
   return (
     <button
       onClick={onClick}
-      className={`flex h-[5rem] flex-col items-center justify-center gap-2 rounded-[1rem] transition ${
-        on ? "bg-(--accent)/[0.16] text-[color-mix(in_oklab,var(--accent)_70%,white)] shadow-[inset_0_0_0_0.125rem_var(--accent)]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
+      className={`flex h-20 flex-col items-center justify-center gap-2 rounded-2xl transition ${
+        on ? "bg-(--accent)/[0.14] text-[color-mix(in_oklab,var(--accent)_70%,white)] shadow-[inset_0_0_0_0.125rem_var(--accent)]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
       }`}
     >
       <Icon size="1.5rem" strokeWidth={1.6} />
@@ -705,7 +705,7 @@ function TyreTemp({ temp }: { temp: number }) {
 
 function Tile({ label, value, sub }: { label: string; value: string; sub?: React.ReactNode }) {
   return (
-    <div className="rounded-[1rem] bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
+    <div className="rounded-2xl bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
       <div className="text-[0.75rem] text-white/45">{label}</div>
       <div className="mt-1.5 text-[1.5rem] font-light text-white tabular-nums">{value}</div>
       {sub && <div className="mt-1 text-[0.75rem] text-white/60">{sub}</div>}
@@ -744,13 +744,13 @@ function ChronoSheet() {
           <button
             onClick={lapChrono}
             disabled={!running && elapsed === 0}
-            className="h-[3.25rem] w-[7.5rem] rounded-full bg-white/[0.08] text-[1rem] text-white transition hover:bg-white/[0.12] active:press disabled:opacity-30"
+            className="h-13 w-30 rounded-full bg-white/[0.08] text-[1rem] text-white transition hover:bg-white/[0.12] active:press disabled:opacity-30"
           >
             {running || elapsed === 0 ? "Lap" : "Reset"}
           </button>
           <button
             onClick={toggleChrono}
-            className={`h-[3.25rem] w-[7.5rem] rounded-full text-[1rem] font-medium transition active:press ${
+            className={`h-13 w-30 rounded-full text-[1rem] font-medium transition active:press ${
               running ? "bg-[#ff4a4a]/20 text-[#ff7a70] hover:bg-[#ff4a4a]/30" : "bg-[#3fd46b]/20 text-[#5fe086] hover:bg-[#3fd46b]/30"
             }`}
           >
@@ -758,7 +758,7 @@ function ChronoSheet() {
           </button>
         </div>
       </div>
-      <div className="w-[21rem] shrink-0 overflow-y-auto border-l border-white/[0.06] bg-black/20 px-5 pt-16 pb-6 [scrollbar-width:none]">
+      <div className="w-84 shrink-0 overflow-y-auto border-l border-white/[0.06] bg-black/20 px-5 pt-16 pb-6 [scrollbar-width:none]">
         <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/40 uppercase">Laps</div>
         {laps.length === 0 && <div className="text-[1rem] text-white/40">Press Lap to record a lap time</div>}
         {laps
@@ -884,8 +884,8 @@ function MediaSheet() {
               s.set({ progress: Math.min(t.length, Math.max(0, s.progress + step)) });
             }}
           >
-            <div className="absolute inset-x-0 top-1/2 h-[0.25rem] -translate-y-1/2 rounded-full bg-white/15" />
-            <div className="absolute top-1/2 left-0 h-[0.25rem] -translate-y-1/2 rounded-full bg-white" style={{ width: `${(s.progress / t.length) * 100}%` }} />
+            <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-white/15" />
+            <div className="absolute top-1/2 left-0 h-1 -translate-y-1/2 rounded-full bg-white" style={{ width: `${(s.progress / t.length) * 100}%` }} />
             <div
               className={`absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0.125rem_0.5rem_rgba(0,0,0,0.5)] transition-opacity ${
                 s.seeking ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
@@ -904,7 +904,7 @@ function MediaSheet() {
             <button
               aria-label="Play/pause"
               onClick={() => s.set({ playing: !s.playing })}
-              className="grid h-[4.5rem] w-[4.5rem] place-items-center rounded-full bg-white text-black transition active:press"
+              className="grid h-18 w-18 place-items-center rounded-full bg-white text-black transition active:press"
             >
               {s.playing ? <Pause size="1.75rem" fill="currentColor" strokeWidth={0} /> : <Play size="1.75rem" fill="currentColor" strokeWidth={0} className="translate-x-0.5" />}
             </button>
@@ -914,13 +914,13 @@ function MediaSheet() {
           </div>
         </div>
       </div>
-      <div className="relative w-[19rem] shrink-0 border-l border-white/[0.06] bg-black/20 px-5 pt-16">
+      <div className="relative w-76 shrink-0 border-l border-white/[0.06] bg-black/20 px-5 pt-16">
         <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/40 uppercase">Up next</div>
         {TRACKS.map((tr, i) => (
           <button
             key={tr.title}
             onClick={() => s.set({ track: i, progress: 0, playing: true })}
-            className={`flex w-full items-center gap-3 rounded-[0.75rem] px-2 py-2.5 text-left transition hover:bg-white/[0.05] ${i === s.track ? "bg-white/[0.07]" : ""}`}
+            className={`flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition hover:bg-white/[0.05] ${i === s.track ? "bg-white/[0.08]" : ""}`}
           >
             <AlbumArt size={2.25} radius={0.5} track={i} />
             <span className="min-w-0">
@@ -960,8 +960,8 @@ function PhoneSheet() {
     tab === "Favourites" ? CONTACTS.filter((c) => c.fav) : tab === "Contacts" ? [...CONTACTS].sort((a, b) => a.n.localeCompare(b.n)) : CONTACTS;
   return (
     <div className="flex h-full">
-      <nav ref={container} className="relative w-[17rem] shrink-0 border-r border-white/[0.06] px-3 pt-6">
-        <span ref={indicator} className="pointer-events-none absolute top-0 left-0 rounded-[0.75rem] bg-white/[0.08] opacity-0" />
+      <nav ref={container} className="relative w-68 shrink-0 border-r border-white/[0.06] px-3 pt-6">
+        <span ref={indicator} className="pointer-events-none absolute top-0 left-0 rounded-xl bg-white/[0.08] opacity-0" />
         <div className="mb-3 flex items-center gap-2 px-3 text-[1.25rem] font-medium text-white">
           <Glyph id="phone" size={1.25} /> Phone
         </div>
@@ -970,7 +970,7 @@ function PhoneSheet() {
             key={l}
             data-slot
             onClick={() => setTab(l)}
-            className="relative flex w-full rounded-[0.75rem] px-3 py-[0.75rem] text-left text-[1rem] transition"
+            className="relative flex w-full rounded-xl px-3 py-3 text-left text-[1rem] transition"
           >
             <span className={`relative ${tab === l ? "text-white" : "text-white/70"}`}>{l}</span>
           </button>
@@ -1010,7 +1010,7 @@ function CallBanner({ to, at, onEnd }: { to: string; at: number; onEnd: () => vo
   const now = useCar((s) => s.now);
   const t = (now - at) / 1000;
   return (
-    <div className="mb-3 flex items-center gap-4 rounded-[1rem] bg-[#3fd46b]/[0.1] px-5 py-4 shadow-[inset_0_0_0_1px_rgba(63,212,107,0.3)]">
+    <div className="mb-3 flex items-center gap-4 rounded-2xl bg-[#3fd46b]/[0.1] px-5 py-4 shadow-[inset_0_0_0_1px_rgba(63,212,107,0.3)]">
       <Phone size="1.25rem" fill="currentColor" strokeWidth={0} className="shrink-0 text-[#3fd46b]" />
       <div className="min-w-0 flex-1">
         <div className="truncate text-[1rem] text-white">{to}</div>
@@ -1032,7 +1032,7 @@ const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
 function Keypad({ onCall }: { onCall: (to: string) => void }) {
   const [digits, setDigits] = useState("");
   return (
-    <div className="w-[19rem]">
+    <div className="w-76">
       <div className="flex h-14 items-center justify-between gap-2 border-b border-white/[0.07]">
         {digits ? (
           <span className="min-w-0 truncate text-[1.75rem] font-light text-white tabular-nums">{digits}</span>
@@ -1054,7 +1054,7 @@ function Keypad({ onCall }: { onCall: (to: string) => void }) {
           <button
             key={k}
             onClick={() => setDigits((d) => (d + k).slice(0, 15))}
-            className="h-14 rounded-[1rem] bg-white/[0.05] text-[1.5rem] text-white transition hover:bg-white/[0.08] active:press"
+            className="h-14 rounded-2xl bg-white/[0.05] text-[1.5rem] text-white transition hover:bg-white/[0.08] active:press"
           >
             {k}
           </button>
@@ -1075,7 +1075,7 @@ function Keypad({ onCall }: { onCall: (to: string) => void }) {
 function AppPage({ id, children }: { id: AppId; children: React.ReactNode }) {
   return (
     <div className="h-full overflow-y-auto px-10 pt-7 pb-8 [scrollbar-width:none]">
-      <div className="max-w-[40rem]">
+      <div className="max-w-160">
         <h2 className="mb-3 flex items-center gap-2 text-[1.5rem] font-medium text-white">
           <Glyph id={id} size={1.25} /> {APPS[id].label}
         </h2>
@@ -1114,16 +1114,16 @@ function ProjectionSheet({ id, phone }: { id: "carplay" | "androidauto"; phone: 
   const openSheet = useCar((s) => s.openSheet);
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 px-10 text-center">
-      <span className="grid h-[6rem] w-[6rem] place-items-center rounded-[1.5rem] bg-gradient-to-b from-[#2a2e34] to-[#1d2025] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0.5rem_1rem_rgba(0,0,0,0.35)]">
+      <span className="grid h-24 w-24 place-items-center rounded-3xl bg-gradient-to-b from-[#2a2e34] to-[#1d2025] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0.5rem_1rem_rgba(0,0,0,0.35)]">
         <Glyph id={id} size={2.75} />
       </span>
       <h2 className="text-[1.75rem] font-medium text-white">{APPS[id].label}</h2>
-      <p className="max-w-[26rem] text-[1rem] leading-relaxed text-white/55">
+      <p className="max-w-104 text-[1rem] leading-relaxed text-white/55">
         No {phone} connected. Plug it into the USB-C port in the centre console, or pair it wirelessly from Devices.
       </p>
       <button
         onClick={() => openSheet("devices")}
-        className="mt-2 rounded-[0.75rem] bg-white/[0.08] px-5 py-3 text-[1rem] text-white transition hover:bg-white/[0.12] active:press"
+        className="mt-2 rounded-xl bg-white/[0.08] px-5 py-3 text-[1rem] text-white transition hover:bg-white/[0.12] active:press"
       >
         Open Devices
       </button>

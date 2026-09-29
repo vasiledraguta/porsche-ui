@@ -28,7 +28,7 @@ export function BottomBar() {
   };
 
   return (
-    <footer className="relative z-30 flex h-[5.5rem] shrink-0 items-center border-t border-white/[0.05] bg-[#0b0c0e] px-4">
+    <footer className="relative z-30 flex h-22 shrink-0 items-center border-t border-white/[0.05] bg-[#0b0c0e] px-4">
       <div className="flex items-center gap-1">
         <DockBtn label="Home" onClick={() => s.openSheet("home")} active={s.sheet === "home"}>
           <Glyph id="apps" size={1.5} />
@@ -42,7 +42,7 @@ export function BottomBar() {
         <button
           aria-label="Fan"
           onClick={() => s.openSheet("vehicle", "climate")}
-          className="flex h-[3.25rem] items-center gap-2 rounded-[1rem] px-3.5 text-white/85 transition hover:bg-white/[0.05] active:press"
+          className="flex h-13 items-center gap-2 rounded-2xl px-3.5 text-white/85 transition hover:bg-white/[0.05] active:press"
         >
           <Fan
             size="1.25rem"
@@ -78,11 +78,11 @@ function DockBtn({
     <button
       aria-label={label}
       onClick={onClick}
-      className="relative grid h-[3.25rem] w-[3.75rem] place-items-center rounded-[1rem] transition hover:bg-white/[0.05] active:press"
+      className="relative grid h-13 w-15 place-items-center rounded-2xl transition hover:bg-white/[0.05] active:press"
     >
       {children}
       <span
-        className="absolute bottom-[0.25rem] h-[0.25rem] w-5 rounded-full bg-[#2f8fff] transition-opacity"
+        className="absolute bottom-1 h-1 w-5 rounded-full bg-[#2f8fff] transition-opacity"
         style={{ opacity: active ? 1 : 0 }}
       />
     </button>
@@ -92,10 +92,10 @@ function DockBtn({
 function Temp({ value, onUp, onDown }: { value: number; onUp: () => void; onDown: () => void }) {
   return (
     <div className="flex items-center gap-1">
-      <RepeatBtn aria-label="Cooler" onStep={onDown} className="grid h-11 w-9 place-items-center rounded-[0.75rem] text-white/50 transition hover:text-white active:press">
-        <ChevronDown size="1.5rem" strokeWidth={1.8} />
+      <RepeatBtn aria-label="Cooler" onStep={onDown} className="grid h-11 w-9 place-items-center rounded-xl text-white/50 transition hover:text-white active:press">
+        <ChevronDown size="1.25rem" strokeWidth={1.8} />
       </RepeatBtn>
-      <div className="relative w-[4rem] overflow-hidden text-center">
+      <div className="relative w-16 overflow-hidden text-center">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.span
             key={value}
@@ -110,8 +110,8 @@ function Temp({ value, onUp, onDown }: { value: number; onUp: () => void; onDown
         </AnimatePresence>
         <span className="absolute top-0 right-0 text-[0.75rem] text-white/40">°</span>
       </div>
-      <RepeatBtn aria-label="Warmer" onStep={onUp} className="grid h-11 w-9 place-items-center rounded-[0.75rem] text-white/50 transition hover:text-white active:press">
-        <ChevronUp size="1.5rem" strokeWidth={1.8} />
+      <RepeatBtn aria-label="Warmer" onStep={onUp} className="grid h-11 w-9 place-items-center rounded-xl text-white/50 transition hover:text-white active:press">
+        <ChevronUp size="1.25rem" strokeWidth={1.8} />
       </RepeatBtn>
     </div>
   );
@@ -165,16 +165,16 @@ function SeatHeat({ level, onClick }: { level: number; onClick: () => void }) {
     <button
       onClick={onClick}
       aria-label={`Seat heating ${level}`}
-      className="flex h-[3.25rem] w-[3.25rem] flex-col items-center justify-center gap-1 rounded-[1rem] transition hover:bg-white/[0.05] active:press"
+      className="flex h-13 w-13 flex-col items-center justify-center gap-1 rounded-2xl transition hover:bg-white/[0.05] active:press"
     >
       <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" stroke={level ? "#ff7a45" : "rgba(255,255,255,.7)"} strokeWidth="1.7" strokeLinecap="round">
         <path d="M7 3c1 2-1 3 0 5M11 3c1 2-1 3 0 5M15 3c1 2-1 3 0 5" opacity={level ? 1 : 0.6} />
         <path d="M6 12h9a3 3 0 0 1 3 3v2H8a2 2 0 0 1-2-2z" />
         <path d="M6 12 5 8M9 17v4M16 17v4" />
       </svg>
-      <span className="flex gap-[0.25rem]">
+      <span className="flex gap-1">
         {[1, 2, 3].map((i) => (
-          <span key={i} className="h-[0.25rem] w-[0.5rem] rounded-full" style={{ background: i <= level ? "#ff7a45" : "rgba(255,255,255,.14)" }} />
+          <span key={i} className="h-1 w-2 rounded-full" style={{ background: i <= level ? "#ff7a45" : "rgba(255,255,255,.14)" }} />
         ))}
       </span>
     </button>
@@ -192,24 +192,24 @@ function Volume() {
       <RepeatBtn
         aria-label="Volume down"
         onStep={() => setVolume(Math.max(0, Math.ceil(volume / VOLUME_STEP) * VOLUME_STEP - VOLUME_STEP))}
-        className="grid h-11 w-9 place-items-center rounded-[0.75rem] text-white/50 transition hover:text-white active:press"
+        className="grid h-11 w-9 place-items-center rounded-xl text-white/50 transition hover:text-white active:press"
       >
         <ChevronLeft size="1.25rem" />
       </RepeatBtn>
       <button
         aria-label={volume ? "Mute" : "Unmute"}
         onClick={() => setVolume(volume ? 0 : lastVolume)}
-        className="relative grid h-11 w-11 place-items-center rounded-[0.75rem] text-white/85 transition active:press"
+        className="relative grid h-11 w-11 place-items-center rounded-xl text-white/85 transition active:press"
       >
         {volume ? <Volume2 size="1.25rem" strokeWidth={1.7} /> : <VolumeX size="1.25rem" strokeWidth={1.7} />}
-        <span className="absolute bottom-0.5 h-[0.125rem] w-7 rounded-full bg-white/10">
+        <span className="absolute bottom-0.5 h-0.5 w-7 rounded-full bg-white/10">
           <span className="block h-full rounded-full bg-white/70" style={{ width: `${volume}%` }} />
         </span>
       </button>
       <RepeatBtn
         aria-label="Volume up"
         onStep={() => setVolume(Math.min(100, Math.floor(volume / VOLUME_STEP) * VOLUME_STEP + VOLUME_STEP))}
-        className="grid h-11 w-9 place-items-center rounded-[0.75rem] text-white/50 transition hover:text-white active:press"
+        className="grid h-11 w-9 place-items-center rounded-xl text-white/50 transition hover:text-white active:press"
       >
         <ChevronRight size="1.25rem" />
       </RepeatBtn>

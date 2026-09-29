@@ -16,19 +16,19 @@ export function MiniPlayer() {
   })));
   const t = TRACKS[s.track];
   return (
-    <div className="overflow-hidden rounded-[1rem] bg-[#16191d] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
+    <div className="overflow-hidden rounded-2xl bg-[#16191d] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
       <button onClick={() => s.openSheet("media")} className="flex w-full items-center gap-3.5 p-3 text-left transition">
         <AlbumArt size={3.5} radius={0.5} />
         <div className="min-w-0 flex-1">
           <div className="truncate text-[1rem] font-medium text-white">{t.title}</div>
-          <div className="truncate text-[0.75rem] text-white/50">{t.artist}</div>
+          <div className="truncate text-[0.75rem] text-white/45">{t.artist}</div>
         </div>
         <span className="flex items-center gap-1.5 pr-1 text-[0.75rem] text-white/40">
           <span className="h-1.5 w-1.5 rounded-full bg-[#ff4a4a]" />
           Media
         </span>
       </button>
-      <div className="h-[0.125rem] bg-white/[0.06]">
+      <div className="h-0.5 bg-white/[0.06]">
         <div className="h-full bg-white/80" style={{ width: `${(s.progress / t.length) * 100}%` }} />
       </div>
       <div className="flex items-center justify-center gap-8 px-3 py-1.5 text-white/75">

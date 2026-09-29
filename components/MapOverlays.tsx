@@ -44,7 +44,7 @@ export function Maneuver() {
   const key = step ? `${step.at}` : "arrive";
 
   return (
-    <div className="absolute top-4 left-4 z-10 w-[21rem] overflow-hidden rounded-[1rem] bg-[#1a1d22]/95 shadow-[0_0.75rem_2rem_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
+    <div className="absolute top-4 left-4 z-10 w-84 overflow-hidden rounded-2xl bg-[#1a1d22]/95 shadow-[0_0.75rem_2rem_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.div
           key={key}
@@ -54,7 +54,7 @@ export function Maneuver() {
           transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
           className="flex items-center gap-4 p-4"
         >
-          <div className="grid h-[3.75rem] w-[3.75rem] shrink-0 place-items-center rounded-[0.75rem] bg-[#2f8fff]">
+          <div className="grid h-15 w-15 shrink-0 place-items-center rounded-xl bg-[#2f8fff]">
             <Icon size="2rem" strokeWidth={2.4} className="text-white" />
           </div>
           <div className="min-w-0">
@@ -71,7 +71,7 @@ export function Maneuver() {
 
 export function SearchBox() {
   return (
-    <div className="absolute top-4 right-4 z-10 w-[19rem] overflow-hidden rounded-[1rem] bg-[#1a1d22]/90 shadow-[0_0.75rem_2rem_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
+    <div className="absolute top-4 right-4 z-10 w-76 overflow-hidden rounded-2xl bg-[#1a1d22]/95 shadow-[0_0.75rem_2rem_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
       <div className="flex cursor-default items-center gap-3 px-4 py-3.5 text-white/30 select-none">
         <Search size="1.25rem" strokeWidth={1.8} />
         <span className="text-[1rem]">Search destination</span>
@@ -96,7 +96,7 @@ export function DemoDrive() {
       onClick={() => set({ autopilot: !autopilot })}
       aria-pressed={autopilot}
       aria-keyshortcuts="A"
-      className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-[#1a1d22]/90 px-4 py-2.5 text-[0.75rem] shadow-[0_0.75rem_2rem_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:bg-[#22262b]/90 active:press"
+      className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-[#1a1d22]/90 px-4 py-2.5 text-[0.75rem] shadow-[0_0.75rem_2rem_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:bg-[#22262b]/95 active:press"
     >
       <span
         className={`h-2 w-2 rounded-full ${autopilot ? "animate-[breathe_1.6s_ease-in-out_infinite] bg-[#2f8fff]" : "bg-white/30"}`}
@@ -119,7 +119,7 @@ export function EtaBar() {
   const eta = now ? new Date(now.getTime() + mins * 60000) : null;
   const arriveFuel = Math.max(0, Math.round(fuel - fuelPercentForDistance(left / 1000, mode)));
   return (
-    <div className="absolute right-4 bottom-4 left-4 z-10 flex items-center gap-6 rounded-[1rem] bg-[#1a1d22]/95 px-5 py-3.5 shadow-[0_0.75rem_2rem_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
+    <div className="absolute right-4 bottom-4 left-4 z-10 flex items-center gap-6 rounded-2xl bg-[#1a1d22]/95 px-5 py-3.5 shadow-[0_0.75rem_2rem_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md">
       <div className="flex items-baseline gap-2">
         <span className="text-[1.5rem] leading-none font-medium text-white tabular-nums">
           {eta ? `${String(eta.getHours()).padStart(2, "0")}:${String(eta.getMinutes()).padStart(2, "0")}` : "--:--"}
@@ -160,7 +160,7 @@ export function MapControls({ mapRef }: { mapRef: RefObject<Map | null> }) {
     else if (mapRef.current) mapRef.current.easeTo({ zoom: mapRef.current.getZoom() + dir, duration: 300 });
   };
   return (
-    <div className="absolute right-4 bottom-[6rem] z-10 flex flex-col gap-2">
+    <div className="absolute right-4 bottom-24 z-10 flex flex-col gap-2">
       <AnimatePresence>
         {!follow && (
           <motion.button
@@ -168,7 +168,7 @@ export function MapControls({ mapRef }: { mapRef: RefObject<Map | null> }) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             onClick={() => set({ follow: true })}
-            className="flex h-11 items-center gap-2 rounded-[0.75rem] bg-[#2f8fff] px-3.5 text-[0.75rem] font-medium text-white shadow-lg transition-[scale,box-shadow] active:press"
+            className="flex h-11 items-center gap-2 rounded-xl bg-[#2f8fff] px-3.5 text-[0.75rem] font-medium text-white shadow-lg transition-[scale,box-shadow] active:press"
           >
             <Crosshair size="1rem" /> Re-centre
           </motion.button>
@@ -193,7 +193,7 @@ function CtlBtn({ children, label, onClick }: { children: React.ReactNode; label
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="ml-auto grid h-11 w-11 place-items-center rounded-[0.75rem] bg-[#1a1d22]/90 text-white/80 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:text-white active:press"
+      className="ml-auto grid h-11 w-11 place-items-center rounded-xl bg-[#1a1d22]/95 text-white/80 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:text-white active:press"
     >
       {children}
     </button>
@@ -207,7 +207,7 @@ export function SpeedLimit() {
   if (!signs) return null;
   return (
     <div
-      className={`absolute bottom-[6rem] left-4 z-10 grid h-[3.5rem] w-[3.5rem] place-items-center rounded-full border-[0.25rem] border-[#e5332a] bg-white shadow-lg ${
+      className={`absolute bottom-24 left-4 z-10 grid h-14 w-14 place-items-center rounded-full border-[0.25rem] border-[#e5332a] bg-white shadow-lg ${
         speeding ? "animate-[limit-flash_0.6s_ease-in-out_3]" : ""
       }`}
     >
