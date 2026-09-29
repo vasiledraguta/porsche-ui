@@ -14,7 +14,7 @@ const BLOBS = [
 const GRAIN =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
-export function AlbumArt({ size, radius = 10, track }: { size: number; radius?: number; track?: number }) {
+export function AlbumArt({ size, radius = 0.75, track }: { size: number; radius?: number; track?: number }) {
   const current = useCar((s) => s.track);
   const playing = useCar((s) => s.playing);
   const index = track ?? current;
@@ -27,7 +27,7 @@ export function AlbumArt({ size, radius = 10, track }: { size: number; radius?: 
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
       className="relative shrink-0 overflow-hidden"
-      style={{ width: size, height: size, borderRadius: radius, background: base }}
+      style={{ width: `${size}rem`, height: `${size}rem`, borderRadius: `${radius}rem`, background: base }}
     >
       {colors.map((c, i) => {
         const b = BLOBS[i];

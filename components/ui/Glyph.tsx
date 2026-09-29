@@ -35,16 +35,16 @@ export const APPS = {
 
 export type AppId = keyof typeof APPS;
 
-export function Glyph({ id, size = 22, dim = false }: { id: AppId; size?: number; dim?: boolean }) {
+export function Glyph({ id, size = 1.5, dim = false }: { id: AppId; size?: number; dim?: boolean }) {
   const a = APPS[id];
   const Icon = a.icon;
   return (
     <Icon
-      size={size}
+      size={`${size}rem`}
       strokeWidth={1.7}
       color={a.color}
       fill={a.fill ? a.color : "none"}
-      style={{ opacity: dim ? 0.55 : 1, filter: `drop-shadow(0 0 10px ${a.color}33)` }}
+      style={{ opacity: dim ? 0.55 : 1, filter: `drop-shadow(0 0 0.75rem ${a.color}33)` }}
     />
   );
 }
