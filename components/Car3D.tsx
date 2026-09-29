@@ -23,6 +23,42 @@ const PAINT_MATERIAL = "TwiXeR_992_carPaint.003";
 
 const AMBIENT_RIM = 4;
 
+type Lamp = "drl" | "beam" | "tail";
+
+const LAMP_COLOR: Record<Lamp, string> = { drl: "#eaf2ff", beam: "#f4f8ff", tail: "#ff1f1f" };
+
+const LIGHTS: Record<"off" | "auto" | "low" | "high", Record<Lamp | "pool" | "reach", number>> = {
+  off: { drl: 2.2, beam: 0, tail: 0, pool: 0, reach: 0.55 },
+  auto: { drl: 2.2, beam: 1.6, tail: 1.8, pool: 0.7, reach: 0.55 },
+  low: { drl: 2.2, beam: 1.6, tail: 1.8, pool: 0.7, reach: 0.55 },
+  high: { drl: 2.2, beam: 3.2, tail: 1.8, pool: 1, reach: 1 },
+};
+
+const POOL_W = 1.7;
+const POOL_L = 5.5;
+
+const POOL_FRAG = `
+uniform float uI;
+uniform float uReach;
+varying vec2 vUv;
+void main() {
+  float d = (1.0 - vUv.y) / uReach;
+  float x = abs(vUv.x - 0.5) * 2.0;
+  float spread = mix(0.25, 1.0, clamp(d, 0.0, 1.0));
+  float side = 1.0 - smoothstep(spread * 0.35, spread, x);
+  float fade = smoothstep(0.0, 0.12, d) * (1.0 - smoothstep(0.45, 1.0, d));
+  gl_FragColor = vec4(0.86, 0.91, 1.0, uI * side * fade * 0.32);
+}
+`;
+
+const POOL_VERT = `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
 const PODIUM_R = 2.55;
 const PODIUM_H = 0.08;
 const STAGE_FADE_S = 1.1;
@@ -141,6 +177,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
   const drs = useCar((s) => s.drs);
   const paint = useCar((s) => s.paint);
   const driving = useCar((s) => s.gear !== "P");
+  const headlights = useCar((s) => s.headlights);
   const lifted = useRef<THREE.Group>(null);
   const placed = useRef<THREE.Group>(null);
   const spot = useMemo(() => new THREE.Vector3(), []);
@@ -157,6 +194,21 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
       clearcoat: 1,
       clearcoatRoughness: 0.06,
     });
+    const lamps: Record<Lamp, THREE.MeshStandardMaterial[]> = { drl: [], beam: [], tail: [] };
+    const clones = new Map<THREE.Material, THREE.MeshStandardMaterial>();
+    const heads: THREE.Mesh[] = [];
+    const lamp = (m: THREE.Mesh, kind: Lamp) => {
+      const src = m.material as THREE.MeshStandardMaterial;
+      let c = clones.get(src);
+      if (!c) {
+        c = src.clone();
+        c.emissive.set(LAMP_COLOR[kind]);
+        c.emissiveIntensity = 0;
+        clones.set(src, c);
+        lamps[kind].push(c);
+      }
+      m.material = c;
+    };
     root.traverse((o) => {
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
@@ -164,6 +216,13 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
       if (HIDE.some((r) => r.test(m.name))) m.visible = false;
       const mat = m.material as THREE.MeshStandardMaterial;
       if (mat?.name === PAINT_MATERIAL) m.material = paint;
+      const where = `${m.name} ${m.parent?.name ?? ""}`;
+      if (/headlight_[LR]_led/.test(where) && mat?.name?.startsWith("TwiXeR_992_led_lights")) lamp(m, "drl");
+      if (/headlight_[LR]_led/.test(where) && mat?.name?.startsWith("TwiXeR_992_headlight_high")) {
+        lamp(m, "beam");
+        heads.push(m);
+      }
+      if (/fascia_mid/.test(where) && mat?.name?.startsWith("TwiXeR_992_taillight_running")) lamp(m, "tail");
       if (mat?.name?.startsWith("TwiXeR_992_glass.004")) {
         mat.color.set("#0a0c0f");
         mat.opacity = 0.62;
@@ -203,15 +262,33 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
 
     const box = new THREE.Box3().setFromObject(root);
     const center = box.getCenter(new THREE.Vector3());
-    return { root, pivots, flap, spots, paint, offset: new THREE.Vector3(-center.x, -box.min.y, -center.z) };
+    const pools = heads.map((h) => {
+      const hb = new THREE.Box3().setFromObject(h);
+      return new THREE.Vector3(hb.getCenter(new THREE.Vector3()).x, box.min.y + 0.004, hb.max.z + POOL_L / 2);
+    });
+    return { root, pivots, flap, spots, paint, lamps, pools, offset: new THREE.Vector3(-center.x, -box.min.y, -center.z) };
   }, [scene]);
 
   const pivots = useRef(rig.pivots);
   const flap = useRef(rig.flap);
   const paintFade = useRef<{ target: Paint; from: THREE.Color; to: THREE.Color; elapsed: number } | null>(null);
+  const lights = useRef({ ...LIGHTS.off, drl: 0 });
+  const pool = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: POOL_VERT,
+        fragmentShader: POOL_FRAG,
+        uniforms: { uI: { value: 0 }, uReach: { value: LIGHTS.off.reach } },
+        transparent: true,
+        depthWrite: false,
+      }),
+    [],
+  );
+  const poolMaterial = useRef(pool);
   const invalidate = useThree((s) => s.invalidate);
 
-  useEffect(() => invalidate(), [open.hood, open.trunk, open.doorL, open.doorR, lift, drs, paint, driving, invalidate]);
+  useEffect(() => () => pool.dispose(), [pool]);
+  useEffect(() => invalidate(), [open.hood, open.trunk, open.doorL, open.doorR, lift, drs, paint, driving, headlights, invalidate]);
 
   useFrame((_, dt) => {
     let moving = false;
@@ -235,6 +312,16 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
     flap.current.rotation.x = THREE.MathUtils.damp(flap.current.rotation.x, flapTarget, 6, dt);
     if (Math.abs(flap.current.rotation.x - flapTarget) > 0.001) moving = true;
     else flap.current.rotation.x = flapTarget;
+    const goal = LIGHTS[headlights];
+    const now = lights.current;
+    for (const k of Object.keys(goal) as (keyof typeof goal)[]) {
+      now[k] = THREE.MathUtils.damp(now[k], goal[k], 6, dt);
+      if (Math.abs(now[k] - goal[k]) > 0.001) moving = true;
+      else now[k] = goal[k];
+    }
+    for (const kind of ["drl", "beam", "tail"] as const) rig.lamps[kind].forEach((m) => (m.emissiveIntensity = now[kind]));
+    poolMaterial.current.uniforms.uI.value = now.pool;
+    poolMaterial.current.uniforms.uReach.value = now.reach;
     if (lifted.current) {
       const y = lift ? 0.05 : 0;
       lifted.current.position.y = THREE.MathUtils.damp(lifted.current.position.y, y, 3, dt);
@@ -262,33 +349,42 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
   const partOf = (e: ThreeEvent<PointerEvent | MouseEvent>) => e.object.userData.part as PartId | undefined;
 
   return (
-    <group ref={lifted}>
-      <group ref={placed} position={rig.offset}>
-        <primitive
-          object={rig.root}
-          onPointerMove={(e: ThreeEvent<PointerEvent>) => {
-            e.stopPropagation();
-            const id = driving ? null : (partOf(e) ?? null);
-            if (id !== hover) {
-              setHover(id);
-              document.body.style.cursor = id ? "pointer" : "";
-            }
-          }}
-          onPointerOut={() => {
-            setHover(null);
-            document.body.style.cursor = "";
-          }}
-          onClick={(e: ThreeEvent<MouseEvent>) => {
-            if (driving || e.delta > 4) return;
-            const id = partOf(e);
-            if (id) {
-              e.stopPropagation();
-              useCar.getState().togglePart(id);
-            }
-          }}
-        />
+    <>
+      <group position={rig.offset}>
+        {rig.pools.map((p, i) => (
+          <mesh key={i} material={pool} position={p} rotation-x={-Math.PI / 2}>
+            <planeGeometry args={[POOL_W, POOL_L]} />
+          </mesh>
+        ))}
       </group>
-    </group>
+      <group ref={lifted}>
+        <group ref={placed} position={rig.offset}>
+          <primitive
+            object={rig.root}
+            onPointerMove={(e: ThreeEvent<PointerEvent>) => {
+              e.stopPropagation();
+              const id = driving ? null : (partOf(e) ?? null);
+              if (id !== hover) {
+                setHover(id);
+                document.body.style.cursor = id ? "pointer" : "";
+              }
+            }}
+            onPointerOut={() => {
+              setHover(null);
+              document.body.style.cursor = "";
+            }}
+            onClick={(e: ThreeEvent<MouseEvent>) => {
+              if (driving || e.delta > 4) return;
+              const id = partOf(e);
+              if (id) {
+                e.stopPropagation();
+                useCar.getState().togglePart(id);
+              }
+            }}
+          />
+        </group>
+      </group>
+    </>
   );
 }
 
