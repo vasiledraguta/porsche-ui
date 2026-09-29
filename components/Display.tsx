@@ -42,10 +42,8 @@ export function Display() {
   return (
     <div ref={wrap} className="relative grid h-dvh w-full place-items-center overflow-hidden bg-[#050506]">
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%] transition-[background] duration-700"
-        style={{
-          background: `radial-gradient(60% 80% at 50% 100%, color-mix(in oklab, ${ambient} ${Math.round(ambientLevel / 7)}%, transparent), transparent 70%)`,
-        }}
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%] bg-[radial-gradient(60%_80%_at_50%_100%,var(--glow),transparent_70%)] transition-[--glow] duration-700"
+        style={{ ["--glow" as string]: ambient, opacity: Math.round(ambientLevel / 7) / 100 }}
       />
       {scale > 0 && (
         <div
