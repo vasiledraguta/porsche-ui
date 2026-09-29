@@ -342,23 +342,33 @@ function ColorDots({ colors, value, onChange, label }: { colors: string[]; value
   );
 }
 
-function AmbientDots() {
-  const ambient = useCar((s) => s.ambient);
-  const set = useCar((s) => s.set);
-  return <ColorDots colors={AMBIENT} value={ambient} onChange={(i) => set({ ambient: i })} label={(i) => `Ambient ${i}`} />;
-}
-
 function AppearanceTab() {
-  const accent = useCar((s) => s.accent);
-  const set = useCar((s) => s.set);
+  const s = useCar(useShallow((s) => ({
+    accent: s.accent,
+    ambient: s.ambient,
+    ambientLevel: s.ambientLevel,
+    set: s.set,
+  })));
   return (
     <>
       <p className="mt-3 text-[14px] text-white/50">Choose a body colour for the 911 GT3 RS, an accent for settings and the ambient lighting.</p>
       <PaintSwatches />
       <SectionTitle>UI accent</SectionTitle>
-      <ColorDots colors={ACCENTS.map((a) => a.color)} value={accent} onChange={(i) => set({ accent: i })} label={(i) => `${ACCENTS[i].label} accent`} />
+      <ColorDots colors={ACCENTS.map((a) => a.color)} value={s.accent} onChange={(i) => s.set({ accent: i })} label={(i) => `${ACCENTS[i].label} accent`} />
       <SectionTitle>Ambient lighting</SectionTitle>
-      <AmbientDots />
+      <ColorDots colors={AMBIENT} value={s.ambient} onChange={(i) => s.set({ ambient: i })} label={(i) => `Ambient ${i}`} />
+      <div className="py-2">
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={s.ambientLevel}
+          onChange={(e) => s.set({ ambientLevel: Number(e.target.value) })}
+          className="slim"
+          aria-label="Ambient brightness"
+          style={{ ["--pct" as string]: `${s.ambientLevel}%`, ["--fill" as string]: AMBIENT[s.ambient] }}
+        />
+      </div>
     </>
   );
 }
@@ -573,8 +583,6 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
 function LightsTab() {
   const s = useCar(useShallow((s) => ({
     headlights: s.headlights,
-    ambient: s.ambient,
-    ambientLevel: s.ambientLevel,
     set: s.set,
   })));
   return (
@@ -590,20 +598,6 @@ function LightsTab() {
             { value: "low", label: "Low beam" },
             { value: "high", label: "HD Matrix" },
           ]}
-        />
-      </div>
-      <SectionTitle>Ambient lighting</SectionTitle>
-      <AmbientDots />
-      <div className="py-2">
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={s.ambientLevel}
-          onChange={(e) => s.set({ ambientLevel: Number(e.target.value) })}
-          className="slim"
-          aria-label="Ambient brightness"
-          style={{ ["--pct" as string]: `${s.ambientLevel}%`, ["--fill" as string]: AMBIENT[s.ambient] }}
         />
       </div>
     </>
