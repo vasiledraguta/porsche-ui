@@ -36,7 +36,7 @@ import { AlbumArt } from "./AlbumArt";
 import { useSlider } from "./ui/useSlider";
 import { Glyph, APPS, type AppId } from "./ui/Glyph";
 import { Row, Segmented, SectionTitle, Stepper, Toggle } from "./ui/controls";
-import { AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
+import { ACCENTS, AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 const slide = [0.16, 1, 0.3, 1] as const;
@@ -234,7 +234,7 @@ function VehicleSheet() {
               onClick={() => set({ vehicleTab: t.id })}
               className="relative flex w-full items-center gap-3 rounded-[10px] px-3 py-[11px] text-left text-[14.5px]"
             >
-              <t.icon size={18} strokeWidth={1.6} className={`relative ${tab === t.id ? "text-white" : "text-white/55"}`} />
+              <t.icon size={18} strokeWidth={1.6} className={`relative ${tab === t.id ? "text-(--accent)" : "text-white/55"}`} />
               <span className={`relative ${tab === t.id ? "text-white" : "text-white/70"}`}>{t.label}</span>
             </button>
           ))}
@@ -284,13 +284,13 @@ function ModesTab() {
           onClick={() => mode !== m && setMode(m)}
           className={`rounded-[14px] p-5 text-left transition ${
             mode === m
-              ? "cursor-default bg-[#2f8fff]/[0.14] shadow-[inset_0_0_0_1.5px_#2f8fff]"
+              ? "cursor-default bg-(--accent)/[0.14] shadow-[inset_0_0_0_1.5px_var(--accent)]"
               : "bg-white/[0.04] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:bg-white/[0.06]"
           }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-[17px] text-white">{MODES[m].label}</span>
-            <Gauge size={18} className={mode === m ? "text-[#2f8fff]" : "text-white/35"} />
+            <Gauge size={18} className={mode === m ? "text-(--accent)" : "text-white/35"} />
           </div>
           <div className="mt-2 text-[13px] leading-snug text-white/50">{MODES[m].desc}</div>
           <div className="mt-3 text-[12px] text-white/40">{MODES[m].spec}</div>
@@ -312,7 +312,7 @@ export function PaintSwatches({ compact = false }: { compact?: boolean }) {
           onClick={() => set({ paint: id })}
           aria-label={PAINTS[id].label}
           aria-pressed={paint === id}
-          className={`flex items-center gap-2 rounded-[12px] text-left text-white transition ${compact ? "px-2 py-2 text-[11px]" : "px-4 py-4 text-[14px]"} ${paint === id ? "bg-[#2f8fff]/[0.14] ring-1 ring-[#2f8fff]" : "bg-white/[0.04] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
+          className={`flex items-center gap-2 rounded-[12px] text-left text-white transition ${compact ? "px-2 py-2 text-[11px]" : "px-4 py-4 text-[14px]"} ${paint === id ? "bg-(--accent)/[0.14] ring-1 ring-(--accent)" : "bg-white/[0.04] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
         >
           <span className="h-5 w-5 shrink-0 rounded-full ring-1 ring-white/20" style={{ backgroundColor: PAINTS[id].color }} />
           <span>{PAINTS[id].label}</span>
@@ -322,11 +322,43 @@ export function PaintSwatches({ compact = false }: { compact?: boolean }) {
   );
 }
 
+function ColorDots({ colors, value, onChange, label }: { colors: string[]; value: number; onChange: (i: number) => void; label: (i: number) => string }) {
+  return (
+    <div className="flex gap-3 py-3">
+      {colors.map((c, i) => (
+        <button
+          key={c}
+          aria-label={label(i)}
+          aria-pressed={value === i}
+          onClick={() => onChange(i)}
+          className="h-10 w-10 rounded-full transition"
+          style={{
+            background: c,
+            boxShadow: value === i ? `0 0 0 3px #121417, 0 0 0 5px ${c}, 0 0 20px ${c}` : "inset 0 0 0 1px rgba(0,0,0,.3)",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function AmbientDots() {
+  const ambient = useCar((s) => s.ambient);
+  const set = useCar((s) => s.set);
+  return <ColorDots colors={AMBIENT} value={ambient} onChange={(i) => set({ ambient: i })} label={(i) => `Ambient ${i}`} />;
+}
+
 function AppearanceTab() {
+  const accent = useCar((s) => s.accent);
+  const set = useCar((s) => s.set);
   return (
     <>
-      <p className="mt-3 text-[14px] text-white/50">Choose a body colour for the 911 GT3 RS.</p>
+      <p className="mt-3 text-[14px] text-white/50">Choose a body colour for the 911 GT3 RS, an accent for settings and the ambient lighting.</p>
       <PaintSwatches />
+      <SectionTitle>UI accent</SectionTitle>
+      <ColorDots colors={ACCENTS.map((a) => a.color)} value={accent} onChange={(i) => set({ accent: i })} label={(i) => `${ACCENTS[i].label} accent`} />
+      <SectionTitle>Ambient lighting</SectionTitle>
+      <AmbientDots />
     </>
   );
 }
@@ -529,7 +561,7 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
     <button
       onClick={onClick}
       className={`flex h-[78px] flex-col items-center justify-center gap-2 rounded-[14px] transition ${
-        on ? "bg-[#2f8fff]/[0.16] text-[#6db3ff] shadow-[inset_0_0_0_1.5px_#2f8fff]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
+        on ? "bg-(--accent)/[0.16] text-[color-mix(in_oklab,var(--accent)_70%,white)] shadow-[inset_0_0_0_1.5px_var(--accent)]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
       }`}
     >
       <Icon size={22} strokeWidth={1.6} />
@@ -561,20 +593,7 @@ function LightsTab() {
         />
       </div>
       <SectionTitle>Ambient lighting</SectionTitle>
-      <div className="flex gap-3 py-3">
-        {AMBIENT.map((c, i) => (
-          <button
-            key={c}
-            aria-label={`Ambient ${i}`}
-            onClick={() => s.set({ ambient: i })}
-            className="h-10 w-10 rounded-full transition"
-            style={{
-              background: c,
-              boxShadow: s.ambient === i ? `0 0 0 3px #121417, 0 0 0 5px ${c}, 0 0 20px ${c}` : "inset 0 0 0 1px rgba(0,0,0,.3)",
-            }}
-          />
-        ))}
-      </div>
+      <AmbientDots />
       <div className="py-2">
         <input
           type="range"

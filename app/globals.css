@@ -6,7 +6,7 @@
 }
 
 :root {
-  --blue: #2f8fff;
+  --accent: #2f8fff;
   color-scheme: dark;
 }
 
@@ -38,8 +38,8 @@ input[type="range"].slim::-webkit-slider-runnable-track {
   border-radius: 99px;
   background: linear-gradient(
     90deg,
-    var(--fill, #2f8fff) 0%,
-    var(--fill, #2f8fff) var(--pct, 50%),
+    var(--fill, var(--accent)) 0%,
+    var(--fill, var(--accent)) var(--pct, 50%),
     rgba(255, 255, 255, 0.1) var(--pct, 50%)
   );
 }
@@ -62,7 +62,7 @@ input[type="range"].slim::-moz-range-track {
 input[type="range"].slim::-moz-range-progress {
   height: 4px;
   border-radius: 99px;
-  background: var(--fill, #2f8fff);
+  background: var(--fill, var(--accent));
 }
 input[type="range"].slim::-moz-range-thumb {
   width: 18px;
