@@ -9,9 +9,9 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "Porsche PCM — 911 GT3 RS Web Study",
+  title: "Porsche UI",
   description:
-    "A single-screen web recreation of the Porsche PCM with a 3D 911 GT3 RS: live navigation, vehicle, media and climate.",
+    "Porsche UI is a single-screen web study of the Porsche PCM with a 3D 911 GT3 RS: live navigation, vehicle, media and climate.",
 };
 
 export const viewport: Viewport = {
