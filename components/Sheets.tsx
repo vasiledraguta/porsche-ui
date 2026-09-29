@@ -285,11 +285,12 @@ function ModesTab() {
       {MODE_ORDER.map((m) => (
         <button
           key={m}
-          onClick={() => setMode(m)}
-          className={`rounded-[14px] p-5 text-left transition active:press ${
+          aria-pressed={mode === m}
+          onClick={() => mode !== m && setMode(m)}
+          className={`rounded-[14px] p-5 text-left transition ${
             mode === m
-              ? "bg-[#2f8fff]/[0.14] shadow-[inset_0_0_0_1.5px_#2f8fff]"
-              : "bg-white/[0.04] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:bg-white/[0.06]"
+              ? "cursor-default bg-[#2f8fff]/[0.14] shadow-[inset_0_0_0_1.5px_#2f8fff]"
+              : "bg-white/[0.04] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:bg-white/[0.06] active:press"
           }`}
         >
           <div className="flex items-center justify-between">
