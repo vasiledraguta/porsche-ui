@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { Minus, Plus } from "lucide-react";
 import { useSlider } from "./useSlider";
 
-export function Toggle({ on, onChange, label }: { on: boolean; onChange: () => void; label?: string }) {
+export function Toggle({ on, onChange, label }: { on: boolean; onChange: () => void; label: string }) {
   return (
     <motion.button
       role="switch"
