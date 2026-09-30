@@ -15,16 +15,29 @@ export function Ticker() {
     };
     raf = requestAnimationFrame(loop);
 
+    const drivingKeys = new Set<string>();
     const down = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if ((e.target as HTMLElement)?.tagName === "INPUT") return;
-      const s = useCar.getState();
+      if (e.defaultPrevented || e.isComposing || e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target instanceof Element ? e.target : null;
+      if (target instanceof HTMLElement && target.isContentEditable) return;
+      if (target?.closest('input, textarea, select, [role="textbox"], [role="combobox"], [role="spinbutton"]')) return;
       const k = e.key.toLowerCase();
+      if (
+        k !== "escape" &&
+        target?.closest(
+          'button, a[href], summary, [role="button"], [role="switch"], [role="slider"], [role="tab"], [role="checkbox"], [role="radio"], [role="menuitem"], [role="option"]',
+        )
+      ) return;
+      const s = useCar.getState();
       if (k === "?") s.set({ shortcuts: !s.shortcuts });
       else if (s.shortcuts) return;
-      else if (k === "arrowup" || k === "w") s.set({ throttle: 1, autopilot: false });
-      else if (k === "arrowdown" || k === "s") s.set({ brake: 1 });
-      else if (e.repeat) return;
+      else if (k === "arrowup" || k === "w") {
+        drivingKeys.add(k);
+        s.set({ throttle: 1, autopilot: false });
+      } else if (k === "arrowdown" || k === "s") {
+        drivingKeys.add(k);
+        s.set({ brake: 1 });
+      } else if (e.repeat) return;
       else if (k === "m") s.cycleMode(e.shiftKey ? -1 : 1);
       else if (k === " ") {
         e.preventDefault();
@@ -37,10 +50,14 @@ export function Ticker() {
     };
     const up = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
+      if (!drivingKeys.delete(k)) return;
       if (k === "arrowup" || k === "w") useCar.getState().set({ throttle: 0 });
       if (k === "arrowdown" || k === "s") useCar.getState().set({ brake: 0 });
     };
-    const resetInput = () => useCar.getState().set({ throttle: 0, brake: 0 });
+    const resetInput = () => {
+      drivingKeys.clear();
+      useCar.getState().set({ throttle: 0, brake: 0 });
+    };
     const onVisibilityChange = () => {
       if (document.hidden) resetInput();
     };
