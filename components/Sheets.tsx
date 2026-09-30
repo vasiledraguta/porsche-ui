@@ -438,6 +438,7 @@ function SetupTab() {
   );
   return (
     <>
+      <p className="mt-3 text-[1rem] text-white/50">The demo saves this setup but does not simulate it while driving. Driving modes still preset ESC.</p>
       <SectionTitle>Damping · front axle</SectionTitle>
       {damper("Front rebound", "reboundF")}
       {damper("Front compression", "compressionF")}
@@ -629,10 +630,10 @@ function AssistTab() {
   })));
   return (
     <>
-      <Row title="Porsche InnoDrive" sub="Adaptive cruise that anticipates corners and limits" right={<Toggle label="Porsche InnoDrive" on={s.innodrive} onChange={() => s.set({ innodrive: !s.innodrive })} />} />
-      <Row title="Lane keeping assist" sub="With emergency steering assist" right={<Toggle label="Lane keeping assist" on={s.lane} onChange={() => s.set({ lane: !s.lane })} />} />
+      <Row title="Porsche InnoDrive" sub="Adaptive cruise · saved, not simulated in the demo" right={<Toggle label="Porsche InnoDrive" on={s.innodrive} onChange={() => s.set({ innodrive: !s.innodrive })} />} />
+      <Row title="Lane keeping assist" sub="Steering support · saved, not simulated in the demo" right={<Toggle label="Lane keeping assist" on={s.lane} onChange={() => s.set({ lane: !s.lane })} />} />
       <Row title="Traffic sign recognition" sub="Shows the speed limit on the map" right={<Toggle label="Traffic sign recognition" on={s.signs} onChange={() => s.set({ signs: !s.signs })} />} />
-      <Row title="Park Assist" sub="Surround view with 3D car" right={<Toggle label="Park Assist" on={s.parkAssist} onChange={() => s.set({ parkAssist: !s.parkAssist })} />} />
+      <Row title="Park Assist" sub="Surround view · saved, not simulated in the demo" right={<Toggle label="Park Assist" on={s.parkAssist} onChange={() => s.set({ parkAssist: !s.parkAssist })} />} />
     </>
   );
 }
@@ -656,7 +657,7 @@ function DoorsTab() {
       <Row title="Engine lid" sub={s.trunkOpen ? "Open" : "Closed"} right={<Toggle label="Engine lid" on={s.trunkOpen} onChange={() => s.togglePart("trunk")} />} />
       <Row title="Driver door" sub={s.doorL ? "Open" : "Closed"} right={<Toggle label="Driver door" on={s.doorL} onChange={() => s.togglePart("doorL")} />} />
       <Row title="Passenger door" sub={s.doorR ? "Open" : "Closed"} right={<Toggle label="Passenger door" on={s.doorR} onChange={() => s.togglePart("doorR")} />} />
-      <Row title="Comfort access" sub="Unlock when you approach with the key" right={<Toggle label="Comfort access" on={s.comfortAccess} onChange={() => s.set({ comfortAccess: !s.comfortAccess })} />} />
+      <Row title="Comfort access" sub="Keyless unlock · saved, key proximity not simulated" right={<Toggle label="Comfort access" on={s.comfortAccess} onChange={() => s.set({ comfortAccess: !s.comfortAccess })} />} />
     </>
   );
 }
