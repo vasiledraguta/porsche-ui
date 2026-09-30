@@ -54,7 +54,7 @@ export function Maneuver() {
           transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
           className="flex items-center gap-4 p-4"
         >
-          <div className="grid h-15 w-15 shrink-0 place-items-center rounded-xl bg-[#2f8fff]">
+          <div className="grid h-15 w-15 shrink-0 place-items-center rounded-xl bg-[#3584d6]">
             <Icon size="2rem" strokeWidth={2.4} className="text-white" />
           </div>
           <div className="min-w-0">
@@ -99,10 +99,10 @@ export function DemoDrive() {
       className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-[#1a1d22]/90 px-4 py-2.5 text-[0.75rem] shadow-[0_0.75rem_2rem_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:bg-[#22262b]/95 active:press"
     >
       <span
-        className={`h-2 w-2 rounded-full ${autopilot ? "animate-[breathe_1.6s_ease-in-out_infinite] bg-[#2f8fff]" : "bg-white/30"}`}
+        className={`h-2 w-2 rounded-full ${autopilot ? "animate-[breathe_1.6s_ease-in-out_infinite] bg-(--accent)" : "bg-white/30"}`}
       />
       <span className="text-white/85">Demo drive</span>
-      <span aria-hidden className={`font-medium ${autopilot ? "text-[#6db3ff]" : "text-white/55"}`}>
+      <span aria-hidden className={`font-medium ${autopilot ? "text-white" : "text-white/55"}`}>
         {autopilot ? "On" : "Off"}
       </span>
     </button>
@@ -168,7 +168,7 @@ export function MapControls({ mapRef }: { mapRef: RefObject<Map | null> }) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             onClick={() => set({ follow: true })}
-            className="flex h-11 items-center gap-2 rounded-xl bg-[#2f8fff] px-3.5 text-[0.75rem] font-medium text-white shadow-lg transition-[scale,box-shadow] active:press"
+            className="flex h-11 items-center gap-2 rounded-xl bg-[#1a1d22]/95 px-3.5 text-[0.75rem] font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition active:press"
           >
             <Crosshair size="1rem" /> Re-centre
           </motion.button>

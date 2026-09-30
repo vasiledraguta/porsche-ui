@@ -126,7 +126,7 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
             source: "route",
             layout: { "line-cap": "round", "line-join": "round" },
             paint: {
-              "line-color": "#2f8fff",
+              "line-color": "#3584d6",
               "line-width": ["interpolate", ["linear"], ["zoom"], 12, 3.5, 17, 10],
             },
           });
@@ -141,7 +141,7 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
             paint: {
               "circle-radius": 7,
               "circle-color": "#ffffff",
-              "circle-stroke-color": "#2f8fff",
+              "circle-stroke-color": "#3584d6",
               "circle-stroke-width": 4,
             },
           });
@@ -196,7 +196,7 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
     });
     const p = document.createElement("div");
     p.innerHTML = `<div style="width:2.25rem;height:2.25rem;display:grid;place-items:center">
-      <svg width="2.25rem" height="2.25rem" viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="#2f8fff" fill-opacity=".18"/>
+      <svg width="2.25rem" height="2.25rem" viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="#3584d6" fill-opacity=".18"/>
       <path d="M17 5 L26 27 L17 22 L8 27 Z" fill="#fff" stroke="#0b1a2a" stroke-width="1.2" stroke-linejoin="round"/></svg></div>`;
     puck.current = new maplibregl.Marker({ element: p, pitchAlignment: "map", rotationAlignment: "map" })
       .setLngLat(ROUTE.coords[0])
