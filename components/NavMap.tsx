@@ -167,13 +167,14 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
   useEffect(() => {
     if (!ready) return;
     let last = 0;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
     const pad = { from: padLeft.current, to: padLeft.current, at: -Infinity };
     const unsub = useCar.subscribe((s) => {
       const map = mapRef.current;
       if (!map) return;
       const target = s.gear === "P" ? PANEL_W : 0;
       if (target !== pad.to) {
-        Object.assign(pad, { from: padLeft.current, to: target, at: s.now });
+        Object.assign(pad, { from: reduce.matches ? target : padLeft.current, to: target, at: s.now });
         if (!s.follow) map.easeTo({ padding: { top: 180, bottom: 0, left: target, right: 0 }, duration: PANEL_S * 1000, easing: panelEase });
       }
       const k = Math.min(1, (s.now - pad.at) / (PANEL_S * 1000));
@@ -186,8 +187,8 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
         map.jumpTo({
           center: pos,
           bearing: map.getBearing() + shortest(map.getBearing(), heading) * 0.12,
-          zoom: map.getZoom() + (zoom - map.getZoom()) * 0.08,
-          pitch: map.getPitch() + ((s.map3d ? 58 : 0) - map.getPitch()) * 0.15,
+          zoom: reduce.matches ? zoom : map.getZoom() + (zoom - map.getZoom()) * 0.08,
+          pitch: reduce.matches ? (s.map3d ? 58 : 0) : map.getPitch() + ((s.map3d ? 58 : 0) - map.getPitch()) * 0.15,
           padding: { top: 180, bottom: 0, left: padLeft.current, right: 0 },
         });
       }

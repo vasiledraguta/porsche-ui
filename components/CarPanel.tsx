@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import dynamic from "next/dynamic";
 import { Fuel, Lock, LockOpen, Move3d, RotateCcw } from "lucide-react";
 import { MiniPlayer } from "./MiniPlayer";
@@ -31,11 +31,18 @@ function useGearFocus<T extends HTMLElement>(active: boolean, onMount = false) {
 export function CarPanel() {
   const driving = useCar((s) => s.gear !== "P");
   const ref = useGearFocus<HTMLElement>(!driving);
+  const reduce = useReducedMotion();
   return (
     <motion.section
       ref={ref}
       initial={false}
-      animate={{ x: driving ? -PANEL_W : 0 }}
+      animate={
+        reduce
+          ? driving
+            ? { opacity: 0, transitionEnd: { x: -PANEL_W } }
+            : { opacity: 1, x: 0 }
+          : { x: driving ? -PANEL_W : 0, opacity: 1 }
+      }
       transition={{ duration: PANEL_S, ease: PANEL_EASE }}
       inert={driving}
       style={{ width: PANEL_W }}
@@ -53,11 +60,12 @@ export function CarPanel() {
 
 export function BesidePanel({ children }: { children: React.ReactNode }) {
   const driving = useCar((s) => s.gear !== "P");
+  const reduce = useReducedMotion();
   return (
     <motion.div
       initial={false}
       animate={{ left: driving ? 0 : PANEL_W }}
-      transition={{ duration: PANEL_S, ease: PANEL_EASE }}
+      transition={reduce ? { duration: 0 } : { duration: PANEL_S, ease: PANEL_EASE }}
       className="pointer-events-none absolute inset-y-0 right-0 *:pointer-events-auto"
     >
       {children}
@@ -191,12 +199,13 @@ function CarStage() {
   const [ready, setReady] = useState(false);
   const [shimmered, setShimmered] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const reduce = useReducedMotion();
   return (
     <div className="relative mx-2 mt-1 flex-1 overflow-hidden rounded-[1.25rem]">
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[radial-gradient(55%_45%_at_50%_70%,rgba(255,255,255,0.06),transparent_70%)]" />
       <Car3D onReady={() => setReady(true)} revealed={revealed} />
       <AnimatePresence onExitComplete={() => setRevealed(true)}>
-        {!(ready && shimmered) && (
+        {!(ready && (shimmered || reduce)) && (
           <motion.div
             role="status"
             exit={{ opacity: 0 }}

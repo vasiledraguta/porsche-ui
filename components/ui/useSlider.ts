@@ -1,6 +1,7 @@
 "use client";
 
 import { animate } from "motion";
+import { useReducedMotion } from "motion/react";
 import { useLayoutEffect, useRef } from "react";
 
 /**
@@ -14,6 +15,7 @@ export function useSlider<C extends HTMLElement = HTMLDivElement>(active: number
   const indicator = useRef<HTMLSpanElement>(null);
   const placed = useRef(false);
   const size = useRef("");
+  const reduce = useReducedMotion();
 
   useLayoutEffect(() => {
     const box = container.current;
@@ -28,7 +30,7 @@ export function useSlider<C extends HTMLElement = HTMLDivElement>(active: number
       animate(
         ind,
         { x: el.offsetLeft, y: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight, opacity: 1 },
-        spring && placed.current ? { type: "spring", stiffness: 400, damping: 33, opacity: { duration: 0.15 } } : { duration: 0 },
+        spring && placed.current && !reduce ? { type: "spring", stiffness: 400, damping: 33, opacity: { duration: 0.15 } } : { duration: 0 },
       );
       placed.current = true;
     };
@@ -42,7 +44,7 @@ export function useSlider<C extends HTMLElement = HTMLDivElement>(active: number
     });
     ro.observe(box);
     return () => ro.disconnect();
-  }, [active]);
+  }, [active, reduce]);
 
   return { container, indicator };
 }
