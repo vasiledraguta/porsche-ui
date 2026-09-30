@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { AnimatePresence, motion, useDragControls, type PanInfo } from "motion/react";
 import {
@@ -45,6 +45,16 @@ export function Sheets() {
   const sheet = useCar((s) => s.sheet);
   const set = useCar((s) => s.set);
   const drag = useDragControls();
+  const opener = useRef<HTMLElement | null>(null);
+  const restoreFocus = (el: HTMLDivElement | null) => () => {
+    if (el?.contains(document.activeElement)) opener.current?.focus();
+  };
+  const focusSheet = (el: HTMLDivElement | null) => {
+    const panel = el?.parentElement;
+    if (!panel) return;
+    if (!panel.contains(document.activeElement)) opener.current = document.activeElement as HTMLElement | null;
+    panel.focus();
+  };
   const release = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     if (info.offset.y > 120 || info.velocity.y > 600) set({ sheet: null });
   };
@@ -53,7 +63,9 @@ export function Sheets() {
       {sheet && (
         <motion.div
           key="sheet"
-          className="absolute inset-0 z-20 flex flex-col bg-[#121417]"
+          ref={restoreFocus}
+          tabIndex={-1}
+          className="absolute inset-0 z-20 flex flex-col bg-[#121417] outline-none"
           initial={{ y: "100%" }}
           animate={{ y: 0, transition: { duration: 0.4, ease: slide } }}
           exit={{ y: "100%", transition: { duration: 0.25, ease: slide } }}
@@ -82,6 +94,7 @@ export function Sheets() {
           <AnimatePresence initial={false}>
             <motion.div
               key={sheet}
+              ref={focusSheet}
               className="absolute inset-0 flex flex-col"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

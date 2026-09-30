@@ -23,6 +23,7 @@ export function Display() {
   const ambient = useCar((s) => AMBIENT[s.ambient]);
   const accent = useCar((s) => ACCENTS[s.accent].color);
   const ambientLevel = useCar((s) => s.ambientLevel);
+  const covered = useCar((s) => s.sheet !== null);
 
   useEffect(() => {
     useCar.persist.rehydrate();
@@ -64,15 +65,19 @@ export function Display() {
             <div className="flex min-w-0 flex-1 flex-col">
               <div className="relative min-h-0 flex-1 overflow-hidden">
                 <main className="absolute inset-0 overflow-hidden">
-                  <NavMap mapRef={mapRef} />
+                  <div inert={covered} className="contents">
+                    <NavMap mapRef={mapRef} />
+                    <BesidePanel>
+                      <Maneuver />
+                      <DrivePill />
+                      <DemoDrive />
+                      <SearchBox />
+                      <SpeedLimit />
+                      <MapControls mapRef={mapRef} />
+                      <EtaBar />
+                    </BesidePanel>
+                  </div>
                   <BesidePanel>
-                    <Maneuver />
-                    <DrivePill />
-                    <DemoDrive />
-                    <SearchBox />
-                    <SpeedLimit />
-                    <MapControls mapRef={mapRef} />
-                    <EtaBar />
                     <Sheets />
                     <ModePopup />
                     <VolumePopup />
