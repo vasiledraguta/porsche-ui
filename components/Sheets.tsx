@@ -36,7 +36,7 @@ import { AlbumArt } from "./AlbumArt";
 import { useSlider } from "./ui/useSlider";
 import { Glyph, APPS, type AppId } from "./ui/Glyph";
 import { Row, Segmented, SectionTitle, Stepper, Toggle } from "./ui/controls";
-import { ACCENTS, AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRE_COLD_BAR, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
+import { AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRE_COLD_BAR, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 const slide = [0.16, 1, 0.3, 1] as const;
@@ -357,17 +357,14 @@ function ColorDots({ colors, value, onChange, label }: { colors: string[]; value
 
 function AppearanceTab() {
   const s = useCar(useShallow((s) => ({
-    accent: s.accent,
     ambient: s.ambient,
     ambientLevel: s.ambientLevel,
     set: s.set,
   })));
   return (
     <>
-      <p className="mt-3 text-[1rem] text-white/50">Choose a body colour for the 911 GT3 RS, an accent for settings and the ambient lighting.</p>
+      <p className="mt-3 text-[1rem] text-white/50">Choose a body colour for the 911 GT3 RS and the ambient lighting.</p>
       <PaintSwatches />
-      <SectionTitle>UI accent</SectionTitle>
-      <ColorDots colors={ACCENTS.map((a) => a.color)} value={s.accent} onChange={(i) => s.set({ accent: i })} label={(i) => `${ACCENTS[i].label} accent`} />
       <SectionTitle>Ambient lighting</SectionTitle>
       <ColorDots colors={AMBIENT} value={s.ambient} onChange={(i) => s.set({ ambient: i })} label={(i) => `Ambient ${i}`} />
       <div className="py-2">

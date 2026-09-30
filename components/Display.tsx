@@ -10,7 +10,7 @@ import { DemoDrive, EtaBar, MapControls, Maneuver, SearchBox, SpeedLimit } from 
 import { NavMap } from "./NavMap";
 import { Rail } from "./Rail";
 import { Sheets } from "./Sheets";
-import { ACCENTS, AMBIENT, MODES, useCar } from "@/lib/store";
+import { AMBIENT, MODES, useCar } from "@/lib/store";
 
 const W = 1920;
 const H = 900;
@@ -21,7 +21,6 @@ export function Display() {
   const [scale, setScale] = useState(0);
   const [notice, setNotice] = useState(true);
   const ambient = useCar((s) => AMBIENT[s.ambient]);
-  const accent = useCar((s) => ACCENTS[s.accent].color);
   const ambientLevel = useCar((s) => s.ambientLevel);
   const covered = useCar((s) => s.sheet !== null);
 
@@ -59,7 +58,7 @@ export function Display() {
           >
           <div
             className="relative flex h-full w-full overflow-hidden rounded-3xl bg-black"
-            style={{ width: W, height: H, ["--ambient" as string]: ambient, ["--accent" as string]: accent }}
+            style={{ width: W, height: H, ["--ambient" as string]: ambient }}
           >
             <Rail />
             <div className="flex min-w-0 flex-1 flex-col">

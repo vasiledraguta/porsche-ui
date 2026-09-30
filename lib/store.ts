@@ -67,14 +67,6 @@ export const TRACKS = [
 
 export const AMBIENT = ["#e8eef5", "#3ea0ff", "#2fd3c0", "#ffb35c", "#ff4f64", "#a57bff"];
 
-export const ACCENTS = [
-  { label: "Shark Blue", color: "#3584d6" },
-  { label: "Guards Red", color: "#e2404a" },
-  { label: "Lava Orange", color: "#e0561f" },
-  { label: "Python Green", color: "#44a02a" },
-  { label: "Arctic Grey", color: "#848b8e" },
-];
-
 type State = {
   speed: number;
   powerKw: number;
@@ -156,7 +148,6 @@ type State = {
   tc: number;
   esc: "on" | "sport" | "off";
   headlights: "auto" | "low" | "high" | "off";
-  accent: number;
   ambient: number;
   ambientLevel: number;
   lane: boolean;
@@ -170,7 +161,7 @@ type State = {
   now: number;
 };
 
-type Appearance = Pick<State, "paint" | "accent" | "ambient" | "ambientLevel" | "map3d" | "headlights">;
+type Appearance = Pick<State, "paint" | "ambient" | "ambientLevel" | "map3d" | "headlights">;
 
 const HEADLIGHTS: State["headlights"][] = ["auto", "low", "high", "off"];
 
@@ -212,7 +203,6 @@ const validAppearance = (saved: unknown): Partial<Appearance> => {
   const v = saved as Record<string, unknown>;
   const out: Partial<Appearance> = {};
   if (typeof v.paint === "string" && Object.hasOwn(PAINTS, v.paint)) out.paint = v.paint as Paint;
-  if (Number.isInteger(v.accent) && (v.accent as number) >= 0 && (v.accent as number) < ACCENTS.length) out.accent = v.accent as number;
   if (Number.isInteger(v.ambient) && (v.ambient as number) >= 0 && (v.ambient as number) < AMBIENT.length) out.ambient = v.ambient as number;
   if (typeof v.ambientLevel === "number" && v.ambientLevel >= 0 && v.ambientLevel <= 100) out.ambientLevel = v.ambientLevel;
   if (typeof v.map3d === "boolean") out.map3d = v.map3d;
@@ -244,7 +234,6 @@ const appearanceOptions: PersistOptions<State & Actions, Partial<Appearance>> = 
   storage: createJSONStorage(() => appearanceStorage),
   partialize: (s) => ({
     paint: s.paint,
-    accent: s.accent,
     ambient: s.ambient,
     ambientLevel: s.ambientLevel,
     map3d: s.map3d,
@@ -339,7 +328,6 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
   tc: 5,
   esc: "on",
   headlights: "auto",
-  accent: 0,
   ambient: 1,
   ambientLevel: 70,
   lane: true,
