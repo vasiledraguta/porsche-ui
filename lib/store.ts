@@ -68,12 +68,11 @@ export const TRACKS = [
 export const AMBIENT = ["#e8eef5", "#3ea0ff", "#2fd3c0", "#ffb35c", "#ff4f64", "#a57bff"];
 
 export const ACCENTS = [
-  { label: "Blue", color: "#2f8fff" },
-  { label: "Red", color: "#ff4d57" },
-  { label: "Orange", color: "#f26a1b" },
-  { label: "Green", color: "#1fa35a" },
-  { label: "Teal", color: "#12a098" },
-  { label: "Violet", color: "#9477ff" },
+  { label: "Shark Blue", color: "#3584d6" },
+  { label: "Guards Red", color: "#e2404a" },
+  { label: "Lava Orange", color: "#e0561f" },
+  { label: "Python Green", color: "#44a02a" },
+  { label: "Arctic Grey", color: "#848b8e" },
 ];
 
 type State = {

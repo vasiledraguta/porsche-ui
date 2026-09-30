@@ -82,7 +82,7 @@ function DockBtn({
     >
       {children}
       <span
-        className="absolute bottom-1 h-1 w-5 rounded-full bg-[#2f8fff] transition-opacity"
+        className="absolute bottom-1 h-1 w-5 rounded-full bg-(--accent) transition-opacity"
         style={{ opacity: active ? 1 : 0 }}
       />
     </button>

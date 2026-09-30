@@ -181,7 +181,7 @@ function HomeSheet() {
       </div>
       {apps.length === 0 && <div className="mt-2 text-[1rem] text-white/55">No apps match “{query.trim()}”</div>}
       <div className="mt-auto mb-6 flex justify-center">
-        <span className="h-1 w-5 rounded-full bg-[#2f8fff]" />
+        <span className="h-1 w-5 rounded-full bg-(--accent)" />
       </div>
     </div>
   );
@@ -297,7 +297,7 @@ function ModesTab() {
           onClick={() => mode !== m && setMode(m)}
           className={`rounded-2xl p-5 text-left transition ${
             mode === m
-              ? "cursor-default bg-(--accent)/[0.14] shadow-[inset_0_0_0_0.125rem_var(--accent)]"
+              ? "cursor-default bg-white/[0.08] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.5)]"
               : "bg-white/[0.05] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:bg-white/[0.08]"
           }`}
         >
@@ -325,7 +325,7 @@ export function PaintSwatches({ compact = false }: { compact?: boolean }) {
           onClick={() => set({ paint: id })}
           aria-label={PAINTS[id].label}
           aria-pressed={paint === id}
-          className={`flex items-center gap-2 text-left text-white transition ${compact ? "rounded-xl px-2 py-2 text-[0.75rem]" : "rounded-2xl px-4 py-4 text-[1rem]"} ${paint === id ? "bg-(--accent)/[0.14] ring-2 ring-(--accent)" : "bg-white/[0.05] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
+          className={`flex items-center gap-2 text-left text-white transition ${compact ? "rounded-xl px-2 py-2 text-[0.75rem]" : "rounded-2xl px-4 py-4 text-[1rem]"} ${paint === id ? "bg-white/[0.08] ring-1 ring-white/50" : "bg-white/[0.05] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
         >
           <span className="h-5 w-5 shrink-0 rounded-full ring-1 ring-white/20" style={{ backgroundColor: PAINTS[id].color }} />
           <span>{PAINTS[id].label}</span>
@@ -347,7 +347,7 @@ function ColorDots({ colors, value, onChange, label }: { colors: string[]; value
           className="h-10 w-10 rounded-full transition"
           style={{
             background: c,
-            boxShadow: value === i ? `0 0 0 0.125rem #121417, 0 0 0 0.25rem ${c}, 0 0 1.25rem ${c}` : "inset 0 0 0 1px rgba(0,0,0,.3)",
+            boxShadow: value === i ? `0 0 0 0.125rem #121417, 0 0 0 0.25rem ${c}` : "inset 0 0 0 1px rgba(0,0,0,.3)",
           }}
         />
       ))}
@@ -585,12 +585,13 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
     <button
       onClick={onClick}
       aria-pressed={on}
-      className={`flex h-20 flex-col items-center justify-center gap-2 rounded-2xl transition ${
-        on ? "bg-(--accent)/[0.14] text-[color-mix(in_oklab,var(--accent)_70%,white)] shadow-[inset_0_0_0_0.125rem_var(--accent)]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
+      className={`relative flex h-20 flex-col items-center justify-center gap-2 rounded-2xl transition ${
+        on ? "bg-white/[0.1] text-white" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
       }`}
     >
       <Icon size="1.5rem" strokeWidth={1.6} />
       <span className="text-[0.75rem] font-medium tracking-wide">{label}</span>
+      <span className="absolute bottom-2 h-1 w-5 rounded-full bg-(--accent) transition-opacity" style={{ opacity: on ? 1 : 0 }} />
     </button>
   );
 }

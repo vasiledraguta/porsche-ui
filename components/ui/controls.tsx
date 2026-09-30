@@ -47,8 +47,10 @@ export function Segmented<T extends string>({
     <div ref={container} className="relative flex rounded-xl bg-white/[0.06] p-1">
       <span
         ref={indicator}
-        className="pointer-events-none absolute top-0 left-0 rounded-lg bg-[color-mix(in_oklab,var(--accent)_22%,#2b2f35)] opacity-0 shadow-[inset_0_0_0_1px_var(--accent),0_0.125rem_0.5rem_rgba(0,0,0,0.3)]"
-      />
+        className="pointer-events-none absolute top-0 left-0 rounded-lg bg-[#2b2f35] opacity-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07),0_0.125rem_0.5rem_rgba(0,0,0,0.3)]"
+      >
+        <span className="absolute bottom-0.5 left-1/2 h-1 w-5 -translate-x-1/2 rounded-full bg-(--accent)" />
+      </span>
       {options.map((o) => (
         <button
           key={o.value}
