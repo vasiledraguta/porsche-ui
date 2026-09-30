@@ -64,7 +64,7 @@ export function Display() {
             <Rail />
             <div className="flex min-w-0 flex-1 flex-col">
               <div className="relative min-h-0 flex-1 overflow-hidden">
-                <main className="absolute inset-0 overflow-hidden">
+                <section aria-label="Navigation map" className="absolute inset-0 overflow-hidden">
                   <div inert={covered} className="contents">
                     <NavMap mapRef={mapRef} />
                     <BesidePanel>
@@ -82,7 +82,7 @@ export function Display() {
                     <ModePopup />
                     <VolumePopup />
                   </BesidePanel>
-                </main>
+                </section>
                 <CarPanel />
               </div>
               <BottomBar />
