@@ -53,7 +53,7 @@ export function Sheets() {
     const panel = el?.parentElement;
     if (!panel) return;
     if (!panel.contains(document.activeElement)) opener.current = document.activeElement as HTMLElement | null;
-    panel.focus();
+    panel.focus({ preventScroll: true });
   };
   const release = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     if (info.offset.y > 120 || info.velocity.y > 600) set({ sheet: null });
