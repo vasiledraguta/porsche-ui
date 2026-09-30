@@ -36,7 +36,7 @@ import { AlbumArt } from "./AlbumArt";
 import { useSlider } from "./ui/useSlider";
 import { Glyph, APPS, type AppId } from "./ui/Glyph";
 import { Row, Segmented, SectionTitle, Stepper, Toggle } from "./ui/controls";
-import { ACCENTS, AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
+import { ACCENTS, AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRE_COLD_BAR, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 const slide = [0.16, 1, 0.3, 1] as const;
@@ -667,8 +667,10 @@ function TripTab() {
     tripFuelL: s.tripFuelL,
     tripTime: s.tripTime,
     odo: s.odo,
+    tyreTemp: s.tyreTemp,
   })));
   const km = s.tripD / 1000;
+  const axleBar = (i: number) => ((tyreBar(i, s.tyreTemp[i]) + tyreBar(i + 1, s.tyreTemp[i + 1])) / 2).toFixed(1);
   const cons = km > 0.2 ? (s.tripFuelL / km) * 100 : 0;
   return (
     <div className="mt-4 grid grid-cols-3 gap-3">
@@ -677,7 +679,7 @@ function TripTab() {
       <Tile label="Avg. consumption" value={km > 0.2 ? `${cons.toFixed(1)} l/100 km` : "– l/100 km"} />
       <Tile label="Fuel used" value={`${s.tripFuelL.toFixed(2)} l`} />
       <Tile label="Odometer" value={`${Math.floor(s.odo).toLocaleString("en")} km`} />
-      <Tile label="Tyre pressure" value="2.8 bar" />
+      <Tile label="Tyre pressure · front / rear" value={`${axleBar(0)} / ${axleBar(2)} bar`} />
     </div>
   );
 }
@@ -1114,7 +1116,7 @@ function NotificationsSheet() {
   const notes = [
     { title: "Missed call", sub: "Sam Becker", time: "10:12", open: () => openSheet("phone") },
     { title: "Service due in 4,200 km", sub: "Oil change and inspection", time: "Today", open: () => openSheet("vehicle", "engine") },
-    { title: "Tyre pressure checked", sub: "All four tyres at 2.8 bar", time: "08:05", open: () => openSheet("vehicle", "trip") },
+    { title: "Tyre pressure checked", sub: `Cold check · front ${TYRE_COLD_BAR[0]} bar, rear ${TYRE_COLD_BAR[2]} bar`, time: "08:05", open: () => openSheet("vehicle", "trip") },
   ];
   return (
     <AppPage id="notifications">
