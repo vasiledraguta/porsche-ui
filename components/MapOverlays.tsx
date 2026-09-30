@@ -54,7 +54,7 @@ export function Maneuver() {
           transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
           className="flex items-center gap-4 p-4"
         >
-          <div className="grid h-15 w-15 shrink-0 place-items-center rounded-xl bg-[#3584d6]">
+          <div className="grid h-15 w-15 shrink-0 place-items-center rounded-xl bg-white/[0.08]">
             <Icon size="2rem" strokeWidth={2.4} className="text-white" />
           </div>
           <div className="min-w-0">
