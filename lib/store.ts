@@ -55,6 +55,7 @@ const CONS: Record<DriveMode, number> = { wet: 12.8, normal: 13.4, sport: 15.2, 
 const TYRE_LOAD: Record<DriveMode, number> = { wet: 0.8, normal: 1, sport: 1.15, track: 1.35 };
 export const TYRES = ["Front left", "Front right", "Rear left", "Rear right"] as const;
 const TYRE_COLD_BAR = [2.2, 2.2, 2.4, 2.4];
+const REAR_DEFROST_MS = 15 * 60 * 1000;
 
 export const TRACKS = [
   { title: "Nightcall", artist: "Kavinsky", album: "OutRun", length: 258, mesh: ["#1b0b3a", "#ff3d8b", "#7c3aed", "#ff9e4a", "#2dd4f0"] },
@@ -131,6 +132,7 @@ type State = {
   seatR: number;
   ventFocus: "driver" | "diffuse" | "passenger";
   rearDefrost: boolean;
+  rearDefrostUntil: number;
   exhaust: boolean;
   drs: boolean;
   startStop: boolean;
@@ -229,6 +231,7 @@ type Actions = {
   openSheet: (s: Sheet, tab?: VehicleTab) => void;
   toggleChrono: () => void;
   lapChrono: () => void;
+  toggleRearDefrost: () => void;
   tick: (dt: number, t: number) => void;
 };
 
@@ -308,6 +311,7 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
   seatR: 0,
   ventFocus: "diffuse",
   rearDefrost: false,
+  rearDefrostUntil: 0,
   exhaust: false,
   drs: false,
   startStop: true,
@@ -379,6 +383,7 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
   toggleChrono: () =>
     set((s) => (s.chronoRunning ? { chronoRunning: false, chronoBase: s.chronoBase + s.now - s.chronoAt } : { chronoRunning: true, chronoAt: s.now })),
   lapChrono: () => set((s) => (s.chronoRunning ? { laps: [...s.laps, s.chronoBase + s.now - s.chronoAt] } : { chronoBase: 0, laps: [] })),
+  toggleRearDefrost: () => set((s) => (s.rearDefrost ? { rearDefrost: false } : { rearDefrost: true, rearDefrostUntil: s.now + REAR_DEFROST_MS })),
 
   tick: (dt, t) => {
     const s = get();
@@ -466,6 +471,7 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
       now: t,
       speed: nv * 3.6,
       lift: s.lift && kmh <= 35,
+      rearDefrost: s.rearDefrost && t < s.rearDefrostUntil,
       powerKw: s.powerKw + (powerKw - s.powerKw) * Math.min(1, dt * 6),
       rpm,
       pdkGear: gearN,

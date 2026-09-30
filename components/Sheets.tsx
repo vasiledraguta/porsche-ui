@@ -541,6 +541,7 @@ function ClimateTab() {
     fan: s.fan,
     ventFocus: s.ventFocus,
     rearDefrost: s.rearDefrost,
+    toggleRearDefrost: s.toggleRearDefrost,
     set: s.set,
   })));
   return (
@@ -574,7 +575,7 @@ function ClimateTab() {
           ]}
         />
       </div>
-      <Row title="Rear window heating" sub="Switches off automatically after 15 minutes" right={<Toggle label="Rear window heating" on={s.rearDefrost} onChange={() => s.set({ rearDefrost: !s.rearDefrost })} />} />
+      <Row title="Rear window heating" sub="Switches off automatically after 15 minutes" right={<Toggle label="Rear window heating" on={s.rearDefrost} onChange={s.toggleRearDefrost} />} />
     </>
   );
 }
