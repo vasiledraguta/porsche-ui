@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { AnimatePresence, motion, useDragControls, type PanInfo } from "motion/react";
 import {
@@ -45,6 +45,16 @@ export function Sheets() {
   const sheet = useCar((s) => s.sheet);
   const set = useCar((s) => s.set);
   const drag = useDragControls();
+  const opener = useRef<HTMLElement | null>(null);
+  const restoreFocus = (el: HTMLDivElement | null) => () => {
+    if (el?.contains(document.activeElement)) opener.current?.focus();
+  };
+  const focusSheet = (el: HTMLDivElement | null) => {
+    const panel = el?.parentElement;
+    if (!panel) return;
+    if (!panel.contains(document.activeElement)) opener.current = document.activeElement as HTMLElement | null;
+    panel.focus();
+  };
   const release = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     if (info.offset.y > 120 || info.velocity.y > 600) set({ sheet: null });
   };
@@ -53,7 +63,9 @@ export function Sheets() {
       {sheet && (
         <motion.div
           key="sheet"
-          className="absolute inset-0 z-20 flex flex-col bg-[#121417]"
+          ref={restoreFocus}
+          tabIndex={-1}
+          className="absolute inset-0 z-20 flex flex-col bg-[#121417] outline-none"
           initial={{ y: "100%" }}
           animate={{ y: 0, transition: { duration: 0.4, ease: slide } }}
           exit={{ y: "100%", transition: { duration: 0.25, ease: slide } }}
@@ -82,6 +94,7 @@ export function Sheets() {
           <AnimatePresence initial={false}>
             <motion.div
               key={sheet}
+              ref={focusSheet}
               className="absolute inset-0 flex flex-col"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -396,7 +409,7 @@ function ChassisTab() {
       <Row
         title="Lift system"
         sub="Raises the front axle for ramps and kerbs. Saved by location."
-        right={<Toggle on={s.lift} onChange={() => s.set({ lift: !s.lift })} />}
+        right={<Toggle label="Lift system" on={s.lift} onChange={() => s.set({ lift: !s.lift })} />}
       />
     </>
   );
@@ -502,17 +515,17 @@ function EngineTab() {
       <Row
         title="Sports exhaust"
         sub={s.exhaust ? "Valves open" : "Valves closed"}
-        right={<Toggle on={s.exhaust} onChange={() => s.set({ exhaust: !s.exhaust })} />}
+        right={<Toggle label="Sports exhaust" on={s.exhaust} onChange={() => s.set({ exhaust: !s.exhaust })} />}
       />
       <Row
         title="Auto start/stop"
         sub="Switches the engine off when stationary"
-        right={<Toggle on={s.startStop} onChange={() => s.set({ startStop: !s.startStop })} />}
+        right={<Toggle label="Auto start/stop" on={s.startStop} onChange={() => s.set({ startStop: !s.startStop })} />}
       />
       <Row
         title="Fuel filler flap"
         sub={s.fuelFlap ? "Unlocked" : "Locked"}
-        right={<Toggle on={s.fuelFlap} onChange={() => s.set({ fuelFlap: !s.fuelFlap })} />}
+        right={<Toggle label="Fuel filler flap" on={s.fuelFlap} onChange={() => s.set({ fuelFlap: !s.fuelFlap })} />}
       />
     </>
   );
@@ -562,7 +575,7 @@ function ClimateTab() {
           ]}
         />
       </div>
-      <Row title="Rear window heating" sub="Switches off automatically after 15 minutes" right={<Toggle on={s.rearDefrost} onChange={s.toggleRearDefrost} />} />
+      <Row title="Rear window heating" sub="Switches off automatically after 15 minutes" right={<Toggle label="Rear window heating" on={s.rearDefrost} onChange={s.toggleRearDefrost} />} />
     </>
   );
 }
@@ -571,6 +584,7 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
   return (
     <button
       onClick={onClick}
+      aria-pressed={on}
       className={`flex h-20 flex-col items-center justify-center gap-2 rounded-2xl transition ${
         on ? "bg-(--accent)/[0.14] text-[color-mix(in_oklab,var(--accent)_70%,white)] shadow-[inset_0_0_0_0.125rem_var(--accent)]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
       }`}
@@ -615,10 +629,10 @@ function AssistTab() {
   })));
   return (
     <>
-      <Row title="Porsche InnoDrive" sub="Adaptive cruise that anticipates corners and limits" right={<Toggle on={s.innodrive} onChange={() => s.set({ innodrive: !s.innodrive })} />} />
-      <Row title="Lane keeping assist" sub="With emergency steering assist" right={<Toggle on={s.lane} onChange={() => s.set({ lane: !s.lane })} />} />
-      <Row title="Traffic sign recognition" sub="Shows the speed limit on the map" right={<Toggle on={s.signs} onChange={() => s.set({ signs: !s.signs })} />} />
-      <Row title="Park Assist" sub="Surround view with 3D car" right={<Toggle on={s.parkAssist} onChange={() => s.set({ parkAssist: !s.parkAssist })} />} />
+      <Row title="Porsche InnoDrive" sub="Adaptive cruise that anticipates corners and limits" right={<Toggle label="Porsche InnoDrive" on={s.innodrive} onChange={() => s.set({ innodrive: !s.innodrive })} />} />
+      <Row title="Lane keeping assist" sub="With emergency steering assist" right={<Toggle label="Lane keeping assist" on={s.lane} onChange={() => s.set({ lane: !s.lane })} />} />
+      <Row title="Traffic sign recognition" sub="Shows the speed limit on the map" right={<Toggle label="Traffic sign recognition" on={s.signs} onChange={() => s.set({ signs: !s.signs })} />} />
+      <Row title="Park Assist" sub="Surround view with 3D car" right={<Toggle label="Park Assist" on={s.parkAssist} onChange={() => s.set({ parkAssist: !s.parkAssist })} />} />
     </>
   );
 }
@@ -637,12 +651,12 @@ function DoorsTab() {
   })));
   return (
     <>
-      <Row title="Central locking" sub={s.locked ? "Locked" : "Unlocked"} right={<Toggle on={s.locked} onChange={s.toggleLock} />} />
-      <Row title="Front trunk" sub={s.frunkOpen ? "Open" : "Closed"} right={<Toggle on={s.frunkOpen} onChange={() => s.togglePart("hood")} />} />
-      <Row title="Engine lid" sub={s.trunkOpen ? "Open" : "Closed"} right={<Toggle on={s.trunkOpen} onChange={() => s.togglePart("trunk")} />} />
-      <Row title="Driver door" sub={s.doorL ? "Open" : "Closed"} right={<Toggle on={s.doorL} onChange={() => s.togglePart("doorL")} />} />
-      <Row title="Passenger door" sub={s.doorR ? "Open" : "Closed"} right={<Toggle on={s.doorR} onChange={() => s.togglePart("doorR")} />} />
-      <Row title="Comfort access" sub="Unlock when you approach with the key" right={<Toggle on={s.comfortAccess} onChange={() => s.set({ comfortAccess: !s.comfortAccess })} />} />
+      <Row title="Central locking" sub={s.locked ? "Locked" : "Unlocked"} right={<Toggle label="Central locking" on={s.locked} onChange={s.toggleLock} />} />
+      <Row title="Front trunk" sub={s.frunkOpen ? "Open" : "Closed"} right={<Toggle label="Front trunk" on={s.frunkOpen} onChange={() => s.togglePart("hood")} />} />
+      <Row title="Engine lid" sub={s.trunkOpen ? "Open" : "Closed"} right={<Toggle label="Engine lid" on={s.trunkOpen} onChange={() => s.togglePart("trunk")} />} />
+      <Row title="Driver door" sub={s.doorL ? "Open" : "Closed"} right={<Toggle label="Driver door" on={s.doorL} onChange={() => s.togglePart("doorL")} />} />
+      <Row title="Passenger door" sub={s.doorR ? "Open" : "Closed"} right={<Toggle label="Passenger door" on={s.doorR} onChange={() => s.togglePart("doorR")} />} />
+      <Row title="Comfort access" sub="Unlock when you approach with the key" right={<Toggle label="Comfort access" on={s.comfortAccess} onChange={() => s.set({ comfortAccess: !s.comfortAccess })} />} />
     </>
   );
 }
@@ -1144,11 +1158,11 @@ function DevicesSheet() {
       <Row title="iPhone" sub={s.bluetooth ? "Connected · Phone and audio" : "Not connected"} />
       <Row title="Android phone" sub="Not connected" />
       <SectionTitle>Connections</SectionTitle>
-      <Row title="Bluetooth" sub={s.bluetooth ? "On" : "Off"} right={<Toggle on={s.bluetooth} onChange={() => s.set({ bluetooth: !s.bluetooth })} />} />
+      <Row title="Bluetooth" sub={s.bluetooth ? "On" : "Off"} right={<Toggle label="Bluetooth" on={s.bluetooth} onChange={() => s.set({ bluetooth: !s.bluetooth })} />} />
       <Row
         title="Wi-Fi hotspot"
         sub={s.hotspot ? "Sharing the car's 5G connection" : "Off"}
-        right={<Toggle on={s.hotspot} onChange={() => s.set({ hotspot: !s.hotspot })} />}
+        right={<Toggle label="Wi-Fi hotspot" on={s.hotspot} onChange={() => s.set({ hotspot: !s.hotspot })} />}
       />
     </AppPage>
   );
