@@ -368,6 +368,7 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
       modePopupAt: s.now,
       pasm: mode === "sport" || mode === "track" ? "sport" : "comfort",
       exhaust: mode === "sport" || mode === "track" ? true : mode === "wet" ? false : s.exhaust,
+      esc: mode === "track" ? "off" : mode === "sport" ? "sport" : "on",
     })),
   cycleMode: (dir) => {
     const i = MODE_ORDER.indexOf(get().mode);
