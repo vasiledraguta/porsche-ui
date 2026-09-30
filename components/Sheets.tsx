@@ -970,9 +970,12 @@ type PhoneTab = (typeof PHONE_TABS)[number];
 
 function PhoneSheet() {
   const [tab, setTab] = useState<PhoneTab>("Recent calls");
-  const [call, setCall] = useState<{ to: string; at: number } | null>(null);
+  const { call, startCall, endCall } = useCar(useShallow((s) => ({
+    call: s.call,
+    startCall: s.startCall,
+    endCall: s.endCall,
+  })));
   const { container, indicator } = useSlider<HTMLElement>(PHONE_TABS.indexOf(tab));
-  const dial = (to: string) => setCall({ to, at: useCar.getState().now });
   const list =
     tab === "Favourites" ? CONTACTS.filter((c) => c.fav) : tab === "Contacts" ? [...CONTACTS].sort((a, b) => a.n.localeCompare(b.n)) : CONTACTS;
   return (
@@ -995,9 +998,10 @@ function PhoneSheet() {
       </nav>
       <div className="min-w-0 flex-1 overflow-y-auto px-9 pt-7 pb-8 [scrollbar-width:none]">
         <h2 className="mb-3 text-[1.5rem] font-medium text-white">{tab}</h2>
-        {call && <CallBanner to={call.to} at={call.at} onEnd={() => setCall(null)} />}
+        <p className="mb-3 text-[0.75rem] text-white/70">Calls are simulated and end on reload.</p>
+        {call && <CallBanner to={call.to} at={call.at} onEnd={endCall} />}
         {tab === "Keypad" ? (
-          <Keypad onCall={dial} />
+          <Keypad onCall={startCall} calling={!!call} />
         ) : tab === "Messages" ? (
           MESSAGES.map((m) => <Row key={m.n} title={m.n} sub={m.text} right={<span className="shrink-0 text-[0.75rem] text-white/40">{m.time}</span>} />)
         ) : (
@@ -1008,8 +1012,9 @@ function PhoneSheet() {
               sub={tab === "Recent calls" ? c.sub : c.kind}
               right={
                 <button
-                  onClick={() => dial(c.n)}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#3fd46b]/15 text-[#3fd46b] transition hover:bg-[#3fd46b]/25 active:press"
+                  onClick={() => startCall(c.n)}
+                  disabled={!!call}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#3fd46b]/15 text-[#3fd46b] transition hover:bg-[#3fd46b]/25 active:press disabled:opacity-30"
                   aria-label={`Call ${c.n}`}
                 >
                   <Phone size="1rem" fill="currentColor" strokeWidth={0} />
@@ -1031,7 +1036,7 @@ function CallBanner({ to, at, onEnd }: { to: string; at: number; onEnd: () => vo
       <Phone size="1.25rem" fill="currentColor" strokeWidth={0} className="shrink-0 text-[#3fd46b]" />
       <div className="min-w-0 flex-1">
         <div className="truncate text-[1rem] text-white">{to}</div>
-        <div className="text-[0.75rem] text-white/55 tabular-nums">{t < 3 ? "Calling…" : fmtTime(t - 3)}</div>
+        <div role="timer" aria-label="Call duration" className="text-[0.75rem] text-white/55 tabular-nums">{t < 3 ? "Calling…" : fmtTime(t - 3)}</div>
       </div>
       <button
         aria-label="End call"
@@ -1046,7 +1051,7 @@ function CallBanner({ to, at, onEnd }: { to: string; at: number; onEnd: () => vo
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
 
-function Keypad({ onCall }: { onCall: (to: string) => void }) {
+function Keypad({ onCall, calling }: { onCall: (to: string) => void; calling: boolean }) {
   const [digits, setDigits] = useState("");
   return (
     <div className="w-76">
@@ -1079,7 +1084,7 @@ function Keypad({ onCall }: { onCall: (to: string) => void }) {
       </div>
       <button
         aria-label="Call"
-        disabled={!digits}
+        disabled={!digits || calling}
         onClick={() => onCall(digits)}
         className="mx-auto mt-5 grid h-14 w-14 place-items-center rounded-full bg-[#3fd46b] text-black transition active:press disabled:opacity-30"
       >

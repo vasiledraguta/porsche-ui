@@ -116,6 +116,8 @@ type State = {
   lastVolume: number;
   liked: number[];
 
+  call: { to: string; at: number } | null;
+
   chronoRunning: boolean;
   chronoAt: number;
   chronoBase: number;
@@ -229,6 +231,8 @@ type Actions = {
   cycleMode: (dir: 1 | -1) => void;
   nextTrack: (dir: 1 | -1) => void;
   openSheet: (s: Sheet, tab?: VehicleTab) => void;
+  startCall: (to: string) => void;
+  endCall: () => void;
   toggleChrono: () => void;
   lapChrono: () => void;
   toggleRearDefrost: () => void;
@@ -294,6 +298,8 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
   volume: 40,
   lastVolume: 40,
   liked: [0],
+
+  call: null,
 
   chronoRunning: false,
   chronoAt: 0,
@@ -380,6 +386,8 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
       vehicleTab: tab ?? s.vehicleTab,
       notesRead: s.notesRead || sheet === "notifications",
     })),
+  startCall: (to) => set((s) => ({ call: s.call ?? { to, at: s.now } })),
+  endCall: () => set({ call: null }),
   toggleChrono: () =>
     set((s) => (s.chronoRunning ? { chronoRunning: false, chronoBase: s.chronoBase + s.now - s.chronoAt } : { chronoRunning: true, chronoAt: s.now })),
   lapChrono: () => set((s) => (s.chronoRunning ? { laps: [...s.laps, s.chronoBase + s.now - s.chronoAt] } : { chronoBase: 0, laps: [] })),
