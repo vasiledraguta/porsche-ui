@@ -36,7 +36,7 @@ import { AlbumArt } from "./AlbumArt";
 import { useSlider } from "./ui/useSlider";
 import { Glyph, APPS, type AppId } from "./ui/Glyph";
 import { Row, Segmented, SectionTitle, Stepper, Toggle } from "./ui/controls";
-import { ACCENTS, AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRE_COLD_BAR, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
+import { AMBIENT, MODES, MODE_ORDER, PAINT_ORDER, PAINTS, TANK_L, TRACKS, TYRE_COLD_BAR, TYRES, fmtTime, oilBar, rangeFor, tyreBar, useCar, type VehicleTab } from "@/lib/store";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 const slide = [0.16, 1, 0.3, 1] as const;
@@ -54,7 +54,7 @@ export function Sheets() {
     const panel = el?.parentElement;
     if (!panel) return;
     if (!panel.contains(document.activeElement)) opener.current = document.activeElement as HTMLElement | null;
-    panel.focus();
+    panel.focus({ preventScroll: true });
   };
   const release = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     if (info.offset.y > 120 || info.velocity.y > 600) set({ sheet: null });
@@ -150,7 +150,7 @@ function HomeSheet() {
   return (
     <div className="flex h-full flex-col px-10 pt-7">
       <div className="flex items-center justify-between pr-14">
-        <label className="flex w-92 items-center gap-3 rounded-xl bg-white/[0.06] px-4 py-3 text-white/45 focus-within:bg-white/[0.09]">
+        <label className="flex w-92 items-center gap-3 rounded-xl bg-white/[0.06] px-4 py-3 text-white/55 focus-within:bg-white/[0.09] focus-within:outline-1 focus-within:outline-offset-2 focus-within:outline-white/50">
           <Search size="1.25rem" />
           <input
             type="text"
@@ -158,7 +158,7 @@ function HomeSheet() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search"
             aria-label="Search apps"
-            className="min-w-0 flex-1 bg-transparent text-[1rem] text-white outline-none placeholder:text-white/45"
+            className="min-w-0 flex-1 bg-transparent text-[1rem] text-white outline-none placeholder:text-white/55"
           />
         </label>
         <div className="text-[1rem] text-white/80">Driver</div>
@@ -180,9 +180,9 @@ function HomeSheet() {
           </motion.button>
         ))}
       </div>
-      {apps.length === 0 && <div className="mt-2 text-[1rem] text-white/45">No apps match “{query.trim()}”</div>}
+      {apps.length === 0 && <div className="mt-2 text-[1rem] text-white/55">No apps match “{query.trim()}”</div>}
       <div className="mt-auto mb-6 flex justify-center">
-        <span className="h-1 w-5 rounded-full bg-[#2f8fff]" />
+        <span className="h-1 w-5 rounded-full bg-(--accent)" />
       </div>
     </div>
   );
@@ -298,7 +298,7 @@ function ModesTab() {
           onClick={() => mode !== m && setMode(m)}
           className={`rounded-2xl p-5 text-left transition ${
             mode === m
-              ? "cursor-default bg-(--accent)/[0.14] shadow-[inset_0_0_0_0.125rem_var(--accent)]"
+              ? "cursor-default bg-white/[0.08] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.5)]"
               : "bg-white/[0.05] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] hover:bg-white/[0.08]"
           }`}
         >
@@ -306,8 +306,8 @@ function ModesTab() {
             <span className="text-[1rem] text-white">{MODES[m].label}</span>
             <Gauge size="1.25rem" className={mode === m ? "text-(--accent)" : "text-white/35"} />
           </div>
-          <div className="mt-2 text-[0.75rem] leading-snug text-white/50">{MODES[m].desc}</div>
-          <div className="mt-3 text-[0.75rem] text-white/40">{MODES[m].spec}</div>
+          <div className="mt-2 text-[0.75rem] leading-snug text-white/60">{MODES[m].desc}</div>
+          <div className="mt-3 text-[0.75rem] text-white/50">{MODES[m].spec}</div>
         </button>
       ))}
     </div>
@@ -326,7 +326,7 @@ export function PaintSwatches({ compact = false }: { compact?: boolean }) {
           onClick={() => set({ paint: id })}
           aria-label={PAINTS[id].label}
           aria-pressed={paint === id}
-          className={`flex items-center gap-2 text-left text-white transition ${compact ? "rounded-xl px-2 py-2 text-[0.75rem]" : "rounded-2xl px-4 py-4 text-[1rem]"} ${paint === id ? "bg-(--accent)/[0.14] ring-2 ring-(--accent)" : "bg-white/[0.05] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
+          className={`flex items-center gap-2 text-left text-white transition ${compact ? "rounded-xl px-2 py-2 text-[0.75rem]" : "rounded-2xl px-4 py-4 text-[1rem]"} ${paint === id ? "bg-white/[0.08] ring-1 ring-white/50" : "bg-white/[0.05] ring-1 ring-white/[0.08] hover:bg-white/[0.08]"}`}
         >
           <span className="h-5 w-5 shrink-0 rounded-full ring-1 ring-white/20" style={{ backgroundColor: PAINTS[id].color }} />
           <span>{PAINTS[id].label}</span>
@@ -348,7 +348,7 @@ function ColorDots({ colors, value, onChange, label }: { colors: string[]; value
           className="h-10 w-10 rounded-full transition"
           style={{
             background: c,
-            boxShadow: value === i ? `0 0 0 0.125rem #121417, 0 0 0 0.25rem ${c}, 0 0 1.25rem ${c}` : "inset 0 0 0 1px rgba(0,0,0,.3)",
+            boxShadow: value === i ? `0 0 0 0.125rem #121417, 0 0 0 0.25rem ${c}` : "inset 0 0 0 1px rgba(0,0,0,.3)",
           }}
         />
       ))}
@@ -358,17 +358,14 @@ function ColorDots({ colors, value, onChange, label }: { colors: string[]; value
 
 function AppearanceTab() {
   const s = useCar(useShallow((s) => ({
-    accent: s.accent,
     ambient: s.ambient,
     ambientLevel: s.ambientLevel,
     set: s.set,
   })));
   return (
     <>
-      <p className="mt-3 text-[1rem] text-white/50">Choose a body colour for the 911 GT3 RS, an accent for settings and the ambient lighting.</p>
+      <p className="mt-3 text-[1rem] text-white/50">Choose a body colour for the 911 GT3 RS and the ambient lighting.</p>
       <PaintSwatches />
-      <SectionTitle>UI accent</SectionTitle>
-      <ColorDots colors={ACCENTS.map((a) => a.color)} value={s.accent} onChange={(i) => s.set({ accent: i })} label={(i) => `${ACCENTS[i].label} accent`} />
       <SectionTitle>Ambient lighting</SectionTitle>
       <ColorDots colors={AMBIENT} value={s.ambient} onChange={(i) => s.set({ ambient: i })} label={(i) => `Ambient ${i}`} />
       <div className="py-2">
@@ -510,7 +507,7 @@ function EngineTab() {
           style={{ width: `${s.fuel}%`, background: s.fuel < 12 ? "#ffb020" : "#f2f4f7" }}
         />
       </div>
-      <div className="text-[0.75rem] text-white/40 tabular-nums">
+      <div className="text-[0.75rem] text-white/50 tabular-nums">
         {((s.fuel / 100) * TANK_L).toFixed(0)} of {TANK_L} L · Super Plus 98 RON
       </div>
       <Row
@@ -586,12 +583,13 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
     <button
       onClick={onClick}
       aria-pressed={on}
-      className={`flex h-20 flex-col items-center justify-center gap-2 rounded-2xl transition ${
-        on ? "bg-(--accent)/[0.14] text-[color-mix(in_oklab,var(--accent)_70%,white)] shadow-[inset_0_0_0_0.125rem_var(--accent)]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
+      className={`relative flex h-20 flex-col items-center justify-center gap-2 rounded-2xl transition ${
+        on ? "bg-white/[0.1] text-white" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
       }`}
     >
       <Icon size="1.5rem" strokeWidth={1.6} />
       <span className="text-[0.75rem] font-medium tracking-wide">{label}</span>
+      <span className="absolute bottom-2 h-1 w-5 rounded-full bg-(--accent) transition-opacity" style={{ opacity: on ? 1 : 0 }} />
     </button>
   );
 }
@@ -712,7 +710,7 @@ function TrackScreenTab() {
 }
 
 function TyreTemp({ temp }: { temp: number }) {
-  const [color, state] = temp < 70 ? ["#6db3ff", "Cold"] : temp <= 100 ? ["#3fd46b", "In window"] : ["#ffb020", "Hot"];
+  const [color, state] = temp < 70 ? ["rgba(255,255,255,0.3)", "Cold"] : temp <= 100 ? ["#3fd46b", "In window"] : ["#ffb020", "Hot"];
   return (
     <span className="flex items-center gap-2 tabular-nums">
       <span className="h-2 w-2 rounded-full" style={{ background: color }} />
@@ -724,7 +722,7 @@ function TyreTemp({ temp }: { temp: number }) {
 function Tile({ label, value, sub }: { label: string; value: string; sub?: React.ReactNode }) {
   return (
     <div className="rounded-2xl bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
-      <div className="text-[0.75rem] text-white/45">{label}</div>
+      <div className="text-[0.75rem] text-white/55">{label}</div>
       <div className="mt-1.5 text-[1.5rem] font-light text-white tabular-nums">{value}</div>
       {sub && <div className="mt-1 text-[0.75rem] text-white/60">{sub}</div>}
     </div>
@@ -754,7 +752,7 @@ function ChronoSheet() {
         <ChronoDial ms={elapsed} />
         <div className="text-center">
           <div className="text-[2.75rem] leading-none font-light text-white tabular-nums">{fmtLap(elapsed)}</div>
-          <div className="mt-2 text-[1rem] text-white/45 tabular-nums">
+          <div className="mt-2 text-[1rem] text-white/55 tabular-nums">
             Lap {laps.length + 1} · {fmtLap(current)}
           </div>
         </div>
@@ -777,8 +775,8 @@ function ChronoSheet() {
         </div>
       </div>
       <div className="w-84 shrink-0 overflow-y-auto border-l border-white/[0.06] bg-black/20 px-5 pt-16 pb-6 [scrollbar-width:none]">
-        <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/40 uppercase">Laps</div>
-        {laps.length === 0 && <div className="text-[1rem] text-white/40">Press Lap to record a lap time</div>}
+        <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/50 uppercase">Laps</div>
+        {laps.length === 0 && <div className="text-[1rem] text-white/50">Press Lap to record a lap time</div>}
         {laps
           .map((t, i) => ({ t, n: i + 1 }))
           .reverse()
@@ -787,7 +785,7 @@ function ChronoSheet() {
               <span className="text-[1rem] text-white/55">Lap {n}</span>
               <span className="flex items-baseline gap-3">
                 {laps.length > 1 && (
-                  <span className={`text-[0.75rem] ${t === best ? "text-[#3fd46b]" : "text-white/40"}`}>
+                  <span className={`text-[0.75rem] ${t === best ? "text-[#3fd46b]" : "text-white/50"}`}>
                     {t === best ? "Best" : `+${((t - best) / 1000).toFixed(2)}`}
                   </span>
                 )}
@@ -871,7 +869,7 @@ function MediaSheet() {
           </div>
           <div className="mt-3 text-[2.25rem] leading-tight font-medium text-white">{t.title}</div>
           <div className="text-[1.25rem] text-white/60">{t.artist}</div>
-          <div className="text-[1rem] text-white/35">{t.album}</div>
+          <div className="text-[1rem] text-white/50">{t.album}</div>
           <div
             role="slider"
             tabIndex={0}
@@ -911,7 +909,7 @@ function MediaSheet() {
               style={{ left: `${(s.progress / t.length) * 100}%` }}
             />
           </div>
-          <div className="flex justify-between text-[0.75rem] text-white/45 tabular-nums">
+          <div className="flex justify-between text-[0.75rem] text-white/55 tabular-nums">
             <span>{fmtTime(s.progress)}</span>
             <span>-{fmtTime(t.length - s.progress)}</span>
           </div>
@@ -933,7 +931,7 @@ function MediaSheet() {
         </div>
       </div>
       <div className="relative w-76 shrink-0 border-l border-white/[0.06] bg-black/20 px-5 pt-16">
-        <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/40 uppercase">Up next</div>
+        <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/50 uppercase">Up next</div>
         {TRACKS.map((tr, i) => (
           <button
             key={tr.title}
@@ -943,7 +941,7 @@ function MediaSheet() {
             <AlbumArt size={2.25} radius={0.5} track={i} />
             <span className="min-w-0">
               <span className={`block truncate text-[1rem] ${i === s.track ? "text-[#ff5a5a]" : "text-white/90"}`}>{tr.title}</span>
-              <span className="block truncate text-[0.75rem] text-white/45">{tr.artist}</span>
+              <span className="block truncate text-[0.75rem] text-white/55">{tr.artist}</span>
             </span>
           </button>
         ))}
@@ -1004,7 +1002,7 @@ function PhoneSheet() {
         {tab === "Keypad" ? (
           <Keypad onCall={startCall} calling={!!call} />
         ) : tab === "Messages" ? (
-          MESSAGES.map((m) => <Row key={m.n} title={m.n} sub={m.text} right={<span className="shrink-0 text-[0.75rem] text-white/40">{m.time}</span>} />)
+          MESSAGES.map((m) => <Row key={m.n} title={m.n} sub={m.text} right={<span className="shrink-0 text-[0.75rem] text-white/50">{m.time}</span>} />)
         ) : (
           list.map((c) => (
             <Row
@@ -1060,7 +1058,7 @@ function Keypad({ onCall, calling }: { onCall: (to: string) => void; calling: bo
         {digits ? (
           <span className="min-w-0 truncate text-[1.75rem] font-light text-white tabular-nums">{digits}</span>
         ) : (
-          <span className="text-[1rem] text-white/35">Enter a number</span>
+          <span className="text-[1rem] text-white/50">Enter a number</span>
         )}
         {digits && (
           <button
@@ -1110,7 +1108,7 @@ function AppPage({ id, children }: { id: AppId; children: React.ReactNode }) {
 
 function RowMeta({ children }: { children?: React.ReactNode }) {
   return (
-    <span className="flex shrink-0 items-center gap-2 text-[0.75rem] text-white/40">
+    <span className="flex shrink-0 items-center gap-2 text-[0.75rem] text-white/50">
       {children}
       <ChevronRight size="1rem" />
     </span>

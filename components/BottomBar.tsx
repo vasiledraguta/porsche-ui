@@ -82,7 +82,7 @@ function DockBtn({
     >
       {children}
       <span
-        className="absolute bottom-1 h-1 w-5 rounded-full bg-[#2f8fff] transition-opacity"
+        className="absolute bottom-1 h-1 w-5 rounded-full bg-(--accent) transition-opacity"
         style={{ opacity: active ? 1 : 0 }}
       />
     </button>
@@ -108,7 +108,7 @@ function Temp({ value, onUp, onDown }: { value: number; onUp: () => void; onDown
             {value.toFixed(1)}
           </motion.span>
         </AnimatePresence>
-        <span className="absolute top-0 right-0 text-[0.75rem] text-white/40">°</span>
+        <span className="absolute top-0 right-0 text-[0.75rem] text-white/50">°</span>
       </div>
       <RepeatBtn aria-label="Warmer" onStep={onUp} className="grid h-11 w-9 place-items-center rounded-xl text-white/50 transition hover:text-white active:press">
         <ChevronUp size="1.25rem" strokeWidth={1.8} />

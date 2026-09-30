@@ -21,9 +21,9 @@ export function MiniPlayer() {
         <AlbumArt size={3.5} radius={0.5} />
         <div className="min-w-0 flex-1">
           <div className="truncate text-[1rem] font-medium text-white">{t.title}</div>
-          <div className="truncate text-[0.75rem] text-white/45">{t.artist}</div>
+          <div className="truncate text-[0.75rem] text-white/55">{t.artist}</div>
         </div>
-        <span className="flex items-center gap-1.5 pr-1 text-[0.75rem] text-white/40">
+        <span className="flex items-center gap-1.5 pr-1 text-[0.75rem] text-white/50">
           <span className="h-1.5 w-1.5 rounded-full bg-[#ff4a4a]" />
           Media
         </span>

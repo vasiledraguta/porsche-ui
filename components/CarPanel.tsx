@@ -109,7 +109,7 @@ function GearSelect() {
           aria-pressed={g === gear}
           disabled={g === "P" && speed > 0}
           onClick={() => setGear(g)}
-          className={`rounded-lg transition ${g === gear ? "text-white" : "text-white/25 hover:text-white/50 disabled:cursor-not-allowed disabled:opacity-40"}`}
+          className={`rounded-lg transition ${g === gear ? "text-white" : "text-white/50 hover:text-white/70 disabled:cursor-not-allowed disabled:opacity-40"}`}
         >
           {g === "D" && gear === "D" ? `D${pdkGear}` : g}
         </button>
@@ -123,7 +123,7 @@ function Speed({ className = "mt-2", size = "text-[4rem]" }: { className?: strin
   return (
     <div className={`flex items-baseline gap-2 ${className}`}>
       <span className={`${size} leading-[0.9] font-normal text-white tabular-nums`}>{Math.round(speed)}</span>
-      <span className="text-[1rem] text-white/45">km/h</span>
+      <span className="text-[1rem] text-white/55">km/h</span>
     </div>
   );
 }
@@ -149,7 +149,7 @@ function DriveHeader() {
           <span className="text-[1rem] font-medium text-white tabular-nums">{Math.round(fuel)}%</span>
           <FuelGauge pct={fuel} />
         </div>
-        <div className="mt-1 text-[0.75rem] text-white/45 tabular-nums">{rangeFor(fuel, mode)} km</div>
+        <div className="mt-1 text-[0.75rem] text-white/55 tabular-nums">{rangeFor(fuel, mode)} km</div>
       </div>
     </div>
   );
@@ -166,7 +166,7 @@ function RevBar({ rpm, shift }: { rpm: number; shift: boolean }) {
           style={{ width: `${pct * 100}%`, background: shift ? "#ff3b30" : pct > 0.78 ? "#ffb020" : "#fff" }}
         />
       </div>
-      <div className="mt-1.5 flex justify-between text-[0.75rem] text-white/35 tabular-nums">
+      <div className="mt-1.5 flex justify-between text-[0.75rem] text-white/50 tabular-nums">
         <span className={shift ? "text-[#ff6b61]" : "text-white/60"}>{(Math.round(rpm / 50) * 50).toLocaleString("en")} rpm</span>
         <span>9</span>
       </div>
@@ -252,7 +252,7 @@ function CarStage() {
         inert={driving}
         className="pointer-events-none absolute inset-x-0 bottom-0 h-12"
       >
-        <div className="absolute bottom-2 left-4 flex items-center gap-1.5 text-[0.75rem] text-white/30">
+        <div className="absolute bottom-2 left-4 flex items-center gap-1.5 text-[0.75rem] text-white/50">
           <Move3d size="0.75rem" strokeWidth={1.6} /> Drag to rotate · tap a part to open
         </div>
         <button

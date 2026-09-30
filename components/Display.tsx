@@ -10,7 +10,7 @@ import { DemoDrive, EtaBar, MapControls, Maneuver, SearchBox, SpeedLimit } from 
 import { NavMap } from "./NavMap";
 import { Rail } from "./Rail";
 import { Sheets } from "./Sheets";
-import { ACCENTS, AMBIENT, MODES, useCar } from "@/lib/store";
+import { AMBIENT, MODES, useCar } from "@/lib/store";
 
 const W = 1920;
 const H = 900;
@@ -21,7 +21,6 @@ export function Display() {
   const [scale, setScale] = useState(0);
   const [notice, setNotice] = useState(true);
   const ambient = useCar((s) => AMBIENT[s.ambient]);
-  const accent = useCar((s) => ACCENTS[s.accent].color);
   const ambientLevel = useCar((s) => s.ambientLevel);
   const covered = useCar((s) => s.sheet !== null);
 
@@ -60,7 +59,7 @@ export function Display() {
             >
             <div
               className="relative flex h-full w-full overflow-hidden rounded-3xl bg-black"
-              style={{ width: W, height: H, ["--ambient" as string]: ambient, ["--accent" as string]: accent }}
+              style={{ width: W, height: H, ["--ambient" as string]: ambient }}
             >
               <Rail />
               <div className="flex min-w-0 flex-1 flex-col">
@@ -139,7 +138,7 @@ function ModePopup() {
           transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
           className="absolute top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2 rounded-[1.25rem] bg-[#1a1d22]/95 px-10 py-6 text-center shadow-[0_1.25rem_3.75rem_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl"
         >
-          <div className="text-[0.75rem] font-medium tracking-[0.08em] text-white/40 uppercase">Driving mode</div>
+          <div className="text-[0.75rem] font-medium tracking-[0.08em] text-white/50 uppercase">Driving mode</div>
           <div className="mt-1 text-[2rem] font-medium text-white">{MODES[mode].label}</div>
         </motion.div>
       )}
@@ -228,7 +227,7 @@ function Shortcuts() {
         className="m-auto w-120 max-w-[calc(100vw-2rem)] rounded-[1.25rem] bg-[#1a1d22]/95 p-0 text-white shadow-[0_1.25rem_3.75rem_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl translate-y-2.5 scale-96 opacity-0 transition-[opacity,scale,translate,overlay,display] transition-discrete duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] open:translate-y-0 open:scale-100 open:opacity-100 open:duration-300 starting:open:translate-y-2.5 starting:open:scale-96 starting:open:opacity-0 backdrop:bg-black/0 backdrop:transition-[background-color,overlay,display] backdrop:transition-discrete backdrop:duration-200 open:backdrop:bg-black/55 open:backdrop:duration-300 starting:open:backdrop:bg-black/0"
       >
         <div className="relative px-7 pt-6 pb-7">
-          <h2 id="shortcuts-title" className="text-[0.75rem] font-medium tracking-[0.08em] text-white/40 uppercase">
+          <h2 id="shortcuts-title" className="text-[0.75rem] font-medium tracking-[0.08em] text-white/50 uppercase">
             Keyboard shortcuts
           </h2>
           <button

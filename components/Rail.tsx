@@ -76,7 +76,7 @@ export function Rail() {
           className="relative grid h-14 w-14 place-items-center rounded-2xl transition active:press"
         >
           <Glyph id="notifications" size={1.25} dim />
-          {!notesRead && <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-[#2f8fff]" />}
+          {!notesRead && <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-(--accent)" />}
         </button>
       </div>
     </aside>
@@ -87,7 +87,7 @@ function HomeGlyph({ active }: { active: boolean }) {
   return (
     <svg width="1.75rem" height="1.75rem" viewBox="0 0 28 28">
       <path d="M5 13 L14 5 L23 13 V22 H5 Z" fill={active ? "#fff" : "#e8ebef"} opacity={active ? 1 : 0.8} />
-      <rect x="5" y="24" width="18" height="2" rx="1" fill="#2f8fff" />
+      <rect x="5" y="24" width="18" height="2" rx="1" className="fill-(--accent)" />
     </svg>
   );
 }
