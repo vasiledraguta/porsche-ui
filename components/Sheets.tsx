@@ -45,20 +45,16 @@ export function Sheets() {
   const sheet = useCar((s) => s.sheet);
   const set = useCar((s) => s.set);
   const drag = useDragControls();
-  const ref = useRef<HTMLDivElement>(null);
   const opener = useRef<HTMLElement | null>(null);
-  useEffect(() => {
-    const a = document.activeElement;
-    if (sheet) {
-      if (!opener.current && a instanceof HTMLElement && a !== document.body && !ref.current?.contains(a)) opener.current = a;
-      ref.current?.focus();
-      return;
-    }
-    const back = opener.current;
-    opener.current = null;
-    if (a && a !== document.body && !ref.current?.contains(a)) return;
-    if (back?.isConnected) back.focus();
-  }, [sheet]);
+  const restoreFocus = (el: HTMLDivElement | null) => () => {
+    if (el?.contains(document.activeElement)) opener.current?.focus();
+  };
+  const focusSheet = (el: HTMLDivElement | null) => {
+    const panel = el?.parentElement;
+    if (!panel) return;
+    if (!panel.contains(document.activeElement)) opener.current = document.activeElement as HTMLElement | null;
+    panel.focus();
+  };
   const release = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     if (info.offset.y > 120 || info.velocity.y > 600) set({ sheet: null });
   };
@@ -67,7 +63,7 @@ export function Sheets() {
       {sheet && (
         <motion.div
           key="sheet"
-          ref={ref}
+          ref={restoreFocus}
           tabIndex={-1}
           className="absolute inset-0 z-20 flex flex-col bg-[#121417] outline-none"
           initial={{ y: "100%" }}
@@ -98,6 +94,7 @@ export function Sheets() {
           <AnimatePresence initial={false}>
             <motion.div
               key={sheet}
+              ref={focusSheet}
               className="absolute inset-0 flex flex-col"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
