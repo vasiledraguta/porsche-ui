@@ -54,7 +54,7 @@ export const TANK_L = 64;
 const CONS: Record<DriveMode, number> = { wet: 12.8, normal: 13.4, sport: 15.2, track: 19 };
 const TYRE_LOAD: Record<DriveMode, number> = { wet: 0.8, normal: 1, sport: 1.15, track: 1.35 };
 export const TYRES = ["Front left", "Front right", "Rear left", "Rear right"] as const;
-const TYRE_COLD_BAR = [2.2, 2.2, 2.4, 2.4];
+export const TYRE_COLD_BAR = [2.2, 2.2, 2.4, 2.4];
 const REAR_DEFROST_MS = 15 * 60 * 1000;
 
 export const TRACKS = [
