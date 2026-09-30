@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist, type PersistOptions, type StateStorage } from "zustand/middleware";
-import { ROUTE_LEN, STOPS, nextStep } from "./route";
+import { ROUTE_LEN, STOPS, demoSpeedLimitAt, nextStep } from "./route";
 
 export type DriveMode = "wet" | "normal" | "sport" | "track";
 export type PartId = "hood" | "trunk" | "doorL" | "doorR";
@@ -421,6 +421,7 @@ export const useCar = create<State & Actions>()(persist((set, get) => ({
         stopIdx++;
       }
       if (ROUTE_LEN - routeD < 60) target = Math.max(0, ((ROUTE_LEN - routeD) / 60) * 25);
+      target = Math.min(target, demoSpeedLimitAt(routeD));
 
       const err = target - s.speed;
       if (err > 0) throttle = Math.min(0.55, err / 30);

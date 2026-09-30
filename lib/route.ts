@@ -77,7 +77,19 @@ export function fmtDist(m: number) {
 
 export const STOPS = [1150, 2370, 3620, 5480, 7080];
 
-export const speedLimitAt = (d: number) => (d > 7900 ? 30 : 50);
+const SPEED_LIMITS = [{ at: 0, kmh: 50 }, { at: 7900, kmh: 30 }];
+const LIMIT_APPROACH_M = 120;
+const LIMIT_SETTLE_M = 20;
+
+export const speedLimitAt = (d: number) => SPEED_LIMITS.findLast((zone) => d >= zone.at)?.kmh ?? SPEED_LIMITS[0].kmh;
+
+export function demoSpeedLimitAt(d: number) {
+  const limit = speedLimitAt(d);
+  const next = SPEED_LIMITS.find((zone) => zone.at > d && zone.kmh < limit);
+  if (!next) return limit;
+  const remaining = Math.max(0, Math.min(1, (next.at - d - LIMIT_SETTLE_M) / (LIMIT_APPROACH_M - LIMIT_SETTLE_M)));
+  return next.kmh + (limit - next.kmh) * remaining * remaining * (3 - 2 * remaining);
+}
 
 const SPEEDING_MARGIN = 3;
 

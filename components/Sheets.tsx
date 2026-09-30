@@ -629,7 +629,7 @@ function AssistTab() {
   })));
   return (
     <>
-      <Row title="Porsche InnoDrive" sub="Adaptive cruise that anticipates corners and limits" right={<Toggle label="Porsche InnoDrive" on={s.innodrive} onChange={() => s.set({ innodrive: !s.innodrive })} />} />
+      <Row title="Porsche InnoDrive" sub="Selection only. Demo drive follows corners and limits with either setting." right={<Toggle label="Porsche InnoDrive" on={s.innodrive} onChange={() => s.set({ innodrive: !s.innodrive })} />} />
       <Row title="Lane keeping assist" sub="With emergency steering assist" right={<Toggle label="Lane keeping assist" on={s.lane} onChange={() => s.set({ lane: !s.lane })} />} />
       <Row title="Traffic sign recognition" sub="Shows the speed limit on the map" right={<Toggle label="Traffic sign recognition" on={s.signs} onChange={() => s.set({ signs: !s.signs })} />} />
       <Row title="Park Assist" sub="Surround view with 3D car" right={<Toggle label="Park Assist" on={s.parkAssist} onChange={() => s.set({ parkAssist: !s.parkAssist })} />} />
