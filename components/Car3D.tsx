@@ -256,6 +256,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
       el.style.transform = `translate3d(${((spot.x + 1) / 2) * size.width}px, ${((1 - spot.y) / 2) * size.height}px, 0)`;
       el.style.opacity = String(o);
       el.style.pointerEvents = o > 0.3 ? "auto" : "none";
+      el.inert = o <= 0.3;
     }
   });
 
@@ -295,7 +296,7 @@ function Model({ hover, setHover, calloutsRef }: { hover: PartId | null; setHove
 function Callout({ ref, id, open, hot }: { ref: (el: HTMLDivElement | null) => void; id: PartId; open: boolean; hot: boolean }) {
   const { label } = PARTS[id];
   return (
-    <div ref={ref} style={{ opacity: 0, pointerEvents: "none" }} className="absolute top-0 left-0 transition-opacity duration-150">
+    <div ref={ref} inert style={{ opacity: 0, pointerEvents: "none" }} className="absolute top-0 left-0 transition-opacity duration-150">
       <button
         onClick={() => useCar.getState().togglePart(id)}
         aria-label={`${open ? "Close" : "Open"} ${label}`}
