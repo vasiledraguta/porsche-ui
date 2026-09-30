@@ -712,7 +712,7 @@ function TrackScreenTab() {
 }
 
 function TyreTemp({ temp }: { temp: number }) {
-  const [color, state] = temp < 70 ? ["#6db3ff", "Cold"] : temp <= 100 ? ["#3fd46b", "In window"] : ["#ffb020", "Hot"];
+  const [color, state] = temp < 70 ? ["rgba(255,255,255,0.3)", "Cold"] : temp <= 100 ? ["#3fd46b", "In window"] : ["#ffb020", "Hot"];
   return (
     <span className="flex items-center gap-2 tabular-nums">
       <span className="h-2 w-2 rounded-full" style={{ background: color }} />
