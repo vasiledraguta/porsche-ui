@@ -149,7 +149,7 @@ function HomeSheet() {
   return (
     <div className="flex h-full flex-col px-10 pt-7">
       <div className="flex items-center justify-between pr-14">
-        <label className="flex w-92 items-center gap-3 rounded-xl bg-white/[0.06] px-4 py-3 text-white/45 focus-within:bg-white/[0.09]">
+        <label className="flex w-92 items-center gap-3 rounded-xl bg-white/[0.06] px-4 py-3 text-white/55 focus-within:bg-white/[0.09] focus-within:outline-1 focus-within:outline-offset-2 focus-within:outline-white/50">
           <Search size="1.25rem" />
           <input
             type="text"
@@ -157,7 +157,7 @@ function HomeSheet() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search"
             aria-label="Search apps"
-            className="min-w-0 flex-1 bg-transparent text-[1rem] text-white outline-none placeholder:text-white/45"
+            className="min-w-0 flex-1 bg-transparent text-[1rem] text-white outline-none placeholder:text-white/55"
           />
         </label>
         <div className="text-[1rem] text-white/80">Driver</div>
@@ -179,7 +179,7 @@ function HomeSheet() {
           </motion.button>
         ))}
       </div>
-      {apps.length === 0 && <div className="mt-2 text-[1rem] text-white/45">No apps match “{query.trim()}”</div>}
+      {apps.length === 0 && <div className="mt-2 text-[1rem] text-white/55">No apps match “{query.trim()}”</div>}
       <div className="mt-auto mb-6 flex justify-center">
         <span className="h-1 w-5 rounded-full bg-[#2f8fff]" />
       </div>
@@ -305,8 +305,8 @@ function ModesTab() {
             <span className="text-[1rem] text-white">{MODES[m].label}</span>
             <Gauge size="1.25rem" className={mode === m ? "text-(--accent)" : "text-white/35"} />
           </div>
-          <div className="mt-2 text-[0.75rem] leading-snug text-white/50">{MODES[m].desc}</div>
-          <div className="mt-3 text-[0.75rem] text-white/40">{MODES[m].spec}</div>
+          <div className="mt-2 text-[0.75rem] leading-snug text-white/60">{MODES[m].desc}</div>
+          <div className="mt-3 text-[0.75rem] text-white/50">{MODES[m].spec}</div>
         </button>
       ))}
     </div>
@@ -509,7 +509,7 @@ function EngineTab() {
           style={{ width: `${s.fuel}%`, background: s.fuel < 12 ? "#ffb020" : "#f2f4f7" }}
         />
       </div>
-      <div className="text-[0.75rem] text-white/40 tabular-nums">
+      <div className="text-[0.75rem] text-white/50 tabular-nums">
         {((s.fuel / 100) * TANK_L).toFixed(0)} of {TANK_L} L · Super Plus 98 RON
       </div>
       <Row
@@ -723,7 +723,7 @@ function TyreTemp({ temp }: { temp: number }) {
 function Tile({ label, value, sub }: { label: string; value: string; sub?: React.ReactNode }) {
   return (
     <div className="rounded-2xl bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
-      <div className="text-[0.75rem] text-white/45">{label}</div>
+      <div className="text-[0.75rem] text-white/55">{label}</div>
       <div className="mt-1.5 text-[1.5rem] font-light text-white tabular-nums">{value}</div>
       {sub && <div className="mt-1 text-[0.75rem] text-white/60">{sub}</div>}
     </div>
@@ -753,7 +753,7 @@ function ChronoSheet() {
         <ChronoDial ms={elapsed} />
         <div className="text-center">
           <div className="text-[2.75rem] leading-none font-light text-white tabular-nums">{fmtLap(elapsed)}</div>
-          <div className="mt-2 text-[1rem] text-white/45 tabular-nums">
+          <div className="mt-2 text-[1rem] text-white/55 tabular-nums">
             Lap {laps.length + 1} · {fmtLap(current)}
           </div>
         </div>
@@ -776,8 +776,8 @@ function ChronoSheet() {
         </div>
       </div>
       <div className="w-84 shrink-0 overflow-y-auto border-l border-white/[0.06] bg-black/20 px-5 pt-16 pb-6 [scrollbar-width:none]">
-        <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/40 uppercase">Laps</div>
-        {laps.length === 0 && <div className="text-[1rem] text-white/40">Press Lap to record a lap time</div>}
+        <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/50 uppercase">Laps</div>
+        {laps.length === 0 && <div className="text-[1rem] text-white/50">Press Lap to record a lap time</div>}
         {laps
           .map((t, i) => ({ t, n: i + 1 }))
           .reverse()
@@ -786,7 +786,7 @@ function ChronoSheet() {
               <span className="text-[1rem] text-white/55">Lap {n}</span>
               <span className="flex items-baseline gap-3">
                 {laps.length > 1 && (
-                  <span className={`text-[0.75rem] ${t === best ? "text-[#3fd46b]" : "text-white/40"}`}>
+                  <span className={`text-[0.75rem] ${t === best ? "text-[#3fd46b]" : "text-white/50"}`}>
                     {t === best ? "Best" : `+${((t - best) / 1000).toFixed(2)}`}
                   </span>
                 )}
@@ -870,7 +870,7 @@ function MediaSheet() {
           </div>
           <div className="mt-3 text-[2.25rem] leading-tight font-medium text-white">{t.title}</div>
           <div className="text-[1.25rem] text-white/60">{t.artist}</div>
-          <div className="text-[1rem] text-white/35">{t.album}</div>
+          <div className="text-[1rem] text-white/50">{t.album}</div>
           <div
             role="slider"
             tabIndex={0}
@@ -910,7 +910,7 @@ function MediaSheet() {
               style={{ left: `${(s.progress / t.length) * 100}%` }}
             />
           </div>
-          <div className="flex justify-between text-[0.75rem] text-white/45 tabular-nums">
+          <div className="flex justify-between text-[0.75rem] text-white/55 tabular-nums">
             <span>{fmtTime(s.progress)}</span>
             <span>-{fmtTime(t.length - s.progress)}</span>
           </div>
@@ -932,7 +932,7 @@ function MediaSheet() {
         </div>
       </div>
       <div className="relative w-76 shrink-0 border-l border-white/[0.06] bg-black/20 px-5 pt-16">
-        <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/40 uppercase">Up next</div>
+        <div className="mb-2 text-[0.75rem] font-medium tracking-[0.08em] text-white/50 uppercase">Up next</div>
         {TRACKS.map((tr, i) => (
           <button
             key={tr.title}
@@ -942,7 +942,7 @@ function MediaSheet() {
             <AlbumArt size={2.25} radius={0.5} track={i} />
             <span className="min-w-0">
               <span className={`block truncate text-[1rem] ${i === s.track ? "text-[#ff5a5a]" : "text-white/90"}`}>{tr.title}</span>
-              <span className="block truncate text-[0.75rem] text-white/45">{tr.artist}</span>
+              <span className="block truncate text-[0.75rem] text-white/55">{tr.artist}</span>
             </span>
           </button>
         ))}
@@ -1003,7 +1003,7 @@ function PhoneSheet() {
         {tab === "Keypad" ? (
           <Keypad onCall={startCall} calling={!!call} />
         ) : tab === "Messages" ? (
-          MESSAGES.map((m) => <Row key={m.n} title={m.n} sub={m.text} right={<span className="shrink-0 text-[0.75rem] text-white/40">{m.time}</span>} />)
+          MESSAGES.map((m) => <Row key={m.n} title={m.n} sub={m.text} right={<span className="shrink-0 text-[0.75rem] text-white/50">{m.time}</span>} />)
         ) : (
           list.map((c) => (
             <Row
@@ -1059,7 +1059,7 @@ function Keypad({ onCall, calling }: { onCall: (to: string) => void; calling: bo
         {digits ? (
           <span className="min-w-0 truncate text-[1.75rem] font-light text-white tabular-nums">{digits}</span>
         ) : (
-          <span className="text-[1rem] text-white/35">Enter a number</span>
+          <span className="text-[1rem] text-white/50">Enter a number</span>
         )}
         {digits && (
           <button
@@ -1109,7 +1109,7 @@ function AppPage({ id, children }: { id: AppId; children: React.ReactNode }) {
 
 function RowMeta({ children }: { children?: React.ReactNode }) {
   return (
-    <span className="flex shrink-0 items-center gap-2 text-[0.75rem] text-white/40">
+    <span className="flex shrink-0 items-center gap-2 text-[0.75rem] text-white/50">
       {children}
       <ChevronRight size="1rem" />
     </span>

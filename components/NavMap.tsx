@@ -236,7 +236,7 @@ export function NavMap({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> })
       {/* maplibre-gl.css forces .maplibregl-map { position: relative }, so size by h/w, not inset */}
       <div ref={el} className="h-full w-full" />
       {failed && (
-        <div className="absolute inset-0 grid place-items-center bg-[#14171b] text-[0.75rem] text-white/40">
+        <div className="absolute inset-0 grid place-items-center bg-[#14171b] text-[0.75rem] text-white/50">
           Map unavailable offline
         </div>
       )}

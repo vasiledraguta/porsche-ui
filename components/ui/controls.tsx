@@ -85,7 +85,7 @@ export function Row({
     >
       <div className="min-w-0">
         <div className="text-[1rem] text-white/90">{title}</div>
-        {sub && <div className="mt-0.5 text-[0.75rem] text-white/45">{sub}</div>}
+        {sub && <div className="mt-0.5 text-[0.75rem] text-white/55">{sub}</div>}
       </div>
       {right}
     </Tag>
@@ -93,7 +93,7 @@ export function Row({
 }
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <div className="mt-6 mb-1 text-[0.75rem] font-medium tracking-[0.08em] text-white/40 uppercase">{children}</div>;
+  return <div className="mt-6 mb-1 text-[0.75rem] font-medium tracking-[0.08em] text-white/50 uppercase">{children}</div>;
 }
 
 export function Stepper({

@@ -102,7 +102,7 @@ export function DemoDrive() {
         className={`h-2 w-2 rounded-full ${autopilot ? "animate-[breathe_1.6s_ease-in-out_infinite] bg-[#2f8fff]" : "bg-white/30"}`}
       />
       <span className="text-white/85">Demo drive</span>
-      <span aria-hidden className={`font-medium ${autopilot ? "text-[#6db3ff]" : "text-white/45"}`}>
+      <span aria-hidden className={`font-medium ${autopilot ? "text-[#6db3ff]" : "text-white/55"}`}>
         {autopilot ? "On" : "Off"}
       </span>
     </button>
@@ -124,7 +124,7 @@ export function EtaBar() {
         <span className="text-[1.5rem] leading-none font-medium text-white tabular-nums">
           {eta ? `${String(eta.getHours()).padStart(2, "0")}:${String(eta.getMinutes()).padStart(2, "0")}` : "--:--"}
         </span>
-        <span className="text-[0.75rem] text-white/45">arrival</span>
+        <span className="text-[0.75rem] text-white/55">arrival</span>
       </div>
       <Sep />
       <Stat v={`${mins} min`} />
@@ -133,11 +133,11 @@ export function EtaBar() {
       <Sep />
       <div className="flex items-center gap-1.5 text-[1rem] text-white/80 tabular-nums">
         <Fuel size="1rem" className="text-white/60" strokeWidth={1.8} />
-        {arriveFuel}% <span className="text-white/40">· {rangeFor(arriveFuel, mode)} km</span>
+        {arriveFuel}% <span className="text-white/50">· {rangeFor(arriveFuel, mode)} km</span>
       </div>
       <div className="ml-auto min-w-0 text-right">
         <div className="truncate text-[1rem] text-white">{ROUTE.to}</div>
-        <div className="truncate text-[0.75rem] text-white/45">{ROUTE.toSub}</div>
+        <div className="truncate text-[0.75rem] text-white/55">{ROUTE.toSub}</div>
       </div>
     </div>
   );
