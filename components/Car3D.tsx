@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type RefOb
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
+import { useReducedMotion } from "motion/react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { AMBIENT, PAINTS, useCar, type Paint, type PartId } from "@/lib/store";
 
@@ -337,6 +338,7 @@ function Rig({ revealed }: { revealed: boolean }) {
   });
   const idle = useRef<ReturnType<typeof setTimeout>>(undefined);
   const resume = useRef(false);
+  const reduce = useReducedMotion();
 
   useEffect(() => () => clearTimeout(idle.current), []);
   useEffect(() => invalidate(), [resetAt, driving, invalidate]);
@@ -356,11 +358,18 @@ function Rig({ revealed }: { revealed: boolean }) {
     if (!c) return;
     if (resetAt !== last.current) {
       last.current = resetAt;
-      glide.current = "hero";
-      view.current.t = -1;
       clearTimeout(idle.current);
       spin.current = false;
-      resume.current = true;
+      if (reduce) {
+        glide.current = null;
+        c.target.set(...TARGET);
+        c.object.position.set(...HERO);
+        c.update();
+      } else {
+        glide.current = "hero";
+        view.current.t = -1;
+        resume.current = true;
+      }
     }
     if (driving !== wasDriving.current) {
       wasDriving.current = driving;
@@ -375,7 +384,7 @@ function Rig({ revealed }: { revealed: boolean }) {
         land();
       }
     }
-    c.autoRotate = spin.current && !driving && !glide.current;
+    c.autoRotate = spin.current && !reduce && !driving && !glide.current;
     c.autoRotateSpeed = c.autoRotate ? Math.min(SPIN_SPEED, c.autoRotateSpeed + (SPIN_SPEED / SPIN_RAMP_S) * Math.min(dt, 1 / 30)) : 0;
     if (!glide.current) {
       if (c.autoRotate) invalidate();
@@ -408,7 +417,7 @@ function Rig({ revealed }: { revealed: boolean }) {
         land();
       }
     }
-    if (glide.current || (spin.current && !driving)) invalidate();
+    if (glide.current || (spin.current && !reduce && !driving)) invalidate();
   }, -0.5);
 
   return (
@@ -417,7 +426,7 @@ function Rig({ revealed }: { revealed: boolean }) {
       makeDefault
       target={TARGET}
       enablePan={false}
-      enableDamping
+      enableDamping={!reduce}
       dampingFactor={0.08}
       rotateSpeed={0.7}
       minDistance={6.5}

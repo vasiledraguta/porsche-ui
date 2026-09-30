@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Map } from "maplibre-gl";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { Keyboard, Monitor, Volume2, VolumeX, X } from "lucide-react";
 import { BottomBar } from "./BottomBar";
 import { BesidePanel, CarPanel, DrivePill } from "./CarPanel";
@@ -41,83 +41,85 @@ export function Display() {
   }, []);
 
   return (
-    <div ref={wrap} className="relative grid h-dvh w-full place-items-center overflow-hidden bg-[#050506]">
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%] bg-[radial-gradient(60%_80%_at_50%_100%,var(--glow),transparent_70%)] transition-[--glow] duration-700"
-        style={{ ["--glow" as string]: ambient, opacity: Math.round(ambientLevel / 7) / 100 }}
-      />
-      {scale > 0 && (
+    <MotionConfig reducedMotion="user">
+      <div ref={wrap} className="relative grid h-dvh w-full place-items-center overflow-hidden bg-[#050506]">
         <div
-          className="absolute top-1/2 left-1/2"
-          style={{ width: W + 28, height: H + 28, transform: `translate(-50%, -50%) scale(${scale})` }}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.985 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.9, ease: [0.2, 0.8, 0.2, 1] }}
-            className="relative h-full w-full rounded-[2.25rem] bg-[#0a0a0b] p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.07),0_3.25rem_7.5rem_-1.25rem_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)]"
-          >
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%] bg-[radial-gradient(60%_80%_at_50%_100%,var(--glow),transparent_70%)] transition-[--glow] duration-700"
+          style={{ ["--glow" as string]: ambient, opacity: Math.round(ambientLevel / 7) / 100 }}
+        />
+        {scale > 0 && (
           <div
-            className="relative flex h-full w-full overflow-hidden rounded-3xl bg-black"
-            style={{ width: W, height: H, ["--ambient" as string]: ambient, ["--accent" as string]: accent }}
+            className="absolute top-1/2 left-1/2"
+            style={{ width: W + 28, height: H + 28, transform: `translate(-50%, -50%) scale(${scale})` }}
           >
-            <Rail />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <div className="relative min-h-0 flex-1 overflow-hidden">
-                <section aria-label="Navigation map" className="absolute inset-0 overflow-hidden">
-                  <div inert={covered} className="contents">
-                    <NavMap mapRef={mapRef} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.985 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.9, ease: [0.2, 0.8, 0.2, 1] }}
+              className="relative h-full w-full rounded-[2.25rem] bg-[#0a0a0b] p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.07),0_3.25rem_7.5rem_-1.25rem_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)]"
+            >
+            <div
+              className="relative flex h-full w-full overflow-hidden rounded-3xl bg-black"
+              style={{ width: W, height: H, ["--ambient" as string]: ambient, ["--accent" as string]: accent }}
+            >
+              <Rail />
+              <div className="flex min-w-0 flex-1 flex-col">
+                <div className="relative min-h-0 flex-1 overflow-hidden">
+                  <section aria-label="Navigation map" className="absolute inset-0 overflow-hidden">
+                    <div inert={covered} className="contents">
+                      <NavMap mapRef={mapRef} />
+                      <BesidePanel>
+                        <Maneuver />
+                        <DrivePill />
+                        <DemoDrive />
+                        <SearchBox />
+                        <SpeedLimit />
+                        <MapControls mapRef={mapRef} />
+                        <EtaBar />
+                      </BesidePanel>
+                    </div>
                     <BesidePanel>
-                      <Maneuver />
-                      <DrivePill />
-                      <DemoDrive />
-                      <SearchBox />
-                      <SpeedLimit />
-                      <MapControls mapRef={mapRef} />
-                      <EtaBar />
+                      <Sheets />
+                      <ModePopup />
+                      <VolumePopup />
                     </BesidePanel>
-                  </div>
-                  <BesidePanel>
-                    <Sheets />
-                    <ModePopup />
-                    <VolumePopup />
-                  </BesidePanel>
-                </section>
-                <CarPanel />
+                  </section>
+                  <CarPanel />
+                </div>
+                <BottomBar />
               </div>
-              <BottomBar />
+              <div className="pointer-events-none absolute inset-0 z-50 rounded-3xl bg-[linear-gradient(115deg,rgba(255,255,255,0.035)_0%,transparent_30%)]" />
             </div>
-            <div className="pointer-events-none absolute inset-0 z-50 rounded-3xl bg-[linear-gradient(115deg,rgba(255,255,255,0.035)_0%,transparent_30%)]" />
+            <div
+              className="absolute -bottom-1 left-[8%] h-0.5 w-[84%] rounded-full transition-[background,box-shadow] duration-700"
+              style={{
+                background: ambient,
+                opacity: 0.25 + ambientLevel / 140,
+                boxShadow: `0 0 1.25rem 0.125rem ${ambient}`,
+              }}
+            />
+            </motion.div>
           </div>
-          <div
-            className="absolute -bottom-1 left-[8%] h-0.5 w-[84%] rounded-full transition-[background,box-shadow] duration-700"
-            style={{
-              background: ambient,
-              opacity: 0.25 + ambientLevel / 140,
-              boxShadow: `0 0 1.25rem 0.125rem ${ambient}`,
-            }}
-          />
-          </motion.div>
-        </div>
-      )}
-      {notice && (
-        <div className="absolute inset-x-4 top-4 z-10 mx-auto hidden max-w-104 items-center gap-3.5 rounded-2xl bg-[#1a1d22]/95 py-3 pr-2 pl-4 shadow-[0_0.75rem_2rem_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md max-sm:flex portrait:flex">
-          <Monitor size="1.25rem" strokeWidth={1.7} className="shrink-0 text-white/70" />
-          <div className="min-w-0 flex-1">
-            <div className="text-[1rem] font-medium text-white">Best on a desktop</div>
-            <div className="text-[0.75rem] text-white/55">Open it on a larger screen, or turn your phone sideways.</div>
+        )}
+        {notice && (
+          <div className="absolute inset-x-4 top-4 z-10 mx-auto hidden max-w-104 items-center gap-3.5 rounded-2xl bg-[#1a1d22]/95 py-3 pr-2 pl-4 shadow-[0_0.75rem_2rem_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md max-sm:flex portrait:flex">
+            <Monitor size="1.25rem" strokeWidth={1.7} className="shrink-0 text-white/70" />
+            <div className="min-w-0 flex-1">
+              <div className="text-[1rem] font-medium text-white">Best on a desktop</div>
+              <div className="text-[0.75rem] text-white/55">Open it on a larger screen, or turn your phone sideways.</div>
+            </div>
+            <button
+              onClick={() => setNotice(false)}
+              aria-label="Dismiss"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white active:press"
+            >
+              <X size="1.25rem" />
+            </button>
           </div>
-          <button
-            onClick={() => setNotice(false)}
-            aria-label="Dismiss"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white/60 transition hover:bg-white/[0.06] hover:text-white active:press"
-          >
-            <X size="1.25rem" />
-          </button>
-        </div>
-      )}
-      <Shortcuts />
-    </div>
+        )}
+        <Shortcuts />
+      </div>
+    </MotionConfig>
   );
 }
 

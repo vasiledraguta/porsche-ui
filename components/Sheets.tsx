@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { AnimatePresence, motion, useDragControls, type PanInfo } from "motion/react";
+import { AnimatePresence, motion, useDragControls, useReducedMotion, type PanInfo } from "motion/react";
 import {
   ArrowUpFromLine,
   Brush,
@@ -45,6 +45,7 @@ export function Sheets() {
   const sheet = useCar((s) => s.sheet);
   const set = useCar((s) => s.set);
   const drag = useDragControls();
+  const reduce = useReducedMotion();
   const opener = useRef<HTMLElement | null>(null);
   const restoreFocus = (el: HTMLDivElement | null) => () => {
     if (el?.contains(document.activeElement)) opener.current?.focus();
@@ -66,9 +67,9 @@ export function Sheets() {
           ref={restoreFocus}
           tabIndex={-1}
           className="absolute inset-0 z-20 flex flex-col bg-[#121417] outline-none"
-          initial={{ y: "100%" }}
-          animate={{ y: 0, transition: { duration: 0.4, ease: slide } }}
-          exit={{ y: "100%", transition: { duration: 0.25, ease: slide } }}
+          initial={reduce ? { opacity: 0 } : { y: "100%" }}
+          animate={{ y: 0, opacity: 1, transition: { duration: 0.4, ease: slide } }}
+          exit={{ ...(reduce ? { opacity: 0 } : { y: "100%" }), transition: { duration: 0.25, ease: slide } }}
           drag="y"
           dragControls={drag}
           dragListener={false}
