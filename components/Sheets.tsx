@@ -570,6 +570,7 @@ function ClimateKey({ icon: Icon, label, on, onClick }: { icon: LucideIcon; labe
   return (
     <button
       onClick={onClick}
+      aria-pressed={on}
       className={`flex h-20 flex-col items-center justify-center gap-2 rounded-2xl transition ${
         on ? "bg-(--accent)/[0.14] text-[color-mix(in_oklab,var(--accent)_70%,white)] shadow-[inset_0_0_0_0.125rem_var(--accent)]" : "bg-white/[0.05] text-white/70 hover:bg-white/[0.08]"
       }`}
