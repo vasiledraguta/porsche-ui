@@ -116,9 +116,30 @@ export function Display() {
             </button>
           </div>
         )}
+        <Credits />
         <Shortcuts />
       </div>
     </MotionConfig>
+  );
+}
+
+const CREDITS: [string, string][] = [
+  ["© OpenStreetMap contributors", "https://www.openstreetmap.org/copyright"],
+  ["OpenFreeMap", "https://openfreemap.org/"],
+  ["3D model by Black Snow, CC BY 4.0", "https://sketchfab.com/3d-models/porsche-gt3-rs-e738eae819c34d19a31dd066c45e0f3d"],
+  ["Source", "https://github.com/vasiledraguta/porsche-ui"],
+];
+
+function Credits() {
+  return (
+    <footer className="absolute right-16 bottom-4 left-4 flex min-h-10 flex-wrap items-center gap-x-3 text-[0.75rem] text-white/55">
+      {CREDITS.map(([label, href]) => (
+        <a key={href} href={href} target="_blank" rel="noreferrer" className="transition hover:text-white">
+          {label}
+        </a>
+      ))}
+      <span>Not affiliated with Porsche AG</span>
+    </footer>
   );
 }
 
