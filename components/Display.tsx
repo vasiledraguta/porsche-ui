@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Map } from "maplibre-gl";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import { Keyboard, Monitor, Volume2, VolumeX, X } from "lucide-react";
+import { Info, Keyboard, Monitor, Volume2, VolumeX, X } from "lucide-react";
 import { BottomBar } from "./BottomBar";
 import { BesidePanel, CarPanel, DrivePill } from "./CarPanel";
 import { DemoDrive, EtaBar, MapControls, Maneuver, SearchBox, SpeedLimit } from "./MapOverlays";
@@ -124,22 +124,44 @@ export function Display() {
 }
 
 const CREDITS: [string, string][] = [
-  ["© OpenStreetMap contributors", "https://www.openstreetmap.org/copyright"],
-  ["OpenFreeMap", "https://openfreemap.org/"],
+  ["Map data © OpenStreetMap contributors", "https://www.openstreetmap.org/copyright"],
+  ["Map tiles by OpenFreeMap", "https://openfreemap.org/"],
   ["3D model by Black Snow, CC BY 4.0", "https://sketchfab.com/3d-models/porsche-gt3-rs-e738eae819c34d19a31dd066c45e0f3d"],
-  ["Source", "https://github.com/vasiledraguta/porsche-ui"],
+  ["Source on GitHub", "https://github.com/vasiledraguta/porsche-ui"],
 ];
 
 function Credits() {
   return (
-    <footer className="absolute right-16 bottom-4 left-4 flex min-h-10 flex-wrap items-center gap-x-3 text-[0.75rem] text-white/55">
-      {CREDITS.map(([label, href]) => (
-        <a key={href} href={href} target="_blank" rel="noreferrer" className="transition hover:text-white">
-          {label}
-        </a>
-      ))}
-      <span>Not affiliated with Porsche AG</span>
-    </footer>
+    <>
+      <button
+        popoverTarget="credits"
+        aria-label="Credits"
+        title="Credits"
+        className="absolute bottom-4 left-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/[0.06] text-white/55 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md transition hover:bg-white/[0.1] hover:text-white active:press"
+      >
+        <Info size="1.25rem" strokeWidth={1.7} />
+      </button>
+      <div
+        id="credits"
+        popover="auto"
+        aria-labelledby="credits-title"
+        className="inset-auto bottom-16 left-4 m-0 w-76 max-w-[calc(100vw-2rem)] rounded-2xl bg-[#1a1d22]/95 px-5 pt-4 pb-5 text-white shadow-[0_0.75rem_2rem_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-md translate-y-2.5 scale-96 opacity-0 transition-[opacity,scale,translate,overlay,display] transition-discrete duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] open:translate-y-0 open:scale-100 open:opacity-100 open:duration-300 starting:open:translate-y-2.5 starting:open:scale-96 starting:open:opacity-0"
+      >
+        <h2 id="credits-title" className="text-[0.75rem] font-medium tracking-[0.08em] text-white/50 uppercase">
+          Credits
+        </h2>
+        <ul className="mt-3 flex flex-col gap-2 text-[0.75rem]">
+          {CREDITS.map(([label, href]) => (
+            <li key={href}>
+              <a href={href} target="_blank" rel="noreferrer" className="text-white/70 transition hover:text-white">
+                {label}
+              </a>
+            </li>
+          ))}
+          <li className="text-white/55">Not affiliated with Porsche AG</li>
+        </ul>
+      </div>
+    </>
   );
 }
 
