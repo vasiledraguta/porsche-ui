@@ -31,6 +31,10 @@ W / ↑ throttle · S / ↓ brake · A demo drive · M drive mode · Space play/
 - [The four screens in a Porsche Taycan](https://www.youtube.com/watch?v=LYob6iiQKT4) by Car Creations
 - [2022 Porsche Macan infotainment review](https://www.youtube.com/watch?v=DgUCJ71-zX0) by Daily Motor
 
+## License
+
+Code under [MIT](LICENSE). The 3D model keeps its CC-BY-4.0 license.
+
 ## Disclaimer
 
 Not affiliated with or endorsed by Porsche AG. Porsche, 911, GT3 RS and PCM are trademarks of their owners.
